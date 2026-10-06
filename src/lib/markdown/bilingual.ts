@@ -55,7 +55,10 @@ export function remarkBilingual() {
           heading.children = (["zh", "en"] as const).map((lang) => ({
             type: "text" as const,
             value: parts[lang]!,
-            data: { hName: "span", hProperties: { lang: LANG_ATTR[lang], "data-lang": lang, className: ["pw-h-part"] } },
+            data: {
+              hName: "span",
+              hProperties: { lang: LANG_ATTR[lang], "data-lang": lang, className: ["pw-h-part"] },
+            },
           }));
         }
       }

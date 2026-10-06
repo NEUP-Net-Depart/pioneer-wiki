@@ -20,7 +20,13 @@ export const NAV_ITEMS: Array<{ href: string; key: MessageKey; match: (p: string
  * Typed destinations. In the header row a single brick hairline marks where
  * the reader is and slides to the next destination when the page turns.
  */
-export function NavLinks({ orientation = "row", onNavigate }: { orientation?: "row" | "column"; onNavigate?: () => void }) {
+export function NavLinks({
+  orientation = "row",
+  onNavigate,
+}: {
+  orientation?: "row" | "column";
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const { t } = useI18n();
   const listRef = useRef<HTMLUListElement>(null);

@@ -1,23 +1,17 @@
 [
   {
     "out": "public/stage/src/geography.png",
-    "inputs": [
-      "public/plates/frontispiece.png"
-    ],
+    "inputs": ["public/plates/frontispiece.png"],
     "prompt": "Redraw this exact plate in a new theme while keeping the SAME composition, framing, scale and silhouette: one wide floating slab, centred, in the lower two thirds, its underside crumbling away into the paper, the top third of the sheet completely empty. New theme — GEOGRAPHY, as a 19th-century geological block diagram from an antique atlas: the slab is now a cut-away block of landscape. The cross-section shows neat layered rock strata (sandstone, shale, chalk) instead of soil and roots, with a thin aquifer line; on top, low hills drawn with hachures where the log was, a winding river that falls in a small cascade into a little harbour at the right, a lighthouse on a rocky point, two tiny sailing boats leaving the harbour along dotted sea routes, a small compass rose resting at the left end, a few tiny cottages. Same 19th-century copperplate engraving with fine hatching and hand-tinted wash; antique-map palette: sepia ink, pale ochre, faded sea-green, soft indigo water. Plain warm paper background #E9E1D1. No text, no letters, no numbers, no labels, no frame, no border."
   },
   {
     "out": "public/stage/src/art.png",
-    "inputs": [
-      "public/plates/frontispiece.png"
-    ],
+    "inputs": ["public/plates/frontispiece.png"],
     "prompt": "Redraw this exact plate in a new theme while keeping the SAME composition, framing, scale and silhouette: one wide floating slab, centred, spanning most of the width, in the lower two thirds, the top third of the sheet completely empty. New theme — FINE ART, as a grand 19th-century classical capriccio in the manner of Hubert Robert and Piranesi, monumental and majestic: the slab is now a great block of carved white marble. Its cut-away front face (instead of soil and roots) is carved with one continuous classical relief frieze of many draped figures — muses, poets, a painter, a sculptor, a musician — walking in procession, like the Parthenon frieze. On top of the block: the ruins of a classical colonnade and a small round temple, two monumental statues (a muse holding a lyre and a winged victory), tall dark cypress trees, a painter's easel with a large canvas, scattered capitals and an amphora; at the right, a fountain cascades from a carved lion's mouth into a broad marble basin. Grand sense of scale and light. Palette: warm marble ivory, terracotta, raw sienna, ochre, touches of gold leaf, cypress green, a little sky blue in the water. Same 19th-century engraved, hand-tinted style. Plain warm paper background #E9E1D1. No people walking around (only statues and carved figures). No text, no letters, no numbers, no inscriptions, no labels, no frame, no border."
   },
   {
     "out": "public/stage/src/blueprint.png",
-    "inputs": [
-      "public/plates/frontispiece.png"
-    ],
+    "inputs": ["public/plates/frontispiece.png"],
     "prompt": "Redraw this exact plate in a new theme while keeping the SAME composition, framing, scale and silhouette: one wide floating slab, centred, in the lower two thirds, the top third of the sheet empty. New theme — ENGINEERING BLUEPRINT, as a 19th-century cyanotype blueprint: fine white technical line drawing on deep Prussian-blue paper. The slab is now an engineering cross-section of a machine for exchanging messages: inside the cut-away, meshing gears, shafts, a small steam engine and a flatbed printing press; on top, a telegraph mast with wires where the fern was, a small signal tower, a water wheel at the right where the stream was, pipes where the roots were; light construction circles, centre lines and dimension arrows WITHOUT any numbers. The whole background is uniform deep Prussian blue with a faint paper texture. Same 19th-century drafting precision. No text, no letters, no numbers, no labels, no title block, no frame, no border."
   }
 ]

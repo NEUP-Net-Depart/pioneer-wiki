@@ -11,7 +11,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
  */
 const ALL = "__all__";
 
-export function FilterSelect({ name, label, value, options }: { name: string; label: string; value: string; options: Array<[string, string]> }) {
+export function FilterSelect({
+  name,
+  label,
+  value,
+  options,
+}: {
+  name: string;
+  label: string;
+  value: string;
+  options: Array<[string, string]>;
+}) {
   const [current, setCurrent] = useState(value === "" ? ALL : value);
   return (
     <label className="flex flex-col gap-1">

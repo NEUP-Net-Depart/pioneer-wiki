@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function AccountActions({ label, doneLabel, confirmLabel }: { label: string; doneLabel: string; confirmLabel: string }) {
+export function AccountActions({
+  label,
+  doneLabel,
+  confirmLabel,
+}: {
+  label: string;
+  doneLabel: string;
+  confirmLabel: string;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);

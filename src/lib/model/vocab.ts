@@ -1,13 +1,4 @@
-import type {
-  BioRole,
-  BorderId,
-  DomainId,
-  InkId,
-  Localized,
-  RelationKind,
-  ReviewState,
-  Scale,
-} from "./types";
+import type { BioRole, BorderId, DomainId, InkId, Localized, RelationKind, ReviewState, Scale } from "./types";
 
 /**
  * Controlled vocabularies with their bilingual labels. UI code reads labels
@@ -41,16 +32,25 @@ export const DOMAINS: Record<DomainId, Localized> = {
 
 /** One-line description of each phylum, shown on its plate page. */
 export const DOMAIN_NOTES: Record<DomainId, Localized> = {
-  algorithms: { zh: "解决问题的步骤，以及为之服务的数据形态。", en: "Step-by-step procedures, and the shapes data takes to serve them." },
+  algorithms: {
+    zh: "解决问题的步骤，以及为之服务的数据形态。",
+    en: "Step-by-step procedures, and the shapes data takes to serve them.",
+  },
   theory: { zh: "什么可以被计算，又要付出多少代价。", en: "What can be computed, and at what cost." },
   languages: { zh: "程序如何被书写、理解与翻译。", en: "How programs are written, understood and translated." },
   systems: { zh: "让许多程序共享一台机器的底层软件。", en: "The software that lets many programs share one machine." },
   architecture: { zh: "处理器与存储器的组织方式。", en: "How processors and memory are organised." },
   networking: { zh: "数据如何穿过不可靠的链路抵达彼端。", en: "How data crosses unreliable links to the other side." },
-  distributed: { zh: "许多机器如何在故障与延迟之中达成一致。", en: "How many machines agree despite failures and delay." },
+  distributed: {
+    zh: "许多机器如何在故障与延迟之中达成一致。",
+    en: "How many machines agree despite failures and delay.",
+  },
   databases: { zh: "数据如何被长久保存、组织与查询。", en: "How data is kept, organised and queried." },
   ml: { zh: "从数据中学习规律的方法。", en: "Methods that learn regularities from data." },
-  security: { zh: "在对手存在时保护信息与系统。", en: "Protecting information and systems when adversaries are present." },
+  security: {
+    zh: "在对手存在时保护信息与系统。",
+    en: "Protecting information and systems when adversaries are present.",
+  },
 };
 
 /**
@@ -66,52 +66,82 @@ export const DOMAIN_EMBLEMS: Record<DomainId, { vignette: string; organism: Loca
   algorithms: {
     vignette: "weaver-bird",
     organism: { zh: "织布鸟", en: "Weaver bird" },
-    why: { zh: "织布鸟按固定的步骤一针一线编出巢：先打结，再绕圈，再收口——一个可以重复执行的过程。", en: "A weaver builds its nest by fixed steps — knot, loop, close — a procedure it can run again and again." },
+    why: {
+      zh: "织布鸟按固定的步骤一针一线编出巢：先打结，再绕圈，再收口——一个可以重复执行的过程。",
+      en: "A weaver builds its nest by fixed steps — knot, loop, close — a procedure it can run again and again.",
+    },
   },
   theory: {
     vignette: "nautilus-section",
     organism: { zh: "鹦鹉螺剖面", en: "Nautilus, sectioned" },
-    why: { zh: "每一个新腔室都按同一比例放大，壳上写着一条对数螺线：生长本身就是一条定理。", en: "Every new chamber grows by the same ratio, tracing a logarithmic spiral: the growth itself is a theorem." },
+    why: {
+      zh: "每一个新腔室都按同一比例放大，壳上写着一条对数螺线：生长本身就是一条定理。",
+      en: "Every new chamber grows by the same ratio, tracing a logarithmic spiral: the growth itself is a theorem.",
+    },
   },
   languages: {
     vignette: "songbird",
     organism: { zh: "鸣禽", en: "Songbird" },
-    why: { zh: "鸣禽的歌有音节、乐句与句法，幼鸟要先听、再学、再练才能唱准——语言也是这样被习得与解析的。", en: "Birdsong has syllables, phrases and syntax, and a fledgling must listen, learn and practise to sing it right — as languages are learned and parsed." },
+    why: {
+      zh: "鸣禽的歌有音节、乐句与句法，幼鸟要先听、再学、再练才能唱准——语言也是这样被习得与解析的。",
+      en: "Birdsong has syllables, phrases and syntax, and a fledgling must listen, learn and practise to sing it right — as languages are learned and parsed.",
+    },
   },
   systems: {
     vignette: "anemone-clownfish",
     organism: { zh: "海葵与小丑鱼", en: "Anemone & clownfish" },
-    why: { zh: "海葵提供庇护，小丑鱼在其中安心生活：宿主与房客，正如操作系统与它承载的程序。", en: "The anemone shelters, the clownfish lives safely within: host and tenant, like an operating system and the programs it carries." },
+    why: {
+      zh: "海葵提供庇护，小丑鱼在其中安心生活：宿主与房客，正如操作系统与它承载的程序。",
+      en: "The anemone shelters, the clownfish lives safely within: host and tenant, like an operating system and the programs it carries.",
+    },
   },
   architecture: {
     vignette: "swallow-nest",
     organism: { zh: "燕巢", en: "Swallow at its nest" },
-    why: { zh: "燕子一口一口衔泥，按受力与空间筑出结构；体系结构也是把有限的材料排成能承重的形状。", en: "A swallow lays mud pellet by pellet into a structure shaped by load and space — as architecture arranges scarce material into something that bears weight." },
+    why: {
+      zh: "燕子一口一口衔泥，按受力与空间筑出结构；体系结构也是把有限的材料排成能承重的形状。",
+      en: "A swallow lays mud pellet by pellet into a structure shaped by load and space — as architecture arranges scarce material into something that bears weight.",
+    },
   },
   networking: {
     vignette: "homing-pigeon",
     organism: { zh: "信鸽", en: "Homing pigeon" },
-    why: { zh: "信鸽带着一小筒信息，穿过陌生的地形找到回家的路：寻路与投递，正是网络要做的事。", en: "A pigeon carries a small capsule across unknown country and finds its way home: routing and delivery, which is what a network does." },
+    why: {
+      zh: "信鸽带着一小筒信息，穿过陌生的地形找到回家的路：寻路与投递，正是网络要做的事。",
+      en: "A pigeon carries a small capsule across unknown country and finds its way home: routing and delivery, which is what a network does.",
+    },
   },
   distributed: {
     vignette: "fish-school",
     organism: { zh: "小鱼群", en: "School of small fish" },
-    why: { zh: "没有领队，每条鱼只看身边几条，整群却能一起转向：分布式系统靠局部规则达成整体一致。", en: "No leader; each fish watches only its neighbours, yet the school turns as one — distributed systems reach agreement through local rules." },
+    why: {
+      zh: "没有领队，每条鱼只看身边几条，整群却能一起转向：分布式系统靠局部规则达成整体一致。",
+      en: "No leader; each fish watches only its neighbours, yet the school turns as one — distributed systems reach agreement through local rules.",
+    },
   },
   databases: {
     vignette: "jay-acorn",
     organism: { zh: "松鸦与橡实", en: "Jay with an acorn" },
-    why: { zh: "一只松鸦秋天能藏下几千颗橡实，冬天还能记得大多数藏在哪里：存储、索引与检索。", en: "A jay caches thousands of acorns in autumn and finds most of them again in winter: storage, indexing and retrieval." },
+    why: {
+      zh: "一只松鸦秋天能藏下几千颗橡实，冬天还能记得大多数藏在哪里：存储、索引与检索。",
+      en: "A jay caches thousands of acorns in autumn and finds most of them again in winter: storage, indexing and retrieval.",
+    },
   },
   ml: {
     vignette: "little-owl",
     organism: { zh: "纵纹腹小鸮", en: "Little owl" },
-    why: { zh: "小鸮在暗处从零星的声响里判断猎物的位置，并随经验越听越准：从稀疏信号中学习。", en: "In the dark a little owl places its prey from faint, scattered sounds, and hears more accurately with experience: learning from sparse signals." },
+    why: {
+      zh: "小鸮在暗处从零星的声响里判断猎物的位置，并随经验越听越准：从稀疏信号中学习。",
+      en: "In the dark a little owl places its prey from faint, scattered sounds, and hears more accurately with experience: learning from sparse signals.",
+    },
   },
   security: {
     vignette: "turtle-hatchling",
     organism: { zh: "海龟幼体", en: "Sea-turtle hatchling" },
-    why: { zh: "刚破壳的小海龟带着一层硬壳奔向大海，在一路的威胁中守住自己：防护、信任与生存。", en: "A hatchling runs for the sea in its small hard shell, guarding itself through every threat on the way: protection, trust and survival." },
+    why: {
+      zh: "刚破壳的小海龟带着一层硬壳奔向大海，在一路的威胁中守住自己：防护、信任与生存。",
+      en: "A hatchling runs for the sea in its small hard shell, guarding itself through every threat on the way: protection, trust and survival.",
+    },
   },
 };
 

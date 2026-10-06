@@ -15,7 +15,17 @@ const LABELS = {
  * labels around it. "slip" sits in a code slip's head strip (typed small
  * caps); "link" sits among record links (indigo, like "All rings →").
  */
-export function CopyButton({ text, lang, variant = "slip", idleLabel }: { text: string; lang: Lang; variant?: "slip" | "link"; idleLabel?: string }) {
+export function CopyButton({
+  text,
+  lang,
+  variant = "slip",
+  idleLabel,
+}: {
+  text: string;
+  lang: Lang;
+  variant?: "slip" | "link";
+  idleLabel?: string;
+}) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {

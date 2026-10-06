@@ -28,7 +28,12 @@ function localized(zh: string, en: string): Localized {
 }
 
 function fallbackHandle(email: string): string {
-  const base = email.split("@")[0]?.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "reader";
+  const base =
+    email
+      .split("@")[0]
+      ?.toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "reader";
   return base.slice(0, 32);
 }
 
@@ -43,10 +48,17 @@ export function createSupabaseAuthAdapter(): AuthAdapter {
       const { data: authData, error } = await supabase.auth.getUser();
       if (error || !authData.user || !authData.user.email) return null;
 
-      const { data } = await supabase.from("profiles").select("handle, display_name_zh, display_name_en, sigil, account_role, author_id").eq("id", authData.user.id).maybeSingle();
+      const { data } = await supabase
+        .from("profiles")
+        .select("handle, display_name_zh, display_name_en, sigil, account_role, author_id")
+        .eq("id", authData.user.id)
+        .maybeSingle();
       const profile = (data ?? {}) as ProfileRow;
       const metadata = (authData.user.user_metadata ?? {}) as Record<string, unknown>;
-      const displayName = typeof metadata.display_name === "string" && metadata.display_name.trim() ? metadata.display_name.trim() : "Reader";
+      const displayName =
+        typeof metadata.display_name === "string" && metadata.display_name.trim()
+          ? metadata.display_name.trim()
+          : "Reader";
       const role = profile.account_role === "admin" ? "admin" : "reader";
 
       return {
@@ -65,9 +77,17 @@ export function createSupabaseAuthAdapter(): AuthAdapter {
       const supabase = await createSupabaseServerClient();
       const { data: authData, error } = await supabase.auth.getUser();
       if (error || !authData.user) return null;
-      const { data: profile } = await supabase.from("profiles").select("author_id").eq("id", authData.user.id).maybeSingle();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("author_id")
+        .eq("id", authData.user.id)
+        .maybeSingle();
       if (!profile?.author_id) return null;
-      const { data } = await supabase.from("authors").select("id, handle, name_zh, name_en, affiliation_zh, affiliation_en, role, sigil").eq("id", profile.author_id).maybeSingle();
+      const { data } = await supabase
+        .from("authors")
+        .select("id, handle, name_zh, name_en, affiliation_zh, affiliation_en, role, sigil")
+        .eq("id", profile.author_id)
+        .maybeSingle();
       const author = data as AuthorRow | null;
       if (!author) return null;
       return {

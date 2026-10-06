@@ -9,7 +9,11 @@ export async function GET(_request: Request, { params }: RouteContext<"/api/draf
   if (!getSupabaseConfig()) return NextResponse.json({ draft: null, localOnly: true });
   const { id } = await params;
   const client = await createSupabaseServerClient();
-  const { data, error } = await client.from("entry_working_drafts").select("id, entry_id, base_revision, payload, updated_at").eq("id", id).maybeSingle();
+  const { data, error } = await client
+    .from("entry_working_drafts")
+    .select("id, entry_id, base_revision, payload, updated_at")
+    .eq("id", id)
+    .maybeSingle();
   if (error) return NextResponse.json({ error: { code: "unavailable", message: error.message } }, { status: 503 });
   return NextResponse.json({ draft: data ?? null });
 }

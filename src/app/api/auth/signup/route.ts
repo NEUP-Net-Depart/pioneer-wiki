@@ -4,7 +4,11 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 import { authInputError } from "@/lib/auth/validation";
 
 export async function POST(request: Request) {
-  if (!getSupabaseConfig()) return NextResponse.json({ error: { message: "Supabase is not configured for this environment." } }, { status: 503 });
+  if (!getSupabaseConfig())
+    return NextResponse.json(
+      { error: { message: "Supabase is not configured for this environment." } },
+      { status: 503 },
+    );
   const input = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const invalid = authInputError(input, "signup");
   if (invalid) return NextResponse.json({ error: invalid }, { status: 422 });

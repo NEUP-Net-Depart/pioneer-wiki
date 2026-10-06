@@ -71,7 +71,13 @@ export const entries: EntryFixture[] = [
     revision: 4,
     revisions: [
       rev(1, "a-qingkong", "2026-06-12T09:20:00+08:00", "published", "初稿：定义与基本推拉模型"),
-      rev(2, "a-qingkong", "2026-07-03T16:42:00+08:00", "published", "Add convergence estimate and the rumor-mongering variant"),
+      rev(
+        2,
+        "a-qingkong",
+        "2026-07-03T16:42:00+08:00",
+        "published",
+        "Add convergence estimate and the rumor-mongering variant",
+      ),
       rev(3, "a-qingkong", "2026-08-19T11:10:00+08:00", "published", "补充反熵与示例代码"),
       rev(4, "a-qingkong", "2026-09-30T21:05:00+08:00", "published", "审校：修正收敛轮次公式，补充对照表与脚注"),
     ],
@@ -562,22 +568,64 @@ const r = (
 
 /** Directed relations between entries (by EntryId). */
 export const relations: Relation[] = [
-  r("rel-01", "PW-0002", "PW-0003", "contrast", 3, { zh: "同为多数派共识，Raft 以可理解性为目标重新组织了 Paxos 的思想。", en: "Both are majority-quorum consensus; Raft reorganises Paxos's ideas for understandability." }),
-  r("rel-02", "PW-0002", "PW-0003", "dispute", 1, { zh: "Raft 是否“更简单”仍有争论：许多人认为差异主要在表述。", en: "Whether Raft is really simpler is debated; many argue the difference is mostly presentation." }),
-  r("rel-03", "PW-0001", "PW-0002", "contrast", 2, { zh: "最终一致的流言传播 vs. 强一致的日志复制。", en: "Eventually consistent gossip vs strongly consistent log replication." }),
-  r("rel-04", "PW-0001", "PW-0015", "symbiosis", 1, { zh: "许多存储系统用流言协议传播成员与元数据，用 B 树组织数据页。", en: "Many storage systems gossip membership and metadata while B-trees organise their pages." }),
-  r("rel-05", "PW-0005", "PW-0006", "taxonomy", 3, { zh: "语法分析器是编译器前端的一部分。", en: "The parser is part of the compiler front end." }),
-  r("rel-06", "PW-0005", "PW-0004", "symbiosis", 2, { zh: "编译器输出栈映射与写屏障，回收器才能精确找到根。", en: "Compilers emit stack maps and write barriers so the collector can find roots precisely." }),
-  r("rel-07", "PW-0004", "PW-0007", "dependency", 2, { zh: "回收器依赖内核的虚拟内存与页保护机制。", en: "Collectors rely on kernel virtual memory and page protection." }),
+  r("rel-01", "PW-0002", "PW-0003", "contrast", 3, {
+    zh: "同为多数派共识，Raft 以可理解性为目标重新组织了 Paxos 的思想。",
+    en: "Both are majority-quorum consensus; Raft reorganises Paxos's ideas for understandability.",
+  }),
+  r("rel-02", "PW-0002", "PW-0003", "dispute", 1, {
+    zh: "Raft 是否“更简单”仍有争论：许多人认为差异主要在表述。",
+    en: "Whether Raft is really simpler is debated; many argue the difference is mostly presentation.",
+  }),
+  r("rel-03", "PW-0001", "PW-0002", "contrast", 2, {
+    zh: "最终一致的流言传播 vs. 强一致的日志复制。",
+    en: "Eventually consistent gossip vs strongly consistent log replication.",
+  }),
+  r("rel-04", "PW-0001", "PW-0015", "symbiosis", 1, {
+    zh: "许多存储系统用流言协议传播成员与元数据，用 B 树组织数据页。",
+    en: "Many storage systems gossip membership and metadata while B-trees organise their pages.",
+  }),
+  r("rel-05", "PW-0005", "PW-0006", "taxonomy", 3, {
+    zh: "语法分析器是编译器前端的一部分。",
+    en: "The parser is part of the compiler front end.",
+  }),
+  r("rel-06", "PW-0005", "PW-0004", "symbiosis", 2, {
+    zh: "编译器输出栈映射与写屏障，回收器才能精确找到根。",
+    en: "Compilers emit stack maps and write barriers so the collector can find roots precisely.",
+  }),
+  r("rel-07", "PW-0004", "PW-0007", "dependency", 2, {
+    zh: "回收器依赖内核的虚拟内存与页保护机制。",
+    en: "Collectors rely on kernel virtual memory and page protection.",
+  }),
   r("rel-08", "PW-0004", "PW-0008", "dependency", 1),
-  r("rel-09", "PW-0009", "PW-0008", "taxonomy", 3, { zh: "缓存行是存储层级中缓存与主存之间的传输单位。", en: "The cache line is the transfer unit between cache and memory in the hierarchy." }),
+  r("rel-09", "PW-0009", "PW-0008", "taxonomy", 3, {
+    zh: "缓存行是存储层级中缓存与主存之间的传输单位。",
+    en: "The cache line is the transfer unit between cache and memory in the hierarchy.",
+  }),
   r("rel-10", "PW-0007", "PW-0008", "dependency", 2),
-  r("rel-11", "PW-0015", "PW-0008", "dependency", 2, { zh: "B 树的宽节点正是为页式存储的访问代价而设计。", en: "B-tree's wide nodes are shaped by the cost of paged storage access." }),
-  r("rel-12", "PW-0012", "PW-0011", "source", 3, { zh: "反向传播把感知机的学习推广到多层网络。", en: "Backpropagation generalises perceptron learning to multi-layer networks." }),
-  r("rel-13", "PW-0011", "PW-0012", "dispute", 2, { zh: "《感知机》一书的批评与多层网络能否训练之争。", en: "The critique in Perceptrons and the argument over whether multi-layer networks could be trained." }),
-  r("rel-14", "PW-0014", "PW-0001", "contrast", 1, { zh: "两者都靠局部交互产生全局行为：信息素 vs. 流言。", en: "Both get global behaviour from local interaction: pheromone vs rumour." }),
-  r("rel-15", "PW-0013", "PW-0006", "contrast", 1, { zh: "L 系统并行重写，语法分析按产生式逆向归约。", en: "L-systems rewrite in parallel; parsers reduce productions in reverse." }),
-  r("rel-16", "PW-0010", "PW-0015", "symbiosis", 2, { zh: "LSM 与 B 树存储常用布隆过滤器跳过不含目标键的页。", en: "LSM and B-tree stores use Bloom filters to skip pages that cannot contain a key." }),
+  r("rel-11", "PW-0015", "PW-0008", "dependency", 2, {
+    zh: "B 树的宽节点正是为页式存储的访问代价而设计。",
+    en: "B-tree's wide nodes are shaped by the cost of paged storage access.",
+  }),
+  r("rel-12", "PW-0012", "PW-0011", "source", 3, {
+    zh: "反向传播把感知机的学习推广到多层网络。",
+    en: "Backpropagation generalises perceptron learning to multi-layer networks.",
+  }),
+  r("rel-13", "PW-0011", "PW-0012", "dispute", 2, {
+    zh: "《感知机》一书的批评与多层网络能否训练之争。",
+    en: "The critique in Perceptrons and the argument over whether multi-layer networks could be trained.",
+  }),
+  r("rel-14", "PW-0014", "PW-0001", "contrast", 1, {
+    zh: "两者都靠局部交互产生全局行为：信息素 vs. 流言。",
+    en: "Both get global behaviour from local interaction: pheromone vs rumour.",
+  }),
+  r("rel-15", "PW-0013", "PW-0006", "contrast", 1, {
+    zh: "L 系统并行重写，语法分析按产生式逆向归约。",
+    en: "L-systems rewrite in parallel; parsers reduce productions in reverse.",
+  }),
+  r("rel-16", "PW-0010", "PW-0015", "symbiosis", 2, {
+    zh: "LSM 与 B 树存储常用布隆过滤器跳过不含目标键的页。",
+    en: "LSM and B-tree stores use Bloom filters to skip pages that cannot contain a key.",
+  }),
   r("rel-17", "PW-0016", "PW-0001", "contrast", 1),
   r("rel-18", "PW-0009", "PW-0007", "dependency", 1),
 ];

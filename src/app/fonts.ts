@@ -51,8 +51,16 @@ export const sourceSans = localFont({
 /** Historic letterpress face (the Fell types): running heads, captions, marginalia. */
 export const fell = localFont({
   src: [
-    { path: "../../node_modules/@fontsource/im-fell-english/files/im-fell-english-latin-400-normal.woff2", weight: "400", style: "normal" },
-    { path: "../../node_modules/@fontsource/im-fell-english/files/im-fell-english-latin-400-italic.woff2", weight: "400", style: "italic" },
+    {
+      path: "../../node_modules/@fontsource/im-fell-english/files/im-fell-english-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../node_modules/@fontsource/im-fell-english/files/im-fell-english-latin-400-italic.woff2",
+      weight: "400",
+      style: "italic",
+    },
   ],
   variable: "--font-fell",
   display: "swap",

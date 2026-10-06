@@ -132,7 +132,14 @@ export function EntranceStage({
       aria-labelledby="stage-title"
       data-dark={dark || undefined}
       className="pw-stage relative -mt-8 ml-[calc(50%-50vw)] w-screen overflow-hidden sm:-mt-10"
-      style={{ "--stage-l": f?.left, "--stage-r": f?.right, "--stage-ink": dark ? "#f1ece2" : "var(--color-ink)", "--stage-ink-2": dark ? "rgb(241 236 226 / 0.72)" : "var(--color-ink-3)" } as React.CSSProperties}
+      style={
+        {
+          "--stage-l": f?.left,
+          "--stage-r": f?.right,
+          "--stage-ink": dark ? "#f1ece2" : "var(--color-ink)",
+          "--stage-ink-2": dark ? "rgb(241 236 226 / 0.72)" : "var(--color-ink-3)",
+        } as React.CSSProperties
+      }
     >
       {biology ? <HyphaeField seed={{ x: 0.5 + (seed.x - 0.5) * 0.8, y: 0.2 + seed.y * 0.62 }} delay={300} /> : null}
 
@@ -158,7 +165,10 @@ export function EntranceStage({
             </span>
           </h1>
           <div className="pw-hero-in flex items-start gap-4" style={{ "--delay": "900ms" } as React.CSSProperties}>
-            <p className="hidden pt-1 text-right font-mono text-[0.6875rem] leading-relaxed tracking-[0.18em] uppercase sm:block" style={{ color: "var(--stage-ink-2)" }}>
+            <p
+              className="hidden pt-1 text-right font-mono text-[0.6875rem] leading-relaxed tracking-[0.18em] uppercase sm:block"
+              style={{ color: "var(--stage-ink-2)" }}
+            >
               <span className="block">
                 Part {part.numeral} · {part.manner[lang]}
               </span>
@@ -166,7 +176,12 @@ export function EntranceStage({
                 {meta[part.id]}
               </span>
             </p>
-            <p aria-hidden="true" lang="zh-CN" className="font-display text-[clamp(1rem,1.4vw,1.25rem)] leading-none tracking-[0.4em] [writing-mode:vertical-rl]" style={{ color: "var(--stage-ink)" }}>
+            <p
+              aria-hidden="true"
+              lang="zh-CN"
+              className="font-display text-[clamp(1rem,1.4vw,1.25rem)] leading-none tracking-[0.4em] [writing-mode:vertical-rl]"
+              style={{ color: "var(--stage-ink)" }}
+            >
               先锋维基
             </p>
           </div>
@@ -197,7 +212,11 @@ export function EntranceStage({
         </div>
 
         {/* The four parts. Every part has its own route; the stage turns between them. */}
-        <nav aria-label={lang === "zh" ? "四个部分" : "Four parts"} className="pw-hero-in relative z-[2] mt-auto pb-5" style={{ "--delay": "1100ms" } as React.CSSProperties}>
+        <nav
+          aria-label={lang === "zh" ? "四个部分" : "Four parts"}
+          className="pw-hero-in relative z-[2] mt-auto pb-5"
+          style={{ "--delay": "1100ms" } as React.CSSProperties}
+        >
           <ol className="grid grid-cols-2 gap-px sm:grid-cols-4">
             {PARTS.map((p) => {
               const current = p.id === part.id;
@@ -207,14 +226,20 @@ export function EntranceStage({
                     href={p.href}
                     scroll={false}
                     aria-current={current ? "page" : undefined}
-                    className={cn("pw-part-tab group flex items-baseline gap-3 py-3 no-underline", current && "is-current")}
+                    className={cn(
+                      "pw-part-tab group flex items-baseline gap-3 py-3 no-underline",
+                      current && "is-current",
+                    )}
                   >
                     <span className="font-display text-h4 italic">{p.numeral}</span>
                     <span className="flex min-w-0 flex-col">
                       <span className="font-display text-lead leading-tight">
-                        {p.name[lang]} <span className="text-small opacity-70">{p.name[lang === "zh" ? "en" : "zh"]}</span>
+                        {p.name[lang]}{" "}
+                        <span className="text-small opacity-70">{p.name[lang === "zh" ? "en" : "zh"]}</span>
                       </span>
-                      <span className="font-mono text-[0.625rem] tracking-[0.16em] uppercase opacity-70">{p.manner[lang]}</span>
+                      <span className="font-mono text-[0.625rem] tracking-[0.16em] uppercase opacity-70">
+                        {p.manner[lang]}
+                      </span>
                     </span>
                   </Link>
                 </li>

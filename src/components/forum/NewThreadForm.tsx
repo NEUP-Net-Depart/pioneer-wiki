@@ -47,13 +47,22 @@ export function NewThreadForm({ nextNumber, today }: { nextNumber: number; today
         notes={
           zh
             ? ["一张图纸只谈一件事。", "讨论条目请注明编号，如 PW-0001。", "申请友链请写站名、地址与一句介绍。"]
-            : ["One subject per sheet.", "Cite entries by number, e.g. PW-0001.", "To exchange links: name, address, one line."]
+            : [
+                "One subject per sheet.",
+                "Cite entries by number, e.g. PW-0001.",
+                "To exchange links: name, address, one line.",
+              ]
         }
         block={
           <>
             <label data-span className="pw-titleblock-title">
               <small>{zh ? "标题 · Title" : "Title · 标题"}</small>
-              <input name="title" required maxLength={120} placeholder={zh ? "这张图纸要讨论什么？" : "What is this sheet about?"} />
+              <input
+                name="title"
+                required
+                maxLength={120}
+                placeholder={zh ? "这张图纸要讨论什么？" : "What is this sheet about?"}
+              />
             </label>
             <div>
               <small>{zh ? "署名 · Drawn by" : "Drawn by · 署名"}</small>

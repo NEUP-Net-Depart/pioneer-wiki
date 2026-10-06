@@ -34,13 +34,13 @@ export function Vignette({ name, className, sizes = "160px" }: { name: string; c
   return (
     <span className={cn("pw-print pointer-events-none select-none", className)}>
       <Image
-      src={`/vignettes/web/${name}.webp`}
-      width={s.width}
-      height={s.height}
-      alt=""
-      aria-hidden="true"
-      sizes={sizes}
-      data-vignette={name}
+        src={`/vignettes/web/${name}.webp`}
+        width={s.width}
+        height={s.height}
+        alt=""
+        aria-hidden="true"
+        sizes={sizes}
+        data-vignette={name}
         className="h-auto w-full"
       />
     </span>

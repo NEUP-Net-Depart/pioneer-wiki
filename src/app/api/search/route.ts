@@ -3,7 +3,10 @@ import { getServices } from "@/lib/services";
 import type { DomainId, Lang, ReviewState, Scale } from "@/lib/model/types";
 
 function values(request: NextRequest, key: string): string[] | undefined {
-  const all = request.nextUrl.searchParams.getAll(key).flatMap((value) => value.split(",")).filter(Boolean);
+  const all = request.nextUrl.searchParams
+    .getAll(key)
+    .flatMap((value) => value.split(","))
+    .filter(Boolean);
   return all.length ? all : undefined;
 }
 

@@ -14,7 +14,10 @@ export function MobileNav() {
   const [open, setOpen] = useState(false);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger className="inline-flex size-9 items-center justify-center rounded-sm text-ink-2 hover:bg-ink/5" aria-label={t("nav.primary")}>
+      <SheetTrigger
+        className="inline-flex size-9 items-center justify-center rounded-sm text-ink-2 hover:bg-ink/5"
+        aria-label={t("nav.primary")}
+      >
         <Menu className="size-5" aria-hidden="true" />
       </SheetTrigger>
       <SheetContent side="right" className="w-[min(20rem,86vw)] bg-paper-sheet">

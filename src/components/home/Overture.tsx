@@ -92,7 +92,10 @@ export function Overture({ cuts, birds }: { cuts: OvertureCut[]; birds: Overture
       setPhase("boot");
     });
 
-    const ready = Promise.all([...order.map((c) => preload(`/overture/${c.name}.webp`)), ...birds.map((b) => preload(b.src))]);
+    const ready = Promise.all([
+      ...order.map((c) => preload(`/overture/${c.name}.webp`)),
+      ...birds.map((b) => preload(b.src)),
+    ]);
     const timeout = new Promise((r) => window.setTimeout(r, 2600));
     Promise.race([ready, timeout]).then(() => {
       if (cancelled || finished.current) return;
@@ -156,7 +159,18 @@ export function Overture({ cuts, birds }: { cuts: OvertureCut[]; birds: Overture
     <div aria-hidden="true" className="pw-overture" data-phase={phase}>
       {showCuts
         ? seq.map((c, i) => (
-            <div key={c.name} className="pw-cut" data-on={(phase !== "boot" && i === at) || undefined} style={{ background: c.ground, "--d": `${beat(i, seq.length) + 120}ms`, "--dir": i % 2 ? 1 : -1 } as React.CSSProperties}>
+            <div
+              key={c.name}
+              className="pw-cut"
+              data-on={(phase !== "boot" && i === at) || undefined}
+              style={
+                {
+                  background: c.ground,
+                  "--d": `${beat(i, seq.length) + 120}ms`,
+                  "--dir": i % 2 ? 1 : -1,
+                } as React.CSSProperties
+              }
+            >
               {/* eslint-disable-next-line @next/next/no-img-element -- preloaded montage frames, swapped by hard cuts */}
               <img src={`/overture/${c.name}.webp`} width={c.width} height={c.height} alt="" draggable={false} />
             </div>

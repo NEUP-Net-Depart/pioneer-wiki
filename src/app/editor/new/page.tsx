@@ -20,12 +20,27 @@ Say what it is in a sentence or two.
 export default async function NewEntryPage() {
   const { t } = await getT();
   const { entries, references } = getServices();
-  const [sources, tags, authors, allEntries, assets] = await Promise.all([references.listSources(), references.listTags(), references.listAuthors(), entries.listEntries({ status: ["published"] }), references.listAssets()]);
+  const [sources, tags, authors, allEntries, assets] = await Promise.all([
+    references.listSources(),
+    references.listTags(),
+    references.listAuthors(),
+    entries.listEntries({ status: ["published"] }),
+    references.listAssets(),
+  ]);
   return (
     <div className="flex flex-col gap-(--space-block)">
       <RunningHead left={`${t("site.name")} · ${t("editor.headingNew")}`} right="PW-····" />
       <h1 className="sr-only">{t("editor.headingNew")}</h1>
-      <MarkdownEditor initial={{ title: { zh: "", en: "" }, summary: { zh: "", en: "" }, body: TEMPLATE, state: "draft", domain: "algorithms" }} options={{ sources, tags, authors, entries: allEntries, assets }} />
+      <MarkdownEditor
+        initial={{
+          title: { zh: "", en: "" },
+          summary: { zh: "", en: "" },
+          body: TEMPLATE,
+          state: "draft",
+          domain: "algorithms",
+        }}
+        options={{ sources, tags, authors, entries: allEntries, assets }}
+      />
     </div>
   );
 }

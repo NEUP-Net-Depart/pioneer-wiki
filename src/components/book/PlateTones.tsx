@@ -19,7 +19,10 @@ export function PlateTones() {
       <defs>
         {Object.entries(TONES).map(([id, { dark, mid }]) => (
           <filter key={id} id={`pw-tone-${id}`} colorInterpolationFilters="sRGB">
-            <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0" />
+            <feColorMatrix
+              type="matrix"
+              values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"
+            />
             <feComponentTransfer>
               <feFuncR type="table" tableValues={`${dark[0]} ${mid[0]} 1`} />
               <feFuncG type="table" tableValues={`${dark[1]} ${mid[1]} 1`} />

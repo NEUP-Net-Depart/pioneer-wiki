@@ -151,7 +151,13 @@ export function SearchPalette() {
               className="mt-1 w-full border-0 border-b border-ink/40 bg-transparent pb-2 font-display text-[clamp(1.5rem,3vw,2rem)] text-ink outline-none placeholder:text-ink-3/60 focus:border-ink"
             />
           </form>
-          <ol key={round} id="pw-palette-results" ref={listRef} role="listbox" className="max-h-[52vh] overflow-y-auto px-3 py-3">
+          <ol
+            key={round}
+            id="pw-palette-results"
+            ref={listRef}
+            role="listbox"
+            className="max-h-[52vh] overflow-y-auto px-3 py-3"
+          >
             {hits.map((h, i) => (
               <li
                 key={h.entry.id}
@@ -171,7 +177,12 @@ export function SearchPalette() {
                 <span className="pt-1.5 font-mono text-[0.6875rem] text-ink-3">{h.entry.id}</span>
                 <span className="min-w-0">
                   <span className="flex items-baseline gap-2">
-                    <span className={cn("font-display text-lead text-ink transition-transform duration-(--dur-quick)", i === active && "translate-x-1")}>
+                    <span
+                      className={cn(
+                        "font-display text-lead text-ink transition-transform duration-(--dur-quick)",
+                        i === active && "translate-x-1",
+                      )}
+                    >
                       {h.entry.title[lang]}
                     </span>
                     <span className="truncate text-meta text-ink-3">{h.entry.title[zh ? "en" : "zh"]}</span>
@@ -185,7 +196,11 @@ export function SearchPalette() {
                 </span>
               </li>
             ))}
-            {hits.length === 0 ? <li className="px-3 py-6 text-small text-ink-3">{zh ? "没有找到匹配的标本。" : "No specimen matches."}</li> : null}
+            {hits.length === 0 ? (
+              <li className="px-3 py-6 text-small text-ink-3">
+                {zh ? "没有找到匹配的标本。" : "No specimen matches."}
+              </li>
+            ) : null}
           </ol>
           <div className="flex items-center gap-4 border-t border-rule px-6 py-2.5 font-mono text-[0.6875rem] text-ink-3">
             <span>↑↓ {zh ? "移动" : "move"}</span>

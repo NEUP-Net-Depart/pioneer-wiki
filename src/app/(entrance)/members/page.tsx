@@ -24,7 +24,9 @@ export default async function MembersPart() {
     <div data-part="members" className="mt-(--space-block) flex flex-col">
       <header className="mb-14 text-center">
         <p className="pw-smallcaps text-small text-part-ink">{zh ? "群像" : "The frieze · the cast"}</p>
-        <h2 className="mt-4 font-display text-[clamp(2.75rem,6vw,5.25rem)] leading-none tracking-[-0.03em] italic">{zh ? "登场人物" : "Dramatis personae"}</h2>
+        <h2 className="mt-4 font-display text-[clamp(2.75rem,6vw,5.25rem)] leading-none tracking-[-0.03em] italic">
+          {zh ? "登场人物" : "Dramatis personae"}
+        </h2>
         <div aria-hidden="true" className="pw-ornament mx-auto mt-6 max-w-xs">
           <span>❦</span>
         </div>
@@ -34,16 +36,26 @@ export default async function MembersPart() {
         {members.map((m, i) => {
           const written = m.authorId ? all.filter((e) => e.authorId === m.authorId).length : 0;
           return (
-            <li key={m.id} data-reveal="rise" style={{ "--i": i % 4 } as React.CSSProperties} className="group grid grid-cols-[5rem_1fr] items-start gap-6 sm:grid-cols-[7rem_1fr] sm:gap-10">
+            <li
+              key={m.id}
+              data-reveal="rise"
+              style={{ "--i": i % 4 } as React.CSSProperties}
+              className="group grid grid-cols-[5rem_1fr] items-start gap-6 sm:grid-cols-[7rem_1fr] sm:gap-10"
+            >
               <Link href={`/members/${m.handle}`} aria-hidden="true" tabIndex={-1} className="block">
                 <Emblem emblem={m.plate.emblem} ink={m.plate.ink} className="pw-lift w-20 sm:w-28" />
               </Link>
               <div className="min-w-0">
                 <p className="flex items-baseline gap-3">
-                  <Link href={`/members/${m.handle}`} className="font-display text-h2 leading-tight text-ink no-underline">
+                  <Link
+                    href={`/members/${m.handle}`}
+                    className="font-display text-h2 leading-tight text-ink no-underline"
+                  >
                     <span className="pw-link">{m.name[lang]}</span>
                   </Link>
-                  {m.name[other] !== m.name[lang] ? <span className="hidden text-h4 text-ink-3 sm:inline">{m.name[other]}</span> : null}
+                  {m.name[other] !== m.name[lang] ? (
+                    <span className="hidden text-h4 text-ink-3 sm:inline">{m.name[other]}</span>
+                  ) : null}
                   <span aria-hidden="true" className="pw-leader" />
                   <span className="font-display text-lead text-part-ink italic">{m.role[lang]}</span>
                 </p>
@@ -67,7 +79,9 @@ export default async function MembersPart() {
       </ol>
 
       <p className="pw-ink-over mx-auto mt-(--space-block) w-full max-w-4xl pt-6 text-center text-small text-ink-3">
-        {zh ? "想加入这台戏？在交流区自我介绍，或直接撰写一篇新条目。" : "Want a part in the play? Introduce yourself in the forum, or simply write a new entry."}{" "}
+        {zh
+          ? "想加入这台戏？在交流区自我介绍，或直接撰写一篇新条目。"
+          : "Want a part in the play? Introduce yourself in the forum, or simply write a new entry."}{" "}
         <Link href="/editor/new" className="pw-link text-part-ink">
           {zh ? "撰写新条目" : "Write an entry"} →
         </Link>

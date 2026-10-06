@@ -11,7 +11,12 @@ export async function ownerOf(handle: string): Promise<NextResponse | null> {
   const { auth, community } = getServices();
   const [user, member] = await Promise.all([auth.getCurrentUser(), community.getMember(handle)]);
   if (!member) return NextResponse.json({ error: { code: "not_found", message: "No such member" } }, { status: 404 });
-  if (!user) return NextResponse.json({ error: { code: "forbidden", message: "Sign in to edit your page" } }, { status: 401 });
-  if (member.authorId !== user.id) return NextResponse.json({ error: { code: "forbidden", message: "You can only edit your own page" } }, { status: 403 });
+  if (!user)
+    return NextResponse.json({ error: { code: "forbidden", message: "Sign in to edit your page" } }, { status: 401 });
+  if (member.authorId !== user.id)
+    return NextResponse.json(
+      { error: { code: "forbidden", message: "You can only edit your own page" } },
+      { status: 403 },
+    );
   return null;
 }

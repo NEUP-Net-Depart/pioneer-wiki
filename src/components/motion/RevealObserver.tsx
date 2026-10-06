@@ -13,7 +13,14 @@ import { useEffect } from "react";
 
 const EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
 const PLAYS: Record<string, { frames: Keyframe[]; duration: number; easing: string }> = {
-  rise: { frames: [{ opacity: 0, transform: "translateY(14px)" }, { opacity: 1, transform: "none" }], duration: 720, easing: EASE },
+  rise: {
+    frames: [
+      { opacity: 0, transform: "translateY(14px)" },
+      { opacity: 1, transform: "none" },
+    ],
+    duration: 720,
+    easing: EASE,
+  },
   fade: { frames: [{ opacity: 0 }, { opacity: 1 }], duration: 900, easing: EASE },
   ink: { frames: [{ "--ink": "0%" }, { "--ink": "160%" }], duration: 1500, easing: "cubic-bezier(0.3, 0.1, 0.2, 1)" },
   rule: { frames: [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], duration: 1100, easing: EASE },
@@ -46,7 +53,8 @@ export function RevealObserver() {
       },
       { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
     );
-    const scan = (node: ParentNode) => node.querySelectorAll("[data-reveal]").forEach((el) => !played.has(el) && io.observe(el));
+    const scan = (node: ParentNode) =>
+      node.querySelectorAll("[data-reveal]").forEach((el) => !played.has(el) && io.observe(el));
     scan(document);
     const mo = new MutationObserver((list) => {
       for (const m of list)

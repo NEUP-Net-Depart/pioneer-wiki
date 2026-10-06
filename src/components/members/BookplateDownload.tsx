@@ -35,7 +35,10 @@ async function render(plate: Bookplate, name: Localized, lang: Lang): Promise<Bl
   const css = getComputedStyle(document.documentElement);
   const font = (v: string) => css.getPropertyValue(v).trim() || "serif";
   const ink = INKS[plate.ink].hex;
-  const [frame, emblem] = await Promise.all([load(`/vignettes/web/${BORDERS[plate.border].frame}.webp`), load(`/vignettes/web/${plate.emblem}.webp`)]);
+  const [frame, emblem] = await Promise.all([
+    load(`/vignettes/web/${BORDERS[plate.border].frame}.webp`),
+    load(`/vignettes/web/${plate.emblem}.webp`),
+  ]);
 
   const c = document.createElement("canvas");
   c.width = W;
@@ -97,13 +100,32 @@ async function render(plate: Bookplate, name: Localized, lang: Lang): Promise<Bl
   if (name[other] !== name[lang]) text(name[other], H * 0.795, W * 0.066, font("--font-display"), "italic");
   x.globalAlpha = 0.8;
   x.textBaseline = "bottom";
-  text(`No. ${String(plate.number).padStart(3, "0")}`, H * 0.93, W * 0.044, font("--font-mono"), "", `${W * 0.044 * 0.16}px`);
+  text(
+    `No. ${String(plate.number).padStart(3, "0")}`,
+    H * 0.93,
+    W * 0.044,
+    font("--font-mono"),
+    "",
+    `${W * 0.044 * 0.16}px`,
+  );
 
   return new Promise((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error("canvas"))), "image/png"));
 }
 
 /** "Download my bookplate": a 1200 × 1800 PNG, ready to print and paste into a real book. */
-export function BookplateDownload({ plate, name, handle, lang, className }: { plate: Bookplate; name: Localized; handle: string; lang: Lang; className?: string }) {
+export function BookplateDownload({
+  plate,
+  name,
+  handle,
+  lang,
+  className,
+}: {
+  plate: Bookplate;
+  name: Localized;
+  handle: string;
+  lang: Lang;
+  className?: string;
+}) {
   const [busy, setBusy] = useState(false);
   const zh = lang === "zh";
   return (
@@ -126,7 +148,8 @@ export function BookplateDownload({ plate, name, handle, lang, className }: { pl
       }}
       className={className ?? "pw-link text-small text-ink-2 hover:text-ink disabled:opacity-50"}
     >
-      {busy ? (zh ? "正在印制…" : "Printing…") : zh ? "下载藏书票" : "Download bookplate"} <span className="pw-nudge">↓</span>
+      {busy ? (zh ? "正在印制…" : "Printing…") : zh ? "下载藏书票" : "Download bookplate"}{" "}
+      <span className="pw-nudge">↓</span>
     </button>
   );
 }

@@ -19,7 +19,12 @@ export function UserMenu({ account, user }: { account: Account | null; user: Aut
   const { t, pick } = useI18n();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  if (!account) return <Link href="/login" className="pw-link text-small text-ink-2">{t("user.signIn")}</Link>;
+  if (!account)
+    return (
+      <Link href="/login" className="pw-link text-small text-ink-2">
+        {t("user.signIn")}
+      </Link>
+    );
   const displayName = pick(account.name);
   const signOut = async () => {
     setBusy(true);
@@ -29,7 +34,10 @@ export function UserMenu({ account, user }: { account: Account | null; user: Aut
   };
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex size-9 items-center justify-center rounded-full" aria-label={`${t("user.menu")} — ${displayName}`}>
+      <DropdownMenuTrigger
+        className="inline-flex size-9 items-center justify-center rounded-full"
+        aria-label={`${t("user.menu")} — ${displayName}`}
+      >
         <AuthorSigil seed={account.sigil} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-52">
@@ -38,12 +46,34 @@ export function UserMenu({ account, user }: { account: Account | null; user: Aut
           <span className="font-mono text-meta font-normal text-ink-3">@{account.handle}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {account.authorId ? <DropdownMenuItem asChild><Link href={`/search?status=draft&author=${account.authorId}`}>{t("user.drafts")}</Link></DropdownMenuItem> : null}
-        {user?.role === "reviewer" || user?.role === "editor" ? <DropdownMenuItem asChild><Link href="/search?status=in_review">{t("user.reviews")}</Link></DropdownMenuItem> : null}
-        {account.role === "admin" ? <DropdownMenuItem asChild><Link href="/admin">{t("user.admin")}</Link></DropdownMenuItem> : null}
-        <DropdownMenuItem asChild><Link href="/account">{t("user.account")}</Link></DropdownMenuItem>
+        {account.authorId ? (
+          <DropdownMenuItem asChild>
+            <Link href={`/search?status=draft&author=${account.authorId}`}>{t("user.drafts")}</Link>
+          </DropdownMenuItem>
+        ) : null}
+        {user?.role === "reviewer" || user?.role === "editor" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/search?status=in_review">{t("user.reviews")}</Link>
+          </DropdownMenuItem>
+        ) : null}
+        {account.role === "admin" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/admin">{t("user.admin")}</Link>
+          </DropdownMenuItem>
+        ) : null}
+        <DropdownMenuItem asChild>
+          <Link href="/account">{t("user.account")}</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={(event) => { event.preventDefault(); void signOut(); }} disabled={busy}>{t("user.signOut")}</DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault();
+            void signOut();
+          }}
+          disabled={busy}
+        >
+          {t("user.signOut")}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

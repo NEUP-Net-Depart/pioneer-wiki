@@ -29,7 +29,9 @@ const flag = (name) => {
 const only = flag("only")?.split(",");
 const concurrency = Number(flag("concurrency") ?? 2);
 
-const jobs = JSON.parse(await fs.readFile(jobsFile, "utf8")).filter((j) => !only || only.includes(path.basename(j.out, ".png")));
+const jobs = JSON.parse(await fs.readFile(jobsFile, "utf8")).filter(
+  (j) => !only || only.includes(path.basename(j.out, ".png")),
+);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -41,7 +43,13 @@ async function generate(job) {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${KEY}` },
-        body: JSON.stringify({ model: MODEL, prompt: job.prompt, size: job.size ?? "1024x1024", quality: job.quality ?? "high", n: 1 }),
+        body: JSON.stringify({
+          model: MODEL,
+          prompt: job.prompt,
+          size: job.size ?? "1024x1024",
+          quality: job.quality ?? "high",
+          n: 1,
+        }),
       });
       const text = await res.text();
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
@@ -72,7 +80,14 @@ function record(job) {
     } catch {}
     const slug = path.basename(job.out, ".png");
     list = list.filter((m) => (m.slug ?? m.name) !== slug);
-    list.push({ slug, file: `/${path.relative("public", job.out).replaceAll("\\", "/")}`, model: MODEL, prompt: job.prompt, license: "CC BY 4.0", createdAt: new Date().toISOString() });
+    list.push({
+      slug,
+      file: `/${path.relative("public", job.out).replaceAll("\\", "/")}`,
+      model: MODEL,
+      prompt: job.prompt,
+      license: "CC BY 4.0",
+      createdAt: new Date().toISOString(),
+    });
     await fs.writeFile(file, JSON.stringify(list, null, 2) + "\n");
   });
   return manifestLock;

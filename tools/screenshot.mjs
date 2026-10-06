@@ -7,7 +7,10 @@ const base = "http://localhost:3000";
 import { mkdirSync } from "node:fs";
 mkdirSync(process.env.SHOT_DIR ?? "test-results/shots", { recursive: true });
 const browser = await chromium.launch({ channel: process.env.PW_CHANNEL ?? "msedge" });
-const views = [["desktop", { width: 1440, height: 900 }], ["mobile", { width: 390, height: 844 }]].filter(([l]) => !process.env.ONLY || process.env.ONLY === l);
+const views = [
+  ["desktop", { width: 1440, height: 900 }],
+  ["mobile", { width: 390, height: 844 }],
+].filter(([l]) => !process.env.ONLY || process.env.ONLY === l);
 for (const [label, viewport] of views) {
   const ctx = await browser.newContext({ viewport, deviceScaleFactor: 1 });
   await ctx.addCookies([{ name: "pw-lang", value: langArg, url: base }]);

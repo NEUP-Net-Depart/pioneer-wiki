@@ -30,7 +30,15 @@ export function RelationLegend({ lang }: { lang: "zh" | "en" }) {
       {RELATION_KIND_IDS.map((k) => (
         <li key={k} className="flex items-center gap-2">
           <svg viewBox="0 0 32 6" aria-hidden="true" className={`h-1.5 w-8 ${edgeStyle[k].className}`}>
-            <line x1="0" y1="3" x2="32" y2="3" stroke="currentColor" strokeWidth="1.5" strokeDasharray={edgeStyle[k].dash} />
+            <line
+              x1="0"
+              y1="3"
+              x2="32"
+              y2="3"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeDasharray={edgeStyle[k].dash}
+            />
           </svg>
           {RELATION_KINDS[k].label[lang]}
           {RELATION_KINDS[k].symmetric ? "" : " →"}
@@ -40,9 +48,21 @@ export function RelationLegend({ lang }: { lang: "zh" | "en" }) {
   );
 }
 
-export function RelationPlate({ entries, relations, title, lang }: { entries: EntrySummary[]; relations: Relation[]; title: string; lang: Lang }) {
+export function RelationPlate({
+  entries,
+  relations,
+  title,
+  lang,
+}: {
+  entries: EntrySummary[];
+  relations: Relation[];
+  title: string;
+  lang: Lang;
+}) {
   const other = otherLang(lang);
-  const ordered = [...entries].sort((a, b) => DOMAIN_IDS.indexOf(a.domain) - DOMAIN_IDS.indexOf(b.domain) || a.id.localeCompare(b.id));
+  const ordered = [...entries].sort(
+    (a, b) => DOMAIN_IDS.indexOf(a.domain) - DOMAIN_IDS.indexOf(b.domain) || a.id.localeCompare(b.id),
+  );
   const step = (2 * Math.PI) / ordered.length;
   const pos = new Map(
     ordered.map((e, i) => {
@@ -62,8 +82,19 @@ export function RelationPlate({ entries, relations, title, lang }: { entries: En
     const mid = (a0 + a1) / 2;
     return (
       <g key={d} className="text-ink-3">
-        <path d={`M ${p(a0)} A ${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${p(a1)}`} fill="none" stroke="currentColor" strokeWidth="1" />
-        <text x={C + (r - 22) * Math.cos(mid)} y={C + (r - 22) * Math.sin(mid)} textAnchor="middle" dominantBaseline="middle" className="fill-current font-display text-[17px] italic">
+        <path
+          d={`M ${p(a0)} A ${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${p(a1)}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1"
+        />
+        <text
+          x={C + (r - 22) * Math.cos(mid)}
+          y={C + (r - 22) * Math.sin(mid)}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className="fill-current font-display text-[17px] italic"
+        >
           {toRoman(di + 1)}
         </text>
       </g>
@@ -73,7 +104,15 @@ export function RelationPlate({ entries, relations, title, lang }: { entries: En
   return (
     <svg viewBox="0 0 1000 1000" role="img" aria-label={title} className="pw-hairline h-auto w-full overflow-visible">
       <defs>
-        <marker id="pw-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <marker
+          id="pw-arrow"
+          viewBox="0 0 8 8"
+          refX="7"
+          refY="4"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
           <path d="M0 0.8 7 4 0 7.2" fill="none" stroke="currentColor" strokeWidth="1" />
         </marker>
       </defs>
@@ -113,12 +152,43 @@ export function RelationPlate({ entries, relations, title, lang }: { entries: En
         const ly = C + (R + 20) * Math.sin(a);
         return (
           <a key={e.id} href={`/entries/${e.slug}`} data-entry={e.id} className="group">
-            {e.analogue ? <circle cx={x} cy={y} r={r + 5} fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2 2.5" className="text-brick" /> : null}
-            <circle cx={x} cy={y} r={r} stroke="currentColor" strokeWidth="1" className={`${nodeFill[e.status]} text-ink`} />
-            <text x={lx} y={ly} textAnchor={right ? "start" : "end"} dominantBaseline="middle" className="fill-ink font-display text-[19px] group-hover:fill-indigo">
+            {e.analogue ? (
+              <circle
+                cx={x}
+                cy={y}
+                r={r + 5}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="0.8"
+                strokeDasharray="2 2.5"
+                className="text-brick"
+              />
+            ) : null}
+            <circle
+              cx={x}
+              cy={y}
+              r={r}
+              stroke="currentColor"
+              strokeWidth="1"
+              className={`${nodeFill[e.status]} text-ink`}
+            />
+            <text
+              x={lx}
+              y={ly}
+              textAnchor={right ? "start" : "end"}
+              dominantBaseline="middle"
+              className="fill-ink font-display text-[19px] group-hover:fill-indigo"
+            >
               {e.title[lang]}
             </text>
-            <text x={lx} y={ly + 19} textAnchor={right ? "start" : "end"} dominantBaseline="middle" lang={other === "zh" ? "zh-CN" : "en"} className="fill-ink-3 font-sans text-[13px]">
+            <text
+              x={lx}
+              y={ly + 19}
+              textAnchor={right ? "start" : "end"}
+              dominantBaseline="middle"
+              lang={other === "zh" ? "zh-CN" : "en"}
+              className="fill-ink-3 font-sans text-[13px]"
+            >
               {e.title[other]}
             </text>
           </a>

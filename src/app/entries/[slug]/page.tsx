@@ -37,7 +37,9 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
   if (!entry) notFound();
 
   const { lang, t } = await getT();
-  const view: SpecimenView = SPECIMEN_VIEWS.includes(query.view as SpecimenView) ? (query.view as SpecimenView) : "macro";
+  const view: SpecimenView = SPECIMEN_VIEWS.includes(query.view as SpecimenView)
+    ? (query.view as SpecimenView)
+    : "macro";
 
   const [all, revisions, relations, authors, sources, tags, asset, members] = await Promise.all([
     repo.listEntries(),
@@ -70,7 +72,8 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
 
   const siblings = all.filter((e) => e.domain === entry.domain).sort((a, b) => a.id.localeCompare(b.id));
   const at = siblings.findIndex((e) => e.id === entry.id);
-  const side = (e?: EntrySummary) => (e ? { href: `/entries/${e.slug}`, kicker: e.id, title: pick(e.title, lang) } : null);
+  const side = (e?: EntrySummary) =>
+    e ? { href: `/entries/${e.slug}`, kicker: e.id, title: pick(e.title, lang) } : null;
 
   return (
     <article data-phylum={entry.domain} className="flex flex-col">
@@ -86,64 +89,93 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
       {/* Facing pages. Mobile reads title → plate → text; desktop puts the sticky plate panel beside both. */}
       <div className="mt-(--space-block) grid gap-x-(--space-block) gap-y-12 lg:grid-cols-12">
         <header className="min-w-0 lg:col-span-7 lg:col-start-6 lg:row-start-1 lg:pl-4">
-            <p className="flex flex-wrap items-center gap-3 text-meta text-ink-3">
-              <span className="pw-stamp">{entry.id}</span>
-              <span>
-                {SCALES[entry.scale][lang]} · {ROLES[entry.role][lang]}
-              </span>
-              {/* Only an entry with no published ring is itself a draft; a pending newer ring gets the note below. */}
-              {entry.status === "draft" ? <StatusBadge state="draft" lang={lang} showForm /> : null}
+          <p className="flex flex-wrap items-center gap-3 text-meta text-ink-3">
+            <span className="pw-stamp">{entry.id}</span>
+            <span>
+              {SCALES[entry.scale][lang]} · {ROLES[entry.role][lang]}
+            </span>
+            {/* Only an entry with no published ring is itself a draft; a pending newer ring gets the note below. */}
+            {entry.status === "draft" ? <StatusBadge state="draft" lang={lang} showForm /> : null}
+          </p>
+          <h1 className="mt-4 font-display">
+            <span className="block text-[clamp(2.75rem,5.5vw,4.75rem)] leading-[0.98] font-[480] tracking-[-0.03em] text-balance">
+              {entry.title[lang]}
+            </span>
+            <span
+              lang={otherLang(lang) === "zh" ? "zh-CN" : "en"}
+              className="mt-3 block text-h3 font-normal text-ink-3"
+            >
+              {entry.title[otherLang(lang)]}
+            </span>
+          </h1>
+          <p className="mt-5 max-w-(--measure) text-lead text-ink-2">{pick(entry.summary, lang)}</p>
+
+          {pending ? (
+            <p className="mt-4 flex items-center gap-2 text-small text-ink-2">
+              <StatusBadge state="in_review" lang={lang} />
+              {t("entry.pendingRevision")} · r{pending.number}
             </p>
-            <h1 className="mt-4 font-display">
-              <span className="block text-[clamp(2.75rem,5.5vw,4.75rem)] leading-[0.98] font-[480] tracking-[-0.03em] text-balance">{entry.title[lang]}</span>
-              <span lang={otherLang(lang) === "zh" ? "zh-CN" : "en"} className="mt-3 block text-h3 font-normal text-ink-3">
-                {entry.title[otherLang(lang)]}
-              </span>
-            </h1>
-            <p className="mt-5 max-w-(--measure) text-lead text-ink-2">{pick(entry.summary, lang)}</p>
+          ) : null}
 
-            {pending ? (
-              <p className="mt-4 flex items-center gap-2 text-small text-ink-2">
-                <StatusBadge state="in_review" lang={lang} />
-                {t("entry.pendingRevision")} · r{pending.number}
-              </p>
+          <div className="pw-ink-both mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-small">
+            {author ? (
+              <span className="flex items-center gap-2 text-ink-2">
+                {authorPage ? (
+                  <Link
+                    href={`/members/${authorPage.handle}`}
+                    className="group flex items-center gap-2 text-ink-2 no-underline hover:text-ink"
+                  >
+                    <Bookplate
+                      plate={authorPage.plate}
+                      name={authorPage.name}
+                      lang={lang}
+                      mini
+                      className="w-6 shadow-sheet transition-transform duration-(--dur-quick) group-hover:-rotate-6"
+                    />
+                    <span className="pw-link">{pick(author.name, lang)}</span>
+                  </Link>
+                ) : (
+                  pick(author.name, lang)
+                )}
+                {contributors.length ? (
+                  <span className="text-ink-3">
+                    + {contributors.map((c) => pick(c.name, lang)).join(lang === "zh" ? "、" : ", ")}
+                  </span>
+                ) : null}
+              </span>
             ) : null}
-
-            <div className="pw-ink-both mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-small">
-              {author ? (
-                <span className="flex items-center gap-2 text-ink-2">
-                  {authorPage ? (
-                    <Link href={`/members/${authorPage.handle}`} className="group flex items-center gap-2 text-ink-2 no-underline hover:text-ink">
-                      <Bookplate plate={authorPage.plate} name={authorPage.name} lang={lang} mini className="w-6 shadow-sheet transition-transform duration-(--dur-quick) group-hover:-rotate-6" />
-                      <span className="pw-link">{pick(author.name, lang)}</span>
-                    </Link>
-                  ) : (
-                    pick(author.name, lang)
-                  )}
-                  {contributors.length ? <span className="text-ink-3">+ {contributors.map((c) => pick(c.name, lang)).join(lang === "zh" ? "、" : ", ")}</span> : null}
-                </span>
-              ) : null}
-              <span className="text-ink-3">
-                {t("entry.updated")} <time dateTime={entry.updatedAt}>{formatDate(entry.updatedAt, lang)}</time>
-              </span>
-              <span className="ml-auto flex items-center gap-2">
-                <Link href={`/entries/${entry.slug}/history`} className="inline-flex h-8 items-center gap-1.5 px-2 text-ink-2 no-underline hover:text-ink">
-                  <History className="size-4" aria-hidden="true" />
-                  {t("entry.history")}
-                </Link>
-                <Link
-                  href={`/editor/${entry.slug}`}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-ink px-3 text-paper-sheet no-underline transition-colors duration-(--dur-quick) hover:bg-ink-2"
-                >
-                  <PenLine className="size-4" aria-hidden="true" />
-                  {t("entry.edit")}
-                </Link>
-              </span>
-            </div>
+            <span className="text-ink-3">
+              {t("entry.updated")} <time dateTime={entry.updatedAt}>{formatDate(entry.updatedAt, lang)}</time>
+            </span>
+            <span className="ml-auto flex items-center gap-2">
+              <Link
+                href={`/entries/${entry.slug}/history`}
+                className="inline-flex h-8 items-center gap-1.5 px-2 text-ink-2 no-underline hover:text-ink"
+              >
+                <History className="size-4" aria-hidden="true" />
+                {t("entry.history")}
+              </Link>
+              <Link
+                href={`/editor/${entry.slug}`}
+                className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-ink px-3 text-paper-sheet no-underline transition-colors duration-(--dur-quick) hover:bg-ink-2"
+              >
+                <PenLine className="size-4" aria-hidden="true" />
+                {t("entry.edit")}
+              </Link>
+            </span>
+          </div>
         </header>
 
         <div className="lg:sticky lg:top-[calc(var(--shell-header)+2rem)] lg:col-span-5 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:self-start">
-          <SpecimenPanel entry={entry} view={view} lang={lang} asset={asset} toc={extractToc(entry.body)} relations={relations} entries={byId} />
+          <SpecimenPanel
+            entry={entry}
+            view={view}
+            lang={lang}
+            asset={asset}
+            toc={extractToc(entry.body)}
+            relations={relations}
+            entries={byId}
+          />
         </div>
 
         <div className="min-w-0 lg:col-span-7 lg:col-start-6 lg:row-start-2 lg:pl-4">
@@ -176,7 +208,11 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
                   <dt className="text-ink-3">{t("entry.tags")}</dt>
                   <dd className="flex flex-wrap gap-x-3 gap-y-1 text-ink-2">
                     {entryTags.map((tg) => (
-                      <Link key={tg.id} href={`/search?q=${encodeURIComponent(pick(tg.label, lang))}`} className="no-underline hover:text-indigo">
+                      <Link
+                        key={tg.id}
+                        href={`/search?q=${encodeURIComponent(pick(tg.label, lang))}`}
+                        className="no-underline hover:text-indigo"
+                      >
                         #{pick(tg.label, lang)}
                       </Link>
                     ))}
@@ -185,7 +221,8 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
               ) : null}
               <dt className="text-ink-3">{t("entry.rings")}</dt>
               <dd className="text-ink-2">
-                <span className="font-mono text-meta text-ink">r{entry.revision}</span> · {revisions.length} {t("entry.revisionCount")}
+                <span className="font-mono text-meta text-ink">r{entry.revision}</span> · {revisions.length}{" "}
+                {t("entry.revisionCount")}
                 {latest ? (
                   <span className="block text-meta text-ink-3">
                     {t("entry.latestRing")} · {latestAuthor ? pick(latestAuthor.name, lang) : null} — {latest.note}
@@ -198,11 +235,19 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
               <dt className="text-ink-3">{t("entry.cite")}</dt>
               <dd className="text-ink-2">
                 <p>
-                  {citationAuthors} <cite className="text-ink">{entry.title.en} · {entry.title.zh}</cite>. {t("site.name")} {entry.id}, r{entry.revision},{" "}
-                  {formatDate(entry.updatedAt, lang)}.
+                  {citationAuthors}{" "}
+                  <cite className="text-ink">
+                    {entry.title.en} · {entry.title.zh}
+                  </cite>
+                  . {t("site.name")} {entry.id}, r{entry.revision}, {formatDate(entry.updatedAt, lang)}.
                 </p>
                 <span className="mt-1 inline-block">
-                  <CopyButton text={citation} lang={lang} variant="link" idleLabel={lang === "zh" ? "复制引用" : "Copy citation"} />
+                  <CopyButton
+                    text={citation}
+                    lang={lang}
+                    variant="link"
+                    idleLabel={lang === "zh" ? "复制引用" : "Copy citation"}
+                  />
                 </span>
               </dd>
             </dl>
@@ -210,7 +255,11 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
         </div>
       </div>
 
-      <PageTurn prev={side(siblings[at - 1])} next={side(siblings[at + 1])} label={{ prev: t("book.prev"), next: t("book.next"), nav: t("book.pageNav") }} />
+      <PageTurn
+        prev={side(siblings[at - 1])}
+        next={side(siblings[at + 1])}
+        label={{ prev: t("book.prev"), next: t("book.next"), nav: t("book.pageNav") }}
+      />
     </article>
   );
 }

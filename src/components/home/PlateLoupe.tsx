@@ -8,7 +8,17 @@ import { useRef } from "react";
  * coordinates typed beside it. Fine pointers only; purely visual (the plate
  * keeps its alt text), so touch and keyboard readers lose nothing.
  */
-export function PlateLoupe({ src, zoom = 2.2, className, children }: { src: string; zoom?: number; className?: string; children: React.ReactNode }) {
+export function PlateLoupe({
+  src,
+  zoom = 2.2,
+  className,
+  children,
+}: {
+  src: string;
+  zoom?: number;
+  className?: string;
+  children: React.ReactNode;
+}) {
   const box = useRef<HTMLDivElement>(null);
   const lens = useRef<HTMLDivElement>(null);
   const tag = useRef<HTMLSpanElement>(null);

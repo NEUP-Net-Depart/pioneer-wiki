@@ -11,7 +11,9 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/api/
     const gate = await verifiedAccountOrResponse();
     if ("response" in gate) return gate.response;
     const { community } = getServices();
-    const member = gate.account.authorId ? (await community.listMembers()).find((m) => m.authorId === gate.account.authorId) : undefined;
+    const member = gate.account.authorId
+      ? (await community.listMembers()).find((m) => m.authorId === gate.account.authorId)
+      : undefined;
     const post = await community.reply({
       threadId: id,
       body: input.body ?? "",
@@ -22,6 +24,9 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/api/
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
     const e = error instanceof ServiceError ? error : new ServiceError("invalid", "Invalid post payload");
-    return NextResponse.json({ error: { code: e.code, message: e.message } }, { status: e.code === "invalid" ? 422 : 503 });
+    return NextResponse.json(
+      { error: { code: e.code, message: e.message } },
+      { status: e.code === "invalid" ? 422 : 503 },
+    );
   }
 }

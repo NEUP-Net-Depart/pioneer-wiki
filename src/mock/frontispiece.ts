@@ -21,7 +21,12 @@ export interface PlateAnnotation {
   href: string;
 }
 
-export const frontispiece: { assetId: string; fallbackAssetId: string; seed: { x: number; y: number }; annotations: PlateAnnotation[] } = {
+export const frontispiece: {
+  assetId: string;
+  fallbackAssetId: string;
+  seed: { x: number; y: number };
+  annotations: PlateAnnotation[];
+} = {
   assetId: "plate-frontispiece",
   fallbackAssetId: "plate-gossip-protocol",
   /** Where the hyphae sprout when the spread opens (the white mycelium in the soil). */

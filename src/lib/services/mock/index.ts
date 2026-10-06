@@ -9,7 +9,16 @@ import type { Account } from "@/lib/model/types";
 export function createMockServices(): WikiServices {
   const qingkong = authors.find((author) => author.id === "a-qingkong") ?? null;
   const account: Account | null = qingkong
-    ? { id: qingkong.id, email: "qingkong@example.test", handle: qingkong.handle, name: qingkong.name, sigil: qingkong.sigil, role: "admin", emailVerified: true, authorId: qingkong.id }
+    ? {
+        id: qingkong.id,
+        email: "qingkong@example.test",
+        handle: qingkong.handle,
+        name: qingkong.name,
+        sigil: qingkong.sigil,
+        role: "admin",
+        emailVerified: true,
+        authorId: qingkong.id,
+      }
     : null;
   return {
     entries: createMockEntryRepository(),

@@ -60,7 +60,12 @@ export function Markdown({ children, lang, assets = {}, className }: MarkdownPro
     pre: ({ node, children, ...rest }) => {
       const code = node?.children[0];
       const classes = code && code.type === "element" ? code.properties.className : undefined;
-      const id = Array.isArray(classes) ? classes.map(String).find((c) => c.startsWith("language-"))?.slice(9) : undefined;
+      const id = Array.isArray(classes)
+        ? classes
+            .map(String)
+            .find((c) => c.startsWith("language-"))
+            ?.slice(9)
+        : undefined;
       const label = id ? (CODE_LANGUAGES[id] ?? id) : "Text";
       const text = code ? textOf(code).replace(/\n$/, "") : "";
       const lines = text.split("\n").length;
@@ -93,7 +98,12 @@ export function Markdown({ children, lang, assets = {}, className }: MarkdownPro
       </div>
     ),
     table: (props) => (
-      <div className="pw-table-wrap" tabIndex={0} role="region" aria-label={lang === "zh" ? "可横向滚动的表格" : "Scrollable table"}>
+      <div
+        className="pw-table-wrap"
+        tabIndex={0}
+        role="region"
+        aria-label={lang === "zh" ? "可横向滚动的表格" : "Scrollable table"}
+      >
         <table {...props} />
       </div>
     ),
@@ -103,7 +113,14 @@ export function Markdown({ children, lang, assets = {}, className }: MarkdownPro
         return (
           <figure className="pw-figure">
             {/* eslint-disable-next-line @next/next/no-img-element -- Markdown images have unknown sizes; plates use next/image elsewhere */}
-            <img src={ref.src} alt={pick(ref.alt, lang)} width={ref.width} height={ref.height} loading="lazy" decoding="async" />
+            <img
+              src={ref.src}
+              alt={pick(ref.alt, lang)}
+              width={ref.width}
+              height={ref.height}
+              loading="lazy"
+              decoding="async"
+            />
             <figcaption>
               {ref.caption ? <span>{pick(ref.caption, lang)}</span> : null}
               <span className="pw-credit">
@@ -122,7 +139,10 @@ export function Markdown({ children, lang, assets = {}, className }: MarkdownPro
     <div className={className ? `pw-prose ${className}` : "pw-prose"}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath, remarkDirective, remarkBilingual]}
-        rehypePlugins={[[rehypeKatex, { strict: "ignore", throwOnError: false }], [rehypeHighlight, { detect: false }]]}
+        rehypePlugins={[
+          [rehypeKatex, { strict: "ignore", throwOnError: false }],
+          [rehypeHighlight, { detect: false }],
+        ]}
         components={components}
       >
         {/* Normalise Windows line endings: copied code and line counts must not carry \r. */}

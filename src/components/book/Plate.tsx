@@ -27,7 +27,18 @@ interface PlateProps {
  * a plate number and a short caption beneath. Plates are prepared by
  * tools/prepare-plates.mjs (ground → white) and multiplied into the page.
  */
-export function Plate({ lang, number, asset, fallback, caption, frame = "natural", bare = false, sizes = "(min-width: 1024px) 40vw, 92vw", priority, className }: PlateProps) {
+export function Plate({
+  lang,
+  number,
+  asset,
+  fallback,
+  caption,
+  frame = "natural",
+  bare = false,
+  sizes = "(min-width: 1024px) 40vw, 92vw",
+  priority,
+  className,
+}: PlateProps) {
   const label = number ? `${translate(lang, "book.plate")} ${number}` : null;
   const text = caption ?? asset?.caption;
   const fitted = frame === "square" || frame === "landscape";
@@ -35,17 +46,19 @@ export function Plate({ lang, number, asset, fallback, caption, frame = "natural
   const art = asset ? (
     <span className={cn("pw-print", fitted ? "flex size-full items-center justify-center" : "w-full")}>
       <Image
-      src={asset.src}
-      width={asset.width}
-      height={asset.height}
-      alt={pick(asset.alt, lang)}
-      sizes={sizes}
-      priority={priority}
+        src={asset.src}
+        width={asset.width}
+        height={asset.height}
+        alt={pick(asset.alt, lang)}
+        sizes={sizes}
+        priority={priority}
         className={fitted ? "max-h-full w-auto max-w-full object-contain" : "h-auto w-full"}
       />
     </span>
   ) : fallback ? (
-    <div className={cn("flex flex-col items-center justify-center gap-3", fitted ? "size-full" : "aspect-[4/5] w-full")}>
+    <div
+      className={cn("flex flex-col items-center justify-center gap-3", fitted ? "size-full" : "aspect-[4/5] w-full")}
+    >
       <SpecimenMark {...fallback} className="pw-hairline size-3/5 max-h-56 max-w-56 text-ink-3" />
       <span className="text-meta tracking-[0.1em] text-ink-3 uppercase">{translate(lang, "book.platePending")}</span>
     </div>
@@ -54,7 +67,18 @@ export function Plate({ lang, number, asset, fallback, caption, frame = "natural
   return (
     <figure className={cn("flex flex-col", className)}>
       {/* min-h-0: a flex item may not grow past the fixed cell, or tall portraits stretch the grid out of alignment. */}
-      {fitted ? <div className={cn("flex min-h-0 w-full items-center justify-center", frame === "square" ? "aspect-square" : "aspect-[4/3]")}>{art}</div> : art}
+      {fitted ? (
+        <div
+          className={cn(
+            "flex min-h-0 w-full items-center justify-center",
+            frame === "square" ? "aspect-square" : "aspect-[4/3]",
+          )}
+        >
+          {art}
+        </div>
+      ) : (
+        art
+      )}
       {!bare && (label || text) ? (
         <figcaption className="mt-4 flex flex-col gap-1 text-small text-ink-2">
           <span className="pw-letterpress text-lead leading-snug">

@@ -4,7 +4,8 @@ import { ServiceError, type NewThreadInput } from "@/lib/services/contracts";
 import type { ForumCategory } from "@/lib/model/types";
 import { verifiedAccountOrResponse } from "@/lib/auth/server";
 
-const status = (e: ServiceError) => (e.code === "forbidden" ? 403 : e.code === "conflict" ? 409 : e.code === "unavailable" ? 503 : 422);
+const status = (e: ServiceError) =>
+  e.code === "forbidden" ? 403 : e.code === "conflict" ? 409 : e.code === "unavailable" ? 503 : 422;
 
 /** GET /api/forum/threads?category=&limit= → ForumThread[] (most recently active first). */
 export async function GET(request: NextRequest) {

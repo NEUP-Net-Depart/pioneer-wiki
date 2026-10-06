@@ -23,7 +23,11 @@ export default async function EditMemberPage({ params }: PageProps<"/members/[ha
     <div className="flex flex-col gap-(--space-block)">
       <RunningHead
         left={
-          <Link href={`/members/${member.handle}`} transitionTypes={["nav-back"]} className="no-underline hover:text-ink">
+          <Link
+            href={`/members/${member.handle}`}
+            transitionTypes={["nav-back"]}
+            className="no-underline hover:text-ink"
+          >
             ← {member.name[lang]}
           </Link>
         }
@@ -31,11 +35,17 @@ export default async function EditMemberPage({ params }: PageProps<"/members/[ha
       />
       {own ? (
         <>
-          <h1 className="font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-tight tracking-[-0.02em]">{zh ? "编辑我的主页" : "Edit my page"}</h1>
+          <h1 className="font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-tight tracking-[-0.02em]">
+            {zh ? "编辑我的主页" : "Edit my page"}
+          </h1>
           <MemberEditor member={member} />
         </>
       ) : (
-        <ArchiveState kind="empty" title={zh ? `只有${member.name.zh}本人可以编辑这个主页。` : `Only ${member.name.en} can edit this page.`} code="403" />
+        <ArchiveState
+          kind="empty"
+          title={zh ? `只有${member.name.zh}本人可以编辑这个主页。` : `Only ${member.name.en} can edit this page.`}
+          code="403"
+        />
       )}
     </div>
   );

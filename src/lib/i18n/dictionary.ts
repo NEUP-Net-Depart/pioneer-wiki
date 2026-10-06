@@ -250,7 +250,8 @@ const en: Record<keyof typeof zh, string> = {
   "auth.notConfigured": "Authentication is not configured yet.",
 
   "index.heading": "The knowledge community",
-  "index.lede": "Macro systems, micro mechanisms and their biological counterparts, linked by symbiosis, source, dependency and dispute.",
+  "index.lede":
+    "Macro systems, micro mechanisms and their biological counterparts, linked by symbiosis, source, dependency and dispute.",
   "index.map": "Community map",
   "index.mapListNote": "Text version of the map: featured entries by scale.",
   "index.recent": "Recently revised",
@@ -308,7 +309,8 @@ const en: Record<keyof typeof zh, string> = {
   "graph.lede": "Symbiosis, source, taxonomy, contrast, dependency and dispute between entries.",
   "graph.viewGraph": "Graph",
   "graph.viewList": "List",
-  "graph.listNote": "The list holds the same information as the graph and suits keyboards, screen readers and low-power devices.",
+  "graph.listNote":
+    "The list holds the same information as the graph and suits keyboards, screen readers and low-power devices.",
 
   "state.loading": "Retrieving from the archive…",
   "state.empty": "Nothing filed here yet",

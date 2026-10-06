@@ -85,9 +85,20 @@ export default async function WikiPart() {
                 <Link href={`/entries/${e.slug}`} className="group flex flex-col no-underline">
                   <span className="grid aspect-[4/3] place-items-center">
                     {p ? (
-                      <span data-reveal="ink" style={{ "--i": i } as React.CSSProperties} className="pw-lift block w-full">
+                      <span
+                        data-reveal="ink"
+                        style={{ "--i": i } as React.CSSProperties}
+                        className="pw-lift block w-full"
+                      >
                         <span className="pw-print block">
-                          <Image src={p.src} width={p.width} height={p.height} alt="" sizes="(min-width: 640px) 30vw, 90vw" className="max-h-[18rem] w-full object-contain" />
+                          <Image
+                            src={p.src}
+                            width={p.width}
+                            height={p.height}
+                            alt=""
+                            sizes="(min-width: 640px) 30vw, 90vw"
+                            className="max-h-[18rem] w-full object-contain"
+                          />
                         </span>
                       </span>
                     ) : null}

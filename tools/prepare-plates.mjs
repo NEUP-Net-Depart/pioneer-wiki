@@ -32,7 +32,9 @@ for (const dir of DIRS.filter((d) => existsSync(d))) {
   for (const file of readdirSync(dir).filter((f) => f.endsWith(".png"))) {
     const name = basename(file, ".png");
     // Transparent PNGs: flatten onto white first so transparency stays "no ink".
-    const img = sharp(join(dir, file)).flatten({ background: "#ffffff" }).resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true });
+    const img = sharp(join(dir, file))
+      .flatten({ background: "#ffffff" })
+      .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true });
     const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
     const ground = groundColour(data, info.width, info.height, info.channels);
     // 1. Divide by 94 % of the ground so the ground (and its own grain) clips to white.
@@ -43,7 +45,8 @@ for (const dir of DIRS.filter((d) => existsSync(d))) {
     for (let i = 0, o = 0; i < data.length; i += info.channels, o += 4) {
       const p = [0, 1, 2].map((c) => Math.min(1, data[i + c] / (ground[c] * 0.94)));
       const alpha = Math.max(1 - p[0], 1 - p[1], 1 - p[2]);
-      for (let c = 0; c < 3; c++) rgba[o + c] = alpha > 0 ? Math.round(255 * Math.max(0, Math.min(1, (p[c] - (1 - alpha)) / alpha))) : 0;
+      for (let c = 0; c < 3; c++)
+        rgba[o + c] = alpha > 0 ? Math.round(255 * Math.max(0, Math.min(1, (p[c] - (1 - alpha)) / alpha))) : 0;
       rgba[o + 3] = Math.round(alpha * 255);
     }
     await sharp(rgba, { raw: { width: info.width, height: info.height, channels: 4 } })

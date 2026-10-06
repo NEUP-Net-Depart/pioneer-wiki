@@ -12,6 +12,11 @@ import sharp from "sharp";
 const SRC = "public/bookplate/src";
 for (const file of (await fs.readdir(SRC)).filter((f) => /^marble-.*\.png$/.test(f))) {
   const out = path.join("public/bookplate", file.replace(/\.png$/, ".webp"));
-  const info = await sharp(path.join(SRC, file)).greyscale().normalise().resize({ width: 1600 }).webp({ quality: 72 }).toFile(out);
+  const info = await sharp(path.join(SRC, file))
+    .greyscale()
+    .normalise()
+    .resize({ width: 1600 })
+    .webp({ quality: 72 })
+    .toFile(out);
   console.log(out, `${info.width}x${info.height}`, `${Math.round(info.size / 1024)} KB`);
 }

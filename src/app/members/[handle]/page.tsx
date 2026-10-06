@@ -66,7 +66,12 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
     <article className="flex flex-col" style={{ "--plate-ink": ink } as React.CSSProperties}>
       {/* Frontispiece */}
       <div className="relative -mt-8 ml-[calc(50%-50vw)] w-screen sm:-mt-10">
-        <Frontispiece cover={member.cover} ink={member.plate.ink} alt={zh ? `${member.name.zh}的主页大图` : `${member.name.en}'s page image`} className="h-[clamp(18rem,58vh,40rem)]" />
+        <Frontispiece
+          cover={member.cover}
+          ink={member.plate.ink}
+          alt={zh ? `${member.name.zh}的主页大图` : `${member.name.en}'s page image`}
+          className="h-[clamp(18rem,58vh,40rem)]"
+        />
       </div>
 
       {/* Bookplate pasted on the endpaper, and the title page beside it */}
@@ -86,7 +91,9 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
             <span lang={zh ? "zh-CN" : "en"} className="block text-[clamp(2.75rem,6vw,5rem)] font-[480]">
               {member.name[lang]}
             </span>
-            {member.name[other] !== member.name[lang] ? <span className="mt-1 block text-h3 text-ink-3 italic">{member.name[other]}</span> : null}
+            {member.name[other] !== member.name[lang] ? (
+              <span className="mt-1 block text-h3 text-ink-3 italic">{member.name[other]}</span>
+            ) : null}
           </h1>
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-small">
             <span className="font-display text-lead italic" style={{ color: ink }}>
@@ -128,7 +135,12 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
               <ul className="flex flex-col gap-3">
                 {member.links.map((l) => (
                   <li key={l.url}>
-                    <a href={l.url} target="_blank" rel="noreferrer" className="group flex items-baseline justify-between gap-4 no-underline">
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group flex items-baseline justify-between gap-4 no-underline"
+                    >
                       <span className="font-display text-lead text-ink">
                         <span className="pw-link">{l.label}</span>
                       </span>
@@ -145,11 +157,19 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
           {/* Library: entries written */}
           {written.length ? (
             <section>
-              <SectionTitle zh="藏书" en="Library" lang={lang} count={zh ? `${written.length} 篇条目` : `${written.length} entries`} />
+              <SectionTitle
+                zh="藏书"
+                en="Library"
+                lang={lang}
+                count={zh ? `${written.length} 篇条目` : `${written.length} entries`}
+              />
               <ol className="flex flex-col">
                 {written.slice(0, 8).map((e) => (
                   <li key={e.id} className="border-b border-rule">
-                    <Link href={`/entries/${e.slug}`} className="group grid grid-cols-[4.75rem_1fr] items-baseline gap-3 py-2.5 no-underline">
+                    <Link
+                      href={`/entries/${e.slug}`}
+                      className="group grid grid-cols-[4.75rem_1fr] items-baseline gap-3 py-2.5 no-underline"
+                    >
                       <span className="font-mono text-meta text-ink-3">{e.id}</span>
                       <span className="min-w-0">
                         <span className="font-display text-lead text-ink">
@@ -162,7 +182,11 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
                 ))}
               </ol>
               {written.length > 8 ? (
-                <Link href={`/search?author=${member.authorId}`} className="pw-link mt-3 inline-block text-small" style={{ color: ink }}>
+                <Link
+                  href={`/search?author=${member.authorId}`}
+                  className="pw-link mt-3 inline-block text-small"
+                  style={{ color: ink }}
+                >
                   {zh ? `全部 ${written.length} 篇` : `All ${written.length}`} →
                 </Link>
               ) : null}
@@ -171,7 +195,12 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
 
           {/* Correspondence: forum posts */}
           <section>
-            <SectionTitle zh="往来" en="Correspondence" lang={lang} count={zh ? `${posts.length} 帖` : `${posts.length} posts`} />
+            <SectionTitle
+              zh="往来"
+              en="Correspondence"
+              lang={lang}
+              count={zh ? `${posts.length} 帖` : `${posts.length} posts`}
+            />
             {posts.length ? (
               <ol className="flex flex-col gap-4">
                 {posts.slice(0, 5).map(({ post, thread }) => (
@@ -205,7 +234,12 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
             <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {repos.map((r, i) => (
                 <li key={r.url} data-reveal="rise" style={{ "--i": i } as React.CSSProperties}>
-                  <a href={r.url} target="_blank" rel="noreferrer" className="pw-card group flex h-full flex-col gap-2 px-5 pb-5 no-underline">
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="pw-card group flex h-full flex-col gap-2 px-5 pb-5 no-underline"
+                  >
                     <span className="pw-label flex h-11 items-center justify-between">
                       <span>{zh ? "仓库" : "Repository"}</span>
                       <span className="font-mono normal-case">No. {String(i + 1).padStart(2, "0")}</span>
@@ -213,7 +247,9 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
                     <span className="mt-2 font-display text-h4 text-ink">
                       <span className="pw-link">{r.name}</span> <span className="pw-nudge text-ink-3">↗</span>
                     </span>
-                    <span className="line-clamp-3 flex-1 text-small text-ink-2">{r.description ?? (zh ? "（没有描述）" : "(no description)")}</span>
+                    <span className="line-clamp-3 flex-1 text-small text-ink-2">
+                      {r.description ?? (zh ? "（没有描述）" : "(no description)")}
+                    </span>
                     <span className="flex flex-wrap items-center gap-x-4 font-mono text-meta text-ink-3">
                       {r.language ? <span style={{ color: ink }}>{r.language}</span> : null}
                       <span>★ {r.stars}</span>
@@ -226,7 +262,13 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
           ) : (
             <p className="text-small text-ink-3">
               {zh ? "暂时无法读取 GitHub 上的仓库。" : "GitHub could not be reached just now."}{" "}
-              <a href={`https://github.com/${member.github}`} target="_blank" rel="noreferrer" className="pw-link" style={{ color: ink }}>
+              <a
+                href={`https://github.com/${member.github}`}
+                target="_blank"
+                rel="noreferrer"
+                className="pw-link"
+                style={{ color: ink }}
+              >
                 github.com/{member.github} ↗
               </a>
             </p>

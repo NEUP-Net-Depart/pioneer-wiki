@@ -24,7 +24,14 @@ const cardLabel: Record<ArchiveStateKind, string> = {
 
 function Glyph({ kind }: { kind: ArchiveStateKind }) {
   return (
-    <svg viewBox="0 0 40 40" aria-hidden="true" className={cn("size-9", kind === "loading" && "pw-breathe")} fill="none" stroke="currentColor" strokeWidth="1.1">
+    <svg
+      viewBox="0 0 40 40"
+      aria-hidden="true"
+      className={cn("size-9", kind === "loading" && "pw-breathe")}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.1"
+    >
       {kind === "loading" ? (
         <>
           <circle cx="20" cy="20" r="6" />
@@ -65,7 +72,16 @@ interface ArchiveStateProps {
   art?: React.ReactNode;
 }
 
-export function ArchiveState({ kind, title, hint, code, action, className, as: Heading = "h2", art }: ArchiveStateProps) {
+export function ArchiveState({
+  kind,
+  title,
+  hint,
+  code,
+  action,
+  className,
+  as: Heading = "h2",
+  art,
+}: ArchiveStateProps) {
   return (
     <div
       role={kind === "error" ? "alert" : kind === "loading" ? "status" : undefined}
@@ -76,7 +92,16 @@ export function ArchiveState({ kind, title, hint, code, action, className, as: H
         <span>{cardLabel[kind]}</span>
         {code ? <span className="pw-stamp">{code}</span> : null}
       </p>
-      {art ? <span className={cn("pointer-events-none absolute right-5 bottom-6 w-28 sm:w-36", kind === "loading" && "pw-breathe")}>{art}</span> : null}
+      {art ? (
+        <span
+          className={cn(
+            "pointer-events-none absolute right-5 bottom-6 w-28 sm:w-36",
+            kind === "loading" && "pw-breathe",
+          )}
+        >
+          {art}
+        </span>
+      ) : null}
       <div className="relative mt-5 flex flex-col items-start gap-3 sm:pr-32">
         <span className={tone[kind]}>
           <Glyph kind={kind} />

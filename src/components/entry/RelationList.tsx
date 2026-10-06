@@ -7,8 +7,20 @@ import { pick } from "@/lib/i18n/dictionary";
  * Typed edges around one entry (or all entries), grouped by kind. This is also
  * the accessible, static alternative to the graph drawings.
  */
-export function RelationList({ relations, entries, lang, focusId }: { relations: Relation[]; entries: Map<string, EntrySummary>; lang: Lang; focusId?: string }) {
-  const groups = RELATION_KIND_IDS.map((kind) => ({ kind, items: relations.filter((r) => r.kind === kind) })).filter((g) => g.items.length);
+export function RelationList({
+  relations,
+  entries,
+  lang,
+  focusId,
+}: {
+  relations: Relation[];
+  entries: Map<string, EntrySummary>;
+  lang: Lang;
+  focusId?: string;
+}) {
+  const groups = RELATION_KIND_IDS.map((kind) => ({ kind, items: relations.filter((r) => r.kind === kind) })).filter(
+    (g) => g.items.length,
+  );
   return (
     <div className="flex flex-col gap-6">
       {groups.map(({ kind, items }) => (
@@ -53,7 +65,9 @@ export function RelationList({ relations, entries, lang, focusId }: { relations:
                       ))}
                     </span>
                   </p>
-                  {r.note ? <p className={`mt-0.5 text-meta text-ink-3 ${other ? "pl-6" : ""}`}>{pick(r.note, lang)}</p> : null}
+                  {r.note ? (
+                    <p className={`mt-0.5 text-meta text-ink-3 ${other ? "pl-6" : ""}`}>{pick(r.note, lang)}</p>
+                  ) : null}
                 </li>
               );
             })}

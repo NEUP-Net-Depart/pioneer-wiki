@@ -24,7 +24,10 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
   const byId = new Map<string, EntrySummary>(all.map((e) => [e.id, e]));
 
   const toggle = (
-    <nav aria-label={`${t("graph.viewGraph")} / ${t("graph.viewList")}`} className="hidden gap-5 border-b border-rule md:flex">
+    <nav
+      aria-label={`${t("graph.viewGraph")} / ${t("graph.viewList")}`}
+      className="hidden gap-5 border-b border-rule md:flex"
+    >
       {[
         { href: "/graph", label: t("graph.viewGraph"), on: !listOnly },
         { href: "/graph?view=list", label: t("graph.viewList"), on: listOnly },
@@ -34,7 +37,10 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
           href={o.href}
           scroll={false}
           aria-current={o.on ? "page" : undefined}
-          className={cn("-mb-px border-b py-2 text-small no-underline", o.on ? "border-brick text-ink" : "border-transparent text-ink-3 hover:text-ink")}
+          className={cn(
+            "-mb-px border-b py-2 text-small no-underline",
+            o.on ? "border-brick text-ink" : "border-transparent text-ink-3 hover:text-ink",
+          )}
         >
           {o.label}
         </Link>
@@ -44,11 +50,16 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
 
   return (
     <div className="flex flex-col">
-      <RunningHead left={`${t("site.name")} · ${t("graph.heading")}`} right={`${relations.length} ${lang === "zh" ? "条关系" : "relations"}`} />
+      <RunningHead
+        left={`${t("site.name")} · ${t("graph.heading")}`}
+        right={`${relations.length} ${lang === "zh" ? "条关系" : "relations"}`}
+      />
 
       <header className="mt-(--space-block) grid gap-6 lg:grid-cols-12">
         <h1 className="font-display lg:col-span-7">
-          <span className="block text-[clamp(3rem,6.5vw,5.75rem)] leading-[0.95] font-[480] tracking-[-0.03em]">{t("graph.heading")}</span>
+          <span className="block text-[clamp(3rem,6.5vw,5.75rem)] leading-[0.95] font-[480] tracking-[-0.03em]">
+            {t("graph.heading")}
+          </span>
           <span lang={lang === "zh" ? "en" : "zh-CN"} className="mt-3 block text-h4 font-normal text-ink-3">
             {translate(otherLang(lang), "graph.heading")}
           </span>
@@ -69,7 +80,10 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
             </figcaption>
           </figure>
         ) : null}
-        <section aria-label={t("graph.viewList")} className={cn("lg:col-span-8 lg:col-start-3", !listOnly && "md:hidden")}>
+        <section
+          aria-label={t("graph.viewList")}
+          className={cn("lg:col-span-8 lg:col-start-3", !listOnly && "md:hidden")}
+        >
           <RelationList relations={relations} entries={byId} lang={lang} />
         </section>
       </div>

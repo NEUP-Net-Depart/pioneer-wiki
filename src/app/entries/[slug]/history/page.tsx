@@ -19,7 +19,14 @@ function Rings({ n, current }: { n: number; current: boolean }) {
   return (
     <svg viewBox="0 0 28 28" aria-hidden="true" className="size-7 shrink-0" fill="none" stroke="currentColor">
       {Array.from({ length: shown }, (_, i) => (
-        <circle key={i} cx="14" cy="14" r={3 + i * 2} strokeWidth={i === shown - 1 ? 1.1 : 0.5} className={i === shown - 1 && current ? "text-moss" : "text-ink-3"} />
+        <circle
+          key={i}
+          cx="14"
+          cy="14"
+          r={3 + i * 2}
+          strokeWidth={i === shown - 1 ? 1.1 : 0.5}
+          className={i === shown - 1 && current ? "text-moss" : "text-ink-3"}
+        />
       ))}
     </svg>
   );
@@ -61,7 +68,9 @@ export default async function HistoryPage({ params, searchParams }: PageProps<"/
       <header className="mt-(--space-block)">
         <h1 className="font-display">
           <span className="block text-h2 font-[560]">{t("history.heading")}</span>
-          <span className="mt-1 block text-h4 font-normal text-ink-3 italic">{pick(entry.title, lang)} · {pick(entry.title, otherLang(lang))}</span>
+          <span className="mt-1 block text-h4 font-normal text-ink-3 italic">
+            {pick(entry.title, lang)} · {pick(entry.title, otherLang(lang))}
+          </span>
         </h1>
       </header>
 
@@ -86,7 +95,11 @@ export default async function HistoryPage({ params, searchParams }: PageProps<"/
                   {author ? <AuthorSigil seed={author.sigil} className="size-5" /> : null}
                   {author ? pick(author.name, lang) : null}
                   {parent ? (
-                    <Link href={`?from=${parent.number}&to=${rev.number}`} scroll={false} className="ml-auto text-indigo">
+                    <Link
+                      href={`?from=${parent.number}&to=${rev.number}`}
+                      scroll={false}
+                      className="ml-auto text-indigo"
+                    >
                       {t("history.compare")} r{parent.number}→r{rev.number}
                     </Link>
                   ) : null}
@@ -96,7 +109,10 @@ export default async function HistoryPage({ params, searchParams }: PageProps<"/
           })}
         </ol>
 
-        <section aria-label={`${t("history.compare")} r${from.number} → r${to.number}`} className="min-w-0 lg:col-span-8">
+        <section
+          aria-label={`${t("history.compare")} r${from.number} → r${to.number}`}
+          className="min-w-0 lg:col-span-8"
+        >
           <p className="mb-4 flex flex-wrap items-baseline gap-x-4 font-mono text-small text-ink-2">
             <span>
               r{from.number} → r{to.number}
@@ -124,12 +140,20 @@ export default async function HistoryPage({ params, searchParams }: PageProps<"/
                 return lines.map((line, j) => (
                   <div
                     key={`${i}-${j}`}
-                    className={c.added ? "bg-moss/12 text-ink" : c.removed ? "bg-brick/10 text-ink-2 line-through decoration-brick/50" : "text-ink-3"}
+                    className={
+                      c.added
+                        ? "bg-moss/12 text-ink"
+                        : c.removed
+                          ? "bg-brick/10 text-ink-2 line-through decoration-brick/50"
+                          : "text-ink-3"
+                    }
                   >
                     <span aria-hidden="true" className="inline-block w-6 text-center select-none">
                       {c.added ? "+" : c.removed ? "−" : " "}
                     </span>
-                    <span className="sr-only">{c.added ? t("history.added") : c.removed ? t("history.removed") : ""}</span>
+                    <span className="sr-only">
+                      {c.added ? t("history.added") : c.removed ? t("history.removed") : ""}
+                    </span>
                     <span className="whitespace-pre-wrap">{line || " "}</span>
                   </div>
                 ));

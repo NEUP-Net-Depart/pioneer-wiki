@@ -8,10 +8,31 @@ import { cn } from "@/lib/utils";
  * uploaded, or printed in their ink; with no image, a marbled endpaper in their
  * ink stands in, as in a bound book.
  */
-export function Frontispiece({ cover, ink, alt, fade = true, className }: { cover?: MemberCover; ink: InkId; alt: string; fade?: boolean; className?: string }) {
+export function Frontispiece({
+  cover,
+  ink,
+  alt,
+  fade = true,
+  className,
+}: {
+  cover?: MemberCover;
+  ink: InkId;
+  alt: string;
+  fade?: boolean;
+  className?: string;
+}) {
   return (
-    <div data-print={cover ? cover.print : "ink"} data-fade={fade || undefined} className={cn("pw-frontis", className)} style={{ "--plate-ink": INKS[ink].hex } as React.CSSProperties}>
-      {cover ? <img src={cover.src} width={cover.width} height={cover.height} alt={alt} fetchPriority="high" /> : <img src="/bookplate/marble-comb.webp" width={1600} height={1067} alt="" />}
+    <div
+      data-print={cover ? cover.print : "ink"}
+      data-fade={fade || undefined}
+      className={cn("pw-frontis", className)}
+      style={{ "--plate-ink": INKS[ink].hex } as React.CSSProperties}
+    >
+      {cover ? (
+        <img src={cover.src} width={cover.width} height={cover.height} alt={alt} fetchPriority="high" />
+      ) : (
+        <img src="/bookplate/marble-comb.webp" width={1600} height={1067} alt="" />
+      )}
     </div>
   );
 }

@@ -46,20 +46,30 @@ export default async function DomainPlatePage({ params }: PageProps<"/domains/[d
   const other = otherLang(lang);
   const neighbour = (i: number) => {
     const d = DOMAIN_IDS[i];
-    return d ? { href: `/domains/${d}`, kicker: `${t("book.phylum")} ${toRoman(i + 1)}`, title: DOMAINS[d][lang] } : null;
+    return d
+      ? { href: `/domains/${d}`, kicker: `${t("book.phylum")} ${toRoman(i + 1)}`, title: DOMAINS[d][lang] }
+      : null;
   };
 
   return (
     <div data-phylum={domain} className="flex flex-col">
-      <RunningHead left={`${t("site.name")} · ${t("book.phylum")} ${numeral}`} right={`${DOMAINS[domain][lang]} · ${DOMAINS[domain][other]}`} />
+      <RunningHead
+        left={`${t("site.name")} · ${t("book.phylum")} ${numeral}`}
+        right={`${DOMAINS[domain][lang]} · ${DOMAINS[domain][other]}`}
+      />
 
       <header className="mt-(--space-block) grid gap-6 lg:grid-cols-12">
-        <p aria-hidden="true" className="font-display text-[clamp(4rem,8vw,7rem)] leading-none text-phylum italic lg:col-span-2">
+        <p
+          aria-hidden="true"
+          className="font-display text-[clamp(4rem,8vw,7rem)] leading-none text-phylum italic lg:col-span-2"
+        >
           {numeral}
         </p>
         <div className="lg:col-span-7">
           <h1 className="font-display">
-            <span className="block text-[clamp(3rem,6.5vw,5.75rem)] leading-[0.95] font-[480] tracking-[-0.03em]">{DOMAINS[domain][lang]}</span>
+            <span className="block text-[clamp(3rem,6.5vw,5.75rem)] leading-[0.95] font-[480] tracking-[-0.03em]">
+              {DOMAINS[domain][lang]}
+            </span>
             <span lang={other === "zh" ? "zh-CN" : "en"} className="mt-3 block text-h4 font-normal text-ink-3">
               {DOMAINS[domain][other]}
             </span>
@@ -76,7 +86,12 @@ export default async function DomainPlatePage({ params }: PageProps<"/domains/[d
       </header>
 
       {specimens.length === 0 ? (
-        <ArchiveState kind="empty" title={t("book.emptyPhylum")} art={<Vignette name="dandelion-clock" />} className="mt-(--space-block) max-w-xl" />
+        <ArchiveState
+          kind="empty"
+          title={t("book.emptyPhylum")}
+          art={<Vignette name="dandelion-clock" />}
+          className="mt-(--space-block) max-w-xl"
+        />
       ) : (
         <div className="mt-(--space-block) grid gap-(--space-block) lg:grid-cols-12">
           {/* The plate: numbered specimens only, no text — the legend carries the names (Codex R3-M2 links the two on hover). */}
@@ -114,7 +129,10 @@ export default async function DomainPlatePage({ params }: PageProps<"/domains/[d
                 <li key={e.id} className="flex gap-3">
                   <span className="w-5 shrink-0 font-display text-lead text-ink-3 italic">{i + 1}.</span>
                   <div className="min-w-0">
-                    <Link href={`/entries/${e.slug}`} className="font-display text-h4 text-ink no-underline hover:text-indigo">
+                    <Link
+                      href={`/entries/${e.slug}`}
+                      className="font-display text-h4 text-ink no-underline hover:text-indigo"
+                    >
                       {e.title[lang]}
                     </Link>
                     <p lang={other === "zh" ? "zh-CN" : "en"} className="text-small text-ink-3">
@@ -136,7 +154,11 @@ export default async function DomainPlatePage({ params }: PageProps<"/domains/[d
         </div>
       )}
 
-      <PageTurn prev={neighbour(index - 1)} next={neighbour(index + 1)} label={{ prev: t("book.prev"), next: t("book.next"), nav: t("book.pageNav") }} />
+      <PageTurn
+        prev={neighbour(index - 1)}
+        next={neighbour(index + 1)}
+        label={{ prev: t("book.prev"), next: t("book.next"), nav: t("book.pageNav") }}
+      />
     </div>
   );
 }

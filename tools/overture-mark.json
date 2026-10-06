@@ -1,105 +1,79 @@
 [
   {
     "out": "public/overture/src/m-eggs.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange dozens of speckled wild-bird eggs of different sizes and colours on plain warm cream paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-blueprint.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange fine white technical line drawings of gears, cams and columns of a 19th-century calculating engine on deep blueprint-blue paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-shells.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange small sea shells — cowries, scallops, tiny spiral shells on plain pale sand-coloured paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-tape.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange strips of old punched paper tape and punched cards on plain dark walnut-brown paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-cyanotype.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange fern fronds printed as a cyanotype photogram, white silhouettes on deep Prussian-blue paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-coins.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange antique silver and bronze coins and medals with pictorial designs only on plain soft grey-green paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-clover.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange pressed three-leaf and four-leaf clover leaves on plain soft chrome-yellow paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-gears.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange small brass clockwork gears, springs and tiny screws on plain warm grey paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-feathers.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange small bird feathers of many soft colours on plain brick-red paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-minerals.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange small minerals and crystals — quartz, amethyst, pyrite, malachite, agate slices on plain warm cream paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-map.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange torn fragments of antique hand-coloured maps (no legible names) on plain warm cream paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-tubes.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange vintage glass vacuum tubes, early transistors and colour-banded resistors on plain off-white paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   },
   {
     "out": "public/overture/src/m-birds.png",
-    "inputs": [
-      "D:/tmp/pw-gen/mark.png"
-    ],
+    "inputs": ["D:/tmp/pw-gen/mark.png"],
     "size": "1024x1536",
     "prompt": "The reference image is a logo mark made of four shapes: a tall curved crook on the left, a crescent sweeping over the top right, a pointed arrow in the middle and a round dot. Use its silhouette as a stencil: arrange about twenty small friendly songbirds — finches, blue tits, wrens, robins — perched closely together on plain warm cream paper, seen straight from above, so that together they fill exactly this silhouette — all four shapes, with the same proportions and gaps — large and centred, about 75% of the image height. The rest of the sheet is plain empty ground. Antique archival look, fine detail, even soft shadowless light. Do NOT copy the logo's red colour or white background. No text, no letters, no numbers, no watermark, no frame, no border."
   }

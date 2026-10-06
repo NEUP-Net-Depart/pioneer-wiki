@@ -35,7 +35,12 @@ export default async function LinksPart() {
       <ol className="grid gap-x-(--space-block) gap-y-14 md:grid-cols-2">
         {links.map((l, i) => (
           <li key={l.id} data-reveal="rise" style={{ "--i": i % 4 } as React.CSSProperties}>
-            <a href={l.url} target="_blank" rel="noreferrer" className="group grid grid-cols-[5.5rem_1fr] gap-5 no-underline">
+            <a
+              href={l.url}
+              target="_blank"
+              rel="noreferrer"
+              className="group grid grid-cols-[5.5rem_1fr] gap-5 no-underline"
+            >
               <span className="relative pt-1">
                 <Vignette name={l.emblem} className="pw-lift w-[5.5rem]" sizes="88px" />
               </span>
@@ -49,12 +54,16 @@ export default async function LinksPart() {
                 </span>
                 <span className="mt-2 block font-display text-h2 leading-tight text-ink">
                   <span className="pw-link">{l.name[lang]}</span>
-                  {l.name[other] !== l.name[lang] ? <span className="ml-3 text-h4 text-ink-3">{l.name[other]}</span> : null}
+                  {l.name[other] !== l.name[lang] ? (
+                    <span className="ml-3 text-h4 text-ink-3">{l.name[other]}</span>
+                  ) : null}
                 </span>
                 <span className="mt-1 block truncate font-mono text-meta text-part-ink">
                   {l.url.replace(/^https?:\/\//, "")} <span className="pw-nudge">↗</span>
                 </span>
-                <span className="mt-3 block max-w-[30em] text-small leading-relaxed text-ink-2">{l.description[lang]}</span>
+                <span className="mt-3 block max-w-[30em] text-small leading-relaxed text-ink-2">
+                  {l.description[lang]}
+                </span>
               </span>
             </a>
           </li>

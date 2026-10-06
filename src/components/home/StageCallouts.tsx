@@ -11,9 +11,23 @@ import { cn } from "@/lib/utils";
  * of the scene and the specimen it stands for. Only on the natural-history
  * plate, and hidden while the stage is turning.
  */
-export function StageCallouts({ annotations, lang, visible }: { annotations: PlateAnnotation[]; lang: Lang; visible: boolean }) {
+export function StageCallouts({
+  annotations,
+  lang,
+  visible,
+}: {
+  annotations: PlateAnnotation[];
+  lang: Lang;
+  visible: boolean;
+}) {
   return (
-    <ol aria-hidden={!visible || undefined} className={cn("absolute inset-0 hidden transition-opacity duration-(--dur-slow) lg:block", visible ? "opacity-100" : "pointer-events-none opacity-0")}>
+    <ol
+      aria-hidden={!visible || undefined}
+      className={cn(
+        "absolute inset-0 hidden transition-opacity duration-(--dur-slow) lg:block",
+        visible ? "opacity-100" : "pointer-events-none opacity-0",
+      )}
+    >
       {annotations.map((a, i) => {
         const toLeft = a.x > 0.7;
         return (
@@ -25,13 +39,18 @@ export function StageCallouts({ annotations, lang, visible }: { annotations: Pla
               style={{ "--i": i } as React.CSSProperties}
               aria-label={`${a.part[lang]} → ${a.concept[lang]}`}
             >
-              <span aria-hidden="true" className="absolute inset-[7px] rounded-full bg-brick ring-[3px] ring-paper/90" />
+              <span
+                aria-hidden="true"
+                className="absolute inset-[7px] rounded-full bg-brick ring-[3px] ring-paper/90"
+              />
             </Link>
             <span
               aria-hidden="true"
               className={cn(
                 "pointer-events-none absolute top-0 flex w-max -translate-y-1/2 items-center gap-2 opacity-0 transition-[opacity,translate] duration-(--dur-base) ease-(--ease-grow) group-focus-within/key:opacity-100 group-hover/key:opacity-100",
-                toLeft ? "right-4 flex-row-reverse translate-x-1 group-hover/key:translate-x-0" : "left-4 -translate-x-1 group-hover/key:translate-x-0",
+                toLeft
+                  ? "right-4 flex-row-reverse translate-x-1 group-hover/key:translate-x-0"
+                  : "left-4 -translate-x-1 group-hover/key:translate-x-0",
               )}
             >
               <span className="h-px w-8 bg-ink/60" />

@@ -18,7 +18,13 @@ const INK = "36, 34, 30";
  * branching as they go and slowly soaking back into the sheet. Decorative,
  * pointer-events: none, stops drawing when idle, absent under reduced motion.
  */
-export function HyphaeField({ seed = { x: 0.62, y: 0.7 }, delay = 300 }: { seed?: { x: number; y: number }; delay?: number }) {
+export function HyphaeField({
+  seed = { x: 0.62, y: 0.7 },
+  delay = 300,
+}: {
+  seed?: { x: number; y: number };
+  delay?: number;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -70,7 +76,14 @@ export function HyphaeField({ seed = { x: 0.62, y: 0.7 }, delay = 300 }: { seed?
         const life = t.life - 1;
         if (life > 0) {
           next.push({ x: nx, y: ny, a, life, w: Math.max(0.35, t.w * 0.985) });
-          if (Math.random() < 0.055 && next.length < 220) next.push({ x: nx, y: ny, a: a + (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.6), life: life * 0.7, w: t.w * 0.8 });
+          if (Math.random() < 0.055 && next.length < 220)
+            next.push({
+              x: nx,
+              y: ny,
+              a: a + (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.6),
+              life: life * 0.7,
+              w: t.w * 0.8,
+            });
         } else if (Math.random() < 0.5) {
           ctx.fillStyle = `rgba(${INK}, 0.35)`;
           ctx.beginPath();
@@ -110,7 +123,8 @@ export function HyphaeField({ seed = { x: 0.62, y: 0.7 }, delay = 300 }: { seed?
       waiting.disconnect();
       arm();
     });
-    if (root.dataset.overture === "play") waiting.observe(root, { attributes: true, attributeFilter: ["data-overture"] });
+    if (root.dataset.overture === "play")
+      waiting.observe(root, { attributes: true, attributeFilter: ["data-overture"] });
     else arm();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);

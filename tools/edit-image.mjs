@@ -29,13 +29,23 @@ const flag = (name) => {
 };
 const only = flag("only")?.split(",");
 const concurrency = Number(flag("concurrency") ?? 2);
-const all = JSON.parse(await fs.readFile(args.find((a) => !a.startsWith("--")), "utf8"));
+const all = JSON.parse(
+  await fs.readFile(
+    args.find((a) => !a.startsWith("--")),
+    "utf8",
+  ),
+);
 const force = args.includes("--force");
 const stream = !args.includes("--no-stream");
-const exists = async (p) => fs.access(p).then(() => true, () => false);
+const exists = async (p) =>
+  fs.access(p).then(
+    () => true,
+    () => false,
+  );
 // Resume: outputs already on disk are skipped unless --force.
 const jobs = [];
-for (const j of all) if ((!only || only.includes(path.basename(j.out, ".png"))) && (force || !(await exists(j.out)))) jobs.push(j);
+for (const j of all)
+  if ((!only || only.includes(path.basename(j.out, ".png"))) && (force || !(await exists(j.out)))) jobs.push(j);
 const endpoint = BASE.endsWith("/v1") ? `${BASE}/images/edits` : `${BASE}/v1/images/edits`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -60,8 +70,16 @@ async function run(job) {
       }
       for (const input of job.inputs) {
         // Upload a compact JPEG of the reference; the composition is what matters, not the bytes.
-        const buf = await sharp(input).flatten({ background: "#ffffff" }).resize({ width: 1536, withoutEnlargement: true }).jpeg({ quality: 88 }).toBuffer();
-        form.append(job.inputs.length > 1 ? "image[]" : "image", new Blob([buf], { type: "image/jpeg" }), path.basename(input).replace(/\.png$/, ".jpg"));
+        const buf = await sharp(input)
+          .flatten({ background: "#ffffff" })
+          .resize({ width: 1536, withoutEnlargement: true })
+          .jpeg({ quality: 88 })
+          .toBuffer();
+        form.append(
+          job.inputs.length > 1 ? "image[]" : "image",
+          new Blob([buf], { type: "image/jpeg" }),
+          path.basename(input).replace(/\.png$/, ".jpg"),
+        );
       }
       const res = await fetch(endpoint, { method: "POST", headers: { authorization: `Bearer ${KEY}` }, body: form });
       const text = await res.text();
@@ -81,14 +99,20 @@ async function run(job) {
           } catch {}
         }
       }
-      const buf = data?.b64_json ? Buffer.from(data.b64_json, "base64") : data?.url ? Buffer.from(await (await fetch(data.url)).arrayBuffer()) : null;
+      const buf = data?.b64_json
+        ? Buffer.from(data.b64_json, "base64")
+        : data?.url
+          ? Buffer.from(await (await fetch(data.url)).arrayBuffer())
+          : null;
       if (!buf) throw new Error(`no image: ${text.slice(0, 200)}`);
       await fs.mkdir(path.dirname(job.out), { recursive: true });
       await fs.writeFile(job.out, buf);
       console.log(`ok   ${job.out}  ${((Date.now() - started) / 1000).toFixed(0)}s`);
       return;
     } catch (err) {
-      console.log(`fail ${job.out}  attempt ${attempt} after ${((Date.now() - started) / 1000).toFixed(0)}s: ${String(err.message ?? err).slice(0, 200)} ${err.cause ? `[${err.cause.code ?? ""} ${String(err.cause.message ?? "").slice(0, 120)}]` : ""}`);
+      console.log(
+        `fail ${job.out}  attempt ${attempt} after ${((Date.now() - started) / 1000).toFixed(0)}s: ${String(err.message ?? err).slice(0, 200)} ${err.cause ? `[${err.cause.code ?? ""} ${String(err.cause.message ?? "").slice(0, 120)}]` : ""}`,
+      );
       await sleep(6000 * attempt);
     }
   }

@@ -15,12 +15,16 @@ export function Colophon({ lang, entryCount }: { lang: Lang; entryCount: number 
           <Vignette name="feather" className="w-10 shrink-0 -rotate-12" sizes="40px" />
           <p className="max-w-[30em] leading-relaxed">
             <span className="font-display text-small text-ink italic">Pioneer Wiki</span> · 先锋维基 —{" "}
-            {zh ? "一部按尺度、角色与关系编目的计算机科学博物志。" : "a natural history of computer science, catalogued by scale, role and relation."}
+            {zh
+              ? "一部按尺度、角色与关系编目的计算机科学博物志。"
+              : "a natural history of computer science, catalogued by scale, role and relation."}
           </p>
         </div>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 font-mono tracking-[0.06em] sm:col-span-4">
           <dt className="uppercase">{zh ? "卷" : "Volume"}</dt>
-          <dd>I · MMXXVI · {entryCount} {zh ? "件标本" : "specimens"}</dd>
+          <dd>
+            I · MMXXVI · {entryCount} {zh ? "件标本" : "specimens"}
+          </dd>
           <dt className="uppercase">{zh ? "图版" : "Plates"}</dt>
           <dd>CC BY 4.0</dd>
           <dt className="uppercase">{zh ? "字体" : "Type"}</dt>

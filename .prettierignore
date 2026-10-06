@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+build/
+archive/
+public/
+supabase/
+package-lock.json
+next-env.d.ts
+*.tsbuildinfo
+*.md
+*.css
+*.yml
+*.yaml
+*.sql
+*.toml

@@ -8,7 +8,15 @@ interface Side {
 }
 
 /** Previous / next page at the foot of a book page. */
-export function PageTurn({ prev, next, label }: { prev?: Side | null; next?: Side | null; label: { prev: string; next: string; nav: string } }) {
+export function PageTurn({
+  prev,
+  next,
+  label,
+}: {
+  prev?: Side | null;
+  next?: Side | null;
+  label: { prev: string; next: string; nav: string };
+}) {
   if (!prev && !next) return null;
   return (
     <nav aria-label={label.nav} className="pw-ink-over mt-(--space-section) grid grid-cols-2 gap-6 pt-6">

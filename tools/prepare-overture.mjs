@@ -20,7 +20,12 @@ const cuts = [];
 for (const file of (await fs.readdir(SRC)).filter((f) => /^m-.*\.png$/.test(f)).sort()) {
   const name = path.basename(file, ".png");
   const img = sharp(path.join(SRC, file));
-  const { data, info } = await img.clone().resize(96, 96, { fit: "fill" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await img
+    .clone()
+    .resize(96, 96, { fit: "fill" })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   const ch = [[], [], []];
   for (let y = 0; y < info.height; y++)
     for (let x = 0; x < info.width; x++) {
@@ -29,8 +34,18 @@ for (const file of (await fs.readdir(SRC)).filter((f) => /^m-.*\.png$/.test(f)).
       for (let c = 0; c < 3; c++) ch[c].push(data[i + c]);
     }
   const ground = `rgb(${ch.map(median).join(" ")})`;
-  const out = await img.resize({ height: HEIGHT }).webp({ quality: 70, effort: 5 }).toFile(path.join(OUT, `${name}.webp`));
+  const out = await img
+    .resize({ height: HEIGHT })
+    .webp({ quality: 70, effort: 5 })
+    .toFile(path.join(OUT, `${name}.webp`));
   cuts.push({ name, width: out.width, height: out.height, ground, kb: Math.round(out.size / 1024) });
   console.log(name, ground, `${out.width}x${out.height}`, `${Math.round(out.size / 1024)} KB`);
 }
-await fs.writeFile(path.join(OUT, "cuts.json"), JSON.stringify(cuts.map(({ kb, ...c }) => c), null, 2) + "\n");
+await fs.writeFile(
+  path.join(OUT, "cuts.json"),
+  JSON.stringify(
+    cuts.map(({ kb, ...c }) => c),
+    null,
+    2,
+  ) + "\n",
+);

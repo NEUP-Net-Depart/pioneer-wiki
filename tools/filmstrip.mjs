@@ -25,9 +25,13 @@ for (const t of at) {
   shots.push(await page.screenshot({ type: "png" }));
 }
 await browser.close();
-const W = 480, H = 300, cols = 4;
+const W = 480,
+  H = 300,
+  cols = 4;
 const tiles = await Promise.all(shots.map((b) => sharp(b).resize(W, H).toBuffer()));
-await sharp({ create: { width: W * cols, height: H * Math.ceil(tiles.length / cols), channels: 3, background: "#000" } })
+await sharp({
+  create: { width: W * cols, height: H * Math.ceil(tiles.length / cols), channels: 3, background: "#000" },
+})
   .composite(tiles.map((input, i) => ({ input, left: (i % cols) * W, top: Math.floor(i / cols) * H })))
   .png()
   .toFile(out);

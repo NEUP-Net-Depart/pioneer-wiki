@@ -29,12 +29,25 @@ const BOOT = `(function(){var d=document.documentElement;d.setAttribute("data-js
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const lang = await getLang();
   const services = getServices();
-  const [account, user, entries, members] = await Promise.all([services.auth.getCurrentAccount(), services.auth.getCurrentUser(), services.entries.listEntries(), services.community.listMembers()]);
+  const [account, user, entries, members] = await Promise.all([
+    services.auth.getCurrentAccount(),
+    services.auth.getCurrentUser(),
+    services.entries.listEntries(),
+    services.community.listMembers(),
+  ]);
   // The signed-in reader's own member record, for the header's "Me" entry.
-  const me = account?.authorId ? (members.find((m) => m.authorId === account.authorId) ?? null) : user ? (members.find((m) => m.authorId === user.id) ?? null) : null;
+  const me = account?.authorId
+    ? (members.find((m) => m.authorId === account.authorId) ?? null)
+    : user
+      ? (members.find((m) => m.authorId === user.id) ?? null)
+      : null;
 
   return (
-    <html lang={lang === "zh" ? "zh-CN" : "en"} className={`${newsreader.variable} ${sourceSans.variable} ${plexMono.variable} ${fell.variable}`} suppressHydrationWarning>
+    <html
+      lang={lang === "zh" ? "zh-CN" : "en"}
+      className={`${newsreader.variable} ${sourceSans.variable} ${plexMono.variable} ${fell.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: BOOT }} />
       </head>

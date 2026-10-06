@@ -18,7 +18,12 @@ export function LanguageToggle({ className }: { className?: string }) {
   const { lang, setLang, t, switching } = useI18n();
   const index = OPTIONS.findIndex((o) => o.lang === lang);
   return (
-    <div role="group" aria-label={t("lang.toggle")} aria-busy={switching || undefined} className={cn("relative inline-grid grid-cols-2 items-center text-small", className)}>
+    <div
+      role="group"
+      aria-label={t("lang.toggle")}
+      aria-busy={switching || undefined}
+      className={cn("relative inline-grid grid-cols-2 items-center text-small", className)}
+    >
       {OPTIONS.map((o) => {
         const active = o.lang === lang;
         return (
@@ -44,7 +49,10 @@ export function LanguageToggle({ className }: { className?: string }) {
         className="pointer-events-none absolute bottom-1 left-0 h-px w-1/2 bg-ink transition-transform duration-(--dur-base) ease-(--ease-grow)"
         style={{ transform: `translateX(${index * 100}%) scaleX(0.5)` }}
       />
-      <span aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1/2 h-3 w-px -translate-y-1/2 bg-rule-strong" />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-1/2 h-3 w-px -translate-y-1/2 bg-rule-strong"
+      />
     </div>
   );
 }

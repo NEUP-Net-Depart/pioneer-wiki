@@ -22,7 +22,10 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/api/
     return NextResponse.json(member, { status: 201 });
   } catch (error) {
     const e = error instanceof ServiceError ? error : new ServiceError("invalid", "Upload failed");
-    return NextResponse.json({ error: { code: e.code, message: e.message } }, { status: e.code === "invalid" ? 422 : 503 });
+    return NextResponse.json(
+      { error: { code: e.code, message: e.message } },
+      { status: e.code === "invalid" ? 422 : 503 },
+    );
   }
 }
 

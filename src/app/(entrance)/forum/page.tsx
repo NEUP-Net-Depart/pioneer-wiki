@@ -29,8 +29,12 @@ export default async function ForumPart({ searchParams }: PageProps<"/forum">) {
     <div data-part="forum" className="mt-(--space-block) flex flex-col">
       <header className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b-2 border-part pb-4">
         <div>
-          <p className="font-mono text-meta tracking-[0.18em] text-part-ink uppercase">{zh ? "图纸登记簿" : "Drawing register"}</p>
-          <h2 className="mt-2 font-display text-[clamp(2.5rem,5vw,4.5rem)] leading-none tracking-[-0.03em]">{zh ? "登记簿" : "Register"}</h2>
+          <p className="font-mono text-meta tracking-[0.18em] text-part-ink uppercase">
+            {zh ? "图纸登记簿" : "Drawing register"}
+          </p>
+          <h2 className="mt-2 font-display text-[clamp(2.5rem,5vw,4.5rem)] leading-none tracking-[-0.03em]">
+            {zh ? "登记簿" : "Register"}
+          </h2>
         </div>
         <nav aria-label={zh ? "分类" : "Categories"} className="flex flex-wrap gap-x-5 gap-y-2 text-small">
           {[{ id: undefined, label: { zh: "全部", en: "All" } }, ...FORUM_CATEGORIES].map((c) => (
@@ -39,7 +43,10 @@ export default async function ForumPart({ searchParams }: PageProps<"/forum">) {
               href={c.id ? `/forum?category=${c.id}` : "/forum"}
               scroll={false}
               aria-current={c.id === category ? "page" : undefined}
-              className={cn("pw-link text-ink-3 hover:text-ink", c.id === category && "text-part-ink [background-size:100%_1px]")}
+              className={cn(
+                "pw-link text-ink-3 hover:text-ink",
+                c.id === category && "text-part-ink [background-size:100%_1px]",
+              )}
             >
               {c.label[lang]}
             </Link>
@@ -51,8 +58,16 @@ export default async function ForumPart({ searchParams }: PageProps<"/forum">) {
         {threads.map((th, i) => {
           const cat = categoryOf(th.category);
           return (
-            <li key={th.id} data-reveal="rise" style={{ "--i": i % 6 } as React.CSSProperties} className="border-b border-part/30">
-              <Link href={`/forum/${th.id}`} className="group grid grid-cols-[4.5rem_1fr] items-center gap-4 px-4 py-5 no-underline transition-colors duration-(--dur-quick) hover:bg-part-wash sm:grid-cols-[4.5rem_3.5rem_1fr_9rem] sm:gap-6">
+            <li
+              key={th.id}
+              data-reveal="rise"
+              style={{ "--i": i % 6 } as React.CSSProperties}
+              className="border-b border-part/30"
+            >
+              <Link
+                href={`/forum/${th.id}`}
+                className="group grid grid-cols-[4.5rem_1fr] items-center gap-4 px-4 py-5 no-underline transition-colors duration-(--dur-quick) hover:bg-part-wash sm:grid-cols-[4.5rem_3.5rem_1fr_9rem] sm:gap-6"
+              >
                 <span className="font-mono text-meta text-part-ink">
                   {zh ? "第" : "Sht."} {String(th.number).padStart(3, "0")}
                   {zh ? "号" : ""}
@@ -75,16 +90,24 @@ export default async function ForumPart({ searchParams }: PageProps<"/forum">) {
             </li>
           );
         })}
-        {threads.length === 0 ? <li className="px-4 py-10 text-center text-small text-ink-3">{zh ? "这个分类还没有图纸。" : "No sheets in this category yet."}</li> : null}
+        {threads.length === 0 ? (
+          <li className="px-4 py-10 text-center text-small text-ink-3">
+            {zh ? "这个分类还没有图纸。" : "No sheets in this category yet."}
+          </li>
+        ) : null}
       </ol>
 
       <section aria-labelledby="new-sheet" className="mt-(--space-block) flex flex-col gap-8">
         <div className="flex items-end gap-6">
           <Vignette name="bp-pulley" className="hidden w-16 shrink-0 sm:block" sizes="64px" />
           <div>
-            <h3 id="new-sheet" className="font-display text-h2 leading-tight">{zh ? "登记新图纸" : "File a new sheet"}</h3>
+            <h3 id="new-sheet" className="font-display text-h2 leading-tight">
+              {zh ? "登记新图纸" : "File a new sheet"}
+            </h3>
             <p className="mt-2 max-w-[44em] text-small leading-relaxed text-ink-3">
-              {zh ? "提问、分享你做的东西、对某个条目提意见，或申请互换友链。讨论条目时请写上编号，例如 PW-0001。" : "Ask, show what you made, comment on an entry, or ask to exchange links. Mention an entry by its number, e.g. PW-0001."}
+              {zh
+                ? "提问、分享你做的东西、对某个条目提意见，或申请互换友链。讨论条目时请写上编号，例如 PW-0001。"
+                : "Ask, show what you made, comment on an entry, or ask to exchange links. Mention an entry by its number, e.g. PW-0001."}
             </p>
           </div>
         </div>

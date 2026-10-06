@@ -16,6 +16,9 @@ export async function PATCH(request: NextRequest, { params }: RouteContext<"/api
     return NextResponse.json(member);
   } catch (error) {
     const e = error instanceof ServiceError ? error : new ServiceError("invalid", "Invalid page edit");
-    return NextResponse.json({ error: { code: e.code, message: e.message } }, { status: e.code === "invalid" ? 422 : 503 });
+    return NextResponse.json(
+      { error: { code: e.code, message: e.message } },
+      { status: e.code === "invalid" ? 422 : 503 },
+    );
   }
 }

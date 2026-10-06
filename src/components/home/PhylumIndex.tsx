@@ -42,7 +42,14 @@ export function PhylumIndex({ rows, lang }: { rows: PhylumRow[]; lang: Lang }) {
             </span>
             {cur.emblem ? (
               <span key={`e-${cur.id}`} className="pw-index-emblem pw-print relative block w-[min(22rem,80%)]">
-                <Image src={cur.emblem.src} width={cur.emblem.width} height={cur.emblem.height} alt="" sizes="352px" className="h-auto w-full" />
+                <Image
+                  src={cur.emblem.src}
+                  width={cur.emblem.width}
+                  height={cur.emblem.height}
+                  alt=""
+                  sizes="352px"
+                  className="h-auto w-full"
+                />
               </span>
             ) : null}
           </div>
@@ -60,16 +67,35 @@ export function PhylumIndex({ rows, lang }: { rows: PhylumRow[]; lang: Lang }) {
           const live = r.count > 0;
           const body = (
             <>
-              <span className={cn("w-16 shrink-0 font-display text-h3 italic transition-colors duration-(--dur-quick)", i === at ? "text-phylum" : "text-ink-3")}>{r.numeral}</span>
+              <span
+                className={cn(
+                  "w-16 shrink-0 font-display text-h3 italic transition-colors duration-(--dur-quick)",
+                  i === at ? "text-phylum" : "text-ink-3",
+                )}
+              >
+                {r.numeral}
+              </span>
               <span className="min-w-0 flex-1">
-                <span className={cn("block font-display text-[clamp(1.875rem,3.6vw,3.25rem)] leading-[1.05] tracking-[-0.02em] transition-transform duration-(--dur-slow) ease-(--ease-grow)", i === at && "lg:translate-x-3")}>
+                <span
+                  className={cn(
+                    "block font-display text-[clamp(1.875rem,3.6vw,3.25rem)] leading-[1.05] tracking-[-0.02em] transition-transform duration-(--dur-slow) ease-(--ease-grow)",
+                    i === at && "lg:translate-x-3",
+                  )}
+                >
                   {r.name[lang]}
                 </span>
                 <span className="mt-1 hidden truncate text-small text-ink-3 sm:block">{r.note[lang]}</span>
               </span>
               {r.emblem ? (
                 <span className="pw-print w-14 shrink-0 lg:hidden">
-                  <Image src={r.emblem.src} width={r.emblem.width} height={r.emblem.height} alt="" sizes="56px" className="h-auto w-full" />
+                  <Image
+                    src={r.emblem.src}
+                    width={r.emblem.width}
+                    height={r.emblem.height}
+                    alt=""
+                    sizes="56px"
+                    className="h-auto w-full"
+                  />
                 </span>
               ) : null}
               <span className="shrink-0 text-right font-mono text-meta text-ink-3">
@@ -79,7 +105,13 @@ export function PhylumIndex({ rows, lang }: { rows: PhylumRow[]; lang: Lang }) {
             </>
           );
           return (
-            <li key={r.id} data-phylum={r.id} data-reveal="rise" style={{ "--i": i % 5 } as React.CSSProperties} className="border-b border-rule first:border-t">
+            <li
+              key={r.id}
+              data-phylum={r.id}
+              data-reveal="rise"
+              style={{ "--i": i % 5 } as React.CSSProperties}
+              className="border-b border-rule first:border-t"
+            >
               {live ? (
                 <Link
                   href={`/domains/${r.id}`}

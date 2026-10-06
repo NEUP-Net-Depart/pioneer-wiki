@@ -16,10 +16,17 @@ export default function ErrorBoundary({ error, reset }: { error: Error & { diges
         hint={t("state.errorHint")}
         action={
           <>
-            <button type="button" onClick={reset} className="inline-flex h-9 items-center rounded-sm bg-ink px-4 text-small text-paper-sheet hover:bg-ink-2">
+            <button
+              type="button"
+              onClick={reset}
+              className="inline-flex h-9 items-center rounded-sm bg-ink px-4 text-small text-paper-sheet hover:bg-ink-2"
+            >
               {t("state.retry")}
             </button>
-            <Link href="/" className="inline-flex h-9 items-center rounded-sm border border-rule-strong px-4 text-small text-ink no-underline hover:bg-ink/5">
+            <Link
+              href="/"
+              className="inline-flex h-9 items-center rounded-sm border border-rule-strong px-4 text-small text-ink no-underline hover:bg-ink/5"
+            >
               {t("state.backHome")}
             </Link>
           </>

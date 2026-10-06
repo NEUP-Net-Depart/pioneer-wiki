@@ -10,7 +10,17 @@ import { DraftingSheet } from "@/components/writing/DraftingSheet";
  * gridded area, the name and the post number in the title block.
  * POST /api/forum/threads/[id]/posts, then refresh the thread in place.
  */
-export function ReplyForm({ threadId, sheetNumber, nextPost, today }: { threadId: string; sheetNumber: number; nextPost: number; today: string }) {
+export function ReplyForm({
+  threadId,
+  sheetNumber,
+  nextPost,
+  today,
+}: {
+  threadId: string;
+  sheetNumber: number;
+  nextPost: number;
+  today: string;
+}) {
   const router = useRouter();
   const { lang } = useI18n();
   const zh = lang === "zh";
@@ -45,7 +55,11 @@ export function ReplyForm({ threadId, sheetNumber, nextPost, today }: { threadId
     >
       <DraftingSheet
         lang={lang}
-        notes={zh ? ["批注只针对这张图纸。", "引用前文请写批注号，如 #02。"] : ["Notes stay on this sheet's subject.", "Refer to earlier notes by number, e.g. #02."]}
+        notes={
+          zh
+            ? ["批注只针对这张图纸。", "引用前文请写批注号，如 #02。"]
+            : ["Notes stay on this sheet's subject.", "Refer to earlier notes by number, e.g. #02."]
+        }
         block={
           <>
             <div>
@@ -80,7 +94,15 @@ export function ReplyForm({ threadId, sheetNumber, nextPost, today }: { threadId
         <label htmlFor="pw-reply-body" className="sr-only">
           {zh ? "回复" : "Reply"}
         </label>
-        <textarea id="pw-reply-body" name="body" required maxLength={8000} rows={7} placeholder={zh ? "在这张图纸上加一条批注……" : "Add a note to this sheet…"} className="pw-drafting-text text-body" />
+        <textarea
+          id="pw-reply-body"
+          name="body"
+          required
+          maxLength={8000}
+          rows={7}
+          placeholder={zh ? "在这张图纸上加一条批注……" : "Add a note to this sheet…"}
+          className="pw-drafting-text text-body"
+        />
       </DraftingSheet>
     </form>
   );

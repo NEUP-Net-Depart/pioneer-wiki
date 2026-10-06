@@ -7,7 +7,14 @@ const ZONES_Y = ["1", "2", "3", "4"];
 /** First-angle projection symbol: a truncated cone seen from the side and from its end. */
 function ProjectionSymbol() {
   return (
-    <svg viewBox="0 0 58 24" aria-hidden="true" className="h-5 w-auto" fill="none" stroke="currentColor" strokeWidth="1">
+    <svg
+      viewBox="0 0 58 24"
+      aria-hidden="true"
+      className="h-5 w-auto"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1"
+    >
       <path d="M4 6 L24 3 L24 21 L4 18 Z" />
       <path d="M1 12 H27 M42 1 V23 M30 12 H55" strokeDasharray="4 2 1 2" strokeWidth="0.6" />
       <circle cx="42" cy="12" r="9" />
@@ -19,12 +26,28 @@ function ProjectionSymbol() {
 /** A drafting scale bar, 0–10 in alternate inked blocks. */
 function ScaleBar() {
   return (
-    <svg viewBox="0 0 132 22" aria-hidden="true" className="h-[1.375rem] w-auto" fill="none" stroke="currentColor" strokeWidth="0.8">
+    <svg
+      viewBox="0 0 132 22"
+      aria-hidden="true"
+      className="h-[1.375rem] w-auto"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="0.8"
+    >
       {[0, 1, 2, 3, 4].map((i) => (
         <rect key={i} x={6 + i * 24} y="3" width="24" height="5" fill={i % 2 ? "none" : "currentColor"} />
       ))}
       {["0", "5", "10"].map((t, i) => (
-        <text key={t} x={6 + i * 60} y="19" fontSize="7" fill="currentColor" stroke="none" textAnchor="middle" fontFamily="var(--font-mono)">
+        <text
+          key={t}
+          x={6 + i * 60}
+          y="19"
+          fontSize="7"
+          fill="currentColor"
+          stroke="none"
+          textAnchor="middle"
+          fontFamily="var(--font-mono)"
+        >
           {t}
         </text>
       ))}
@@ -39,7 +62,19 @@ function ScaleBar() {
  * fields (`block`), headed by the drawing office and finished with scale,
  * checker and numbered drawing notes. Used by the forum (blueprint part).
  */
-export function DraftingSheet({ children, block, notes, lang, className }: { children: React.ReactNode; block: React.ReactNode; notes: string[]; lang: Lang; className?: string }) {
+export function DraftingSheet({
+  children,
+  block,
+  notes,
+  lang,
+  className,
+}: {
+  children: React.ReactNode;
+  block: React.ReactNode;
+  notes: string[];
+  lang: Lang;
+  className?: string;
+}) {
   const zh = lang === "zh";
   return (
     <div className={cn("pw-drafting", className)}>
@@ -69,7 +104,9 @@ export function DraftingSheet({ children, block, notes, lang, className }: { chi
           <div data-span className="pw-titleblock-office">
             <span className="flex items-center justify-between gap-3">
               <span>
-                <span className="block font-display text-lead leading-tight">{zh ? "先锋维基 · 制图室" : "Pioneer Wiki · Drawing Office"}</span>
+                <span className="block font-display text-lead leading-tight">
+                  {zh ? "先锋维基 · 制图室" : "Pioneer Wiki · Drawing Office"}
+                </span>
                 <small>{zh ? "Pioneer Wiki Drawing Office" : "先锋维基 · 制图室"}</small>
               </span>
               <ProjectionSymbol />

@@ -23,11 +23,17 @@ const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
 const lum = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
 async function edges(img) {
-  const { data, info } = await img.clone().resize(120, 80, { fit: "fill" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await img
+    .clone()
+    .resize(120, 80, { fit: "fill" })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   const at = (x, y) => [0, 1, 2].map((c) => data[(y * info.width + x) * 3 + c]);
   const band = (pick) => {
     const ch = [[], [], []];
-    for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) if (pick(x, y)) at(x, y).forEach((v, c) => ch[c].push(v));
+    for (let y = 0; y < info.height; y++)
+      for (let x = 0; x < info.width; x++) if (pick(x, y)) at(x, y).forEach((v, c) => ch[c].push(v));
     return ch.map(median);
   };
   return {
@@ -46,11 +52,32 @@ for (const file of (await fs.readdir(SRC)).filter((f) => f.endsWith(".png")).sor
   const e = await edges(img);
   // A paper ground (light, warm) is scaled onto the page paper; a blue blueprint ground is left alone.
   const paperish = lum(e.top) > 170 && e.top[0] >= e.top[2];
-  if (paperish) img = img.linear(PAPER.map((p, c) => p / Math.max(1, e.top[c])), [0, 0, 0]);
+  if (paperish)
+    img = img.linear(
+      PAPER.map((p, c) => p / Math.max(1, e.top[c])),
+      [0, 0, 0],
+    );
   const fix = (c) => (paperish ? c.map((v, i) => Math.min(255, (v * PAPER[i]) / Math.max(1, e.top[i]))) : c);
-  const out = await img.resize({ width: WIDTH }).webp({ quality: 74, effort: 5 }).toFile(path.join(OUT, `${name}.webp`));
+  const out = await img
+    .resize({ width: WIDTH })
+    .webp({ quality: 74, effort: 5 })
+    .toFile(path.join(OUT, `${name}.webp`));
   const top = fix(e.top);
-  frames.push({ name, width: out.width, height: out.height, left: rgb(fix(e.left)), right: rgb(fix(e.right)), top: rgb(top), dark: lum(top) < 120 });
-  console.log(name, `${out.width}x${out.height}`, `${Math.round(out.size / 1024)} KB`, paperish ? "paper" : "dark", rgb(top));
+  frames.push({
+    name,
+    width: out.width,
+    height: out.height,
+    left: rgb(fix(e.left)),
+    right: rgb(fix(e.right)),
+    top: rgb(top),
+    dark: lum(top) < 120,
+  });
+  console.log(
+    name,
+    `${out.width}x${out.height}`,
+    `${Math.round(out.size / 1024)} KB`,
+    paperish ? "paper" : "dark",
+    rgb(top),
+  );
 }
 await fs.writeFile(path.join(OUT, "frames.json"), JSON.stringify(frames, null, 2) + "\n");
