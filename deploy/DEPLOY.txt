@@ -58,3 +58,15 @@ Before the first deployment the Supabase project needs the schema from
 supabase/migrations (in the release's source archive), applied in filename
 order, with the site URL and URL/auth/callback allowed as a redirect
 targets. Content is imported once from a checkout with pnpm run seed-supabase.
+
+A later release can add migrations, and this script only loads and starts an
+image — it never applies one. So when installing a release whose source archive
+carries files under supabase/migrations that the project has not seen, apply
+those files first and let the new image start afterwards, then confirm the
+database and the image agree:
+
+    curl -s https://<domain>/api/health/ready
+
+"status":"ready" also names the schema the database reports; a "schema_mismatch"
+means the migration is still missing. A release older than that endpoint answers
+404, so check the pages instead.
