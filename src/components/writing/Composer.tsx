@@ -77,14 +77,14 @@ export function Composer({
       el.setSelectionRange(start + before.length, start + before.length + selected.length);
     });
   };
-  const tools: Array<[string, React.ReactNode, () => void]> = [
-    [zh ? "标题" : "Heading", <Heading2 key="h" className="size-4" />, () => wrap("### ", "", zh ? "小标题" : "Heading")],
-    [zh ? "加粗" : "Bold", <Bold key="b" className="size-4" />, () => wrap("**", "**", zh ? "加粗文字" : "bold text")],
-    [zh ? "斜体" : "Italic", <Italic key="i" className="size-4" />, () => wrap("_", "_", zh ? "斜体文字" : "italic text")],
-    [zh ? "引用" : "Quote", <Quote key="q" className="size-4" />, () => wrap("> ", "", zh ? "引用" : "quote")],
-    [zh ? "代码" : "Code", <Code2 key="c" className="size-4" />, () => wrap("`", "`", "code")],
-    [zh ? "链接" : "Link", <Link2 key="l" className="size-4" />, () => wrap("[", "](https://)", zh ? "链接文字" : "link text")],
-    [zh ? "列表" : "List", <List key="li" className="size-4" />, () => wrap("- ", "", zh ? "列表项" : "item")],
+  const tools: Array<[string, React.ReactNode, string, string, string]> = [
+    [zh ? "标题" : "Heading", <Heading2 key="h" className="size-4" />, "### ", "", zh ? "小标题" : "Heading"],
+    [zh ? "加粗" : "Bold", <Bold key="b" className="size-4" />, "**", "**", zh ? "加粗文字" : "bold text"],
+    [zh ? "斜体" : "Italic", <Italic key="i" className="size-4" />, "_", "_", zh ? "斜体文字" : "italic text"],
+    [zh ? "引用" : "Quote", <Quote key="q" className="size-4" />, "> ", "", zh ? "引用" : "quote"],
+    [zh ? "代码" : "Code", <Code2 key="c" className="size-4" />, "`", "`", "code"],
+    [zh ? "链接" : "Link", <Link2 key="l" className="size-4" />, "[", "](https://)", zh ? "链接文字" : "link text"],
+    [zh ? "列表" : "List", <List key="li" className="size-4" />, "- ", "", zh ? "列表项" : "item"],
   ];
 
   return (
@@ -111,13 +111,13 @@ export function Composer({
         </div>
         {tab === "write" ? (
           <div role="toolbar" aria-label={zh ? "格式" : "Formatting"} className="ml-auto flex flex-wrap">
-            {tools.map(([name, icon, run]) => (
+            {tools.map(([name, icon, before, after, hint]) => (
               <button
                 key={name}
                 type="button"
                 title={name}
                 aria-label={name}
-                onClick={run}
+                onClick={() => wrap(before, after, hint)}
                 disabled={disabled}
                 className="inline-flex size-9 items-center justify-center rounded-sm text-ink-2 hover:bg-ink/8 hover:text-ink"
               >

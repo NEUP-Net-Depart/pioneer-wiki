@@ -15,7 +15,6 @@ import { RunningHead } from "@/components/book/RunningHead";
 import { PageTurn } from "@/components/book/PageTurn";
 import { Markdown } from "@/components/markdown/Markdown";
 import { Bookplate } from "@/components/members/Bookplate";
-import { StatusBadge } from "@/components/archive/StatusBadge";
 import { SpecimenPanel, SPECIMEN_VIEWS, type SpecimenView } from "@/components/entry/SpecimenPanel";
 import { Vignette } from "@/components/book/Vignette";
 import { CopyButton } from "@/components/markdown/CopyButton";

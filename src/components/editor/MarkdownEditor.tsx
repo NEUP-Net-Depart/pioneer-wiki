@@ -203,7 +203,7 @@ export function MarkdownEditor({
   const draftVersion = useRef<number | undefined>(serverDraft?.version);
   const inflight = useRef(false);
   const again = useRef(false);
-  const tabId = useRef(typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Math.random()));
+  const [tabId] = useState(() => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Math.random())));
   const channel = useRef<BroadcastChannel | null>(null);
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
   const archived = Boolean(workflow?.archived);
@@ -233,6 +233,9 @@ export function MarkdownEditor({
   /** What the last saved revision holds, and what the server's working copy holds. */
   const savedRef = useRef(initialSerialized);
   const syncedRef = useRef(initialSerialized);
+  // The same two values as state, for what the page shows (refs serve the asynchronous saves).
+  const [savedText, setSavedText] = useState(initialSerialized);
+  const [syncedText, setSyncedText] = useState(initialSerialized);
 
   const apply = useCallback((value: Payload) => {
     setTitleZh(value.title.zh);
@@ -270,11 +273,11 @@ export function MarkdownEditor({
     if (typeof BroadcastChannel === "undefined") return;
     const bc = new BroadcastChannel(`pioneer-wiki:${storageKey}`);
     bc.onmessage = (event) => {
-      if (event.data?.tab && event.data.tab !== tabId.current) setOtherTab(true);
+      if (event.data?.tab && event.data.tab !== tabId) setOtherTab(true);
     };
     channel.current = bc;
     return () => bc.close();
-  }, [storageKey]);
+  }, [storageKey, tabId]);
 
   // ── Autosave: local copy at once, server copy after a pause, one request at a time ──
   const flush = useCallback(async () => {
@@ -302,6 +305,7 @@ export function MarkdownEditor({
       } else {
         draftVersion.current = result.version;
         syncedRef.current = sending;
+        setSyncedText(sending);
         setSync({ state: "saved", at: result.savedAt });
       }
     } catch (error) {
@@ -326,15 +330,15 @@ export function MarkdownEditor({
     if (!ready || recovery || conflict || archived || serialized === syncedRef.current) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify({ savedAt: new Date().toISOString(), payload }));
-      channel.current?.postMessage({ tab: tabId.current });
+      channel.current?.postMessage({ tab: tabId });
     } catch {
       window.setTimeout(() => setSync({ state: "quota" }), 0);
     }
     const timer = window.setTimeout(() => void flushRef.current(), 1500);
     return () => window.clearTimeout(timer);
-  }, [archived, conflict, payload, ready, recovery, serialized, storageKey]);
+  }, [archived, conflict, payload, ready, recovery, serialized, storageKey, tabId]);
 
-  const unsynced = ready && serialized !== syncedRef.current && serialized !== savedRef.current;
+  const unsynced = ready && serialized !== syncedText && serialized !== savedText;
   useLeaveGuard(
     unsynced,
     zh ? "还有内容没有同步到服务器（已保存在本机）。确定离开吗？" : "Some changes are not synced yet (they are kept on this device). Leave anyway?",
@@ -389,6 +393,8 @@ export function MarkdownEditor({
         });
         savedRef.current = sending;
         syncedRef.current = sending;
+        setSavedText(sending);
+        setSyncedText(sending);
         setEntryId(saved.entryId);
         setState("draft");
         setRevision(saved.number);
@@ -707,6 +713,7 @@ export function MarkdownEditor({
               apply(conflict.payload);
               draftVersion.current = conflict.version;
               syncedRef.current = JSON.stringify({ ...conflict.payload, note: undefined });
+              setSyncedText(syncedRef.current);
               setConflict(null);
             }}
           >

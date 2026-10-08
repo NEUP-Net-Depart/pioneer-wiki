@@ -44,7 +44,9 @@ export default async function AdminOverview() {
       ).map(([href, label, key]) => ({ href, label, count: todo[key] }))
     : [];
   const open = waiting.filter((item) => item.count > 0);
-  let numeral = 0;
+  // Rooms are numbered straight through the contents, across groups.
+  const groups = ADMIN_GROUPS.slice(1);
+  const firstOf = groups.map((_, index) => groups.slice(0, index).reduce((n, g) => n + g.items.length, 0));
   return (
     <>
       <DeskHead
@@ -87,12 +89,12 @@ export default async function AdminOverview() {
           {tr(lang, "目录", "Contents")}
         </h2>
         <div className="grid gap-x-(--space-block) gap-y-8 md:grid-cols-2">
-          {ADMIN_GROUPS.slice(1).map((group) => (
+          {groups.map((group, groupIndex) => (
             <section key={group.en} aria-label={lang === "zh" ? group.zh : group.en}>
               <h3 className="pw-smallcaps text-small text-ink-3">{lang === "zh" ? group.zh : group.en}</h3>
               <ol className="mt-2 flex flex-col">
-                {group.items.map((item) => {
-                  numeral += 1;
+                {group.items.map((item, itemIndex) => {
+                  const numeral = firstOf[groupIndex] + itemIndex + 1;
                   return (
                     <li key={item.href} className="pw-ink-under">
                       <Link href={item.href} className="group grid min-h-14 grid-cols-[2.5rem_1fr] gap-x-3 py-2.5 no-underline">

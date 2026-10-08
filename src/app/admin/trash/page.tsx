@@ -9,6 +9,17 @@ import { ThreadModeration } from "@/components/admin/ForumModeration";
 
 export const metadata: Metadata = { title: "回收站 Archive bin" };
 
+function Section({ id, title, count, children }: { id: string; title: string; count: number; children: React.ReactNode }) {
+  return count ? (
+    <section aria-labelledby={id} className="flex flex-col gap-3">
+      <h2 id={id} className="pw-double-rule font-display text-h3">
+        {title} <span className="font-mono text-meta text-ink-3">{count}</span>
+      </h2>
+      {children}
+    </section>
+  ) : null;
+}
+
 /**
  * 回收站 — everything archived or hidden, by kind, each with its way back.
  * Nothing in here is ever deleted: history, versions and audit stay.
@@ -25,15 +36,6 @@ export default async function AdminTrash() {
   ]);
   const memberOptions = (await community.listMembers({ view: "all" }).catch(() => [])).map((m) => ({ id: m.id, label: m.name[lang] }));
   const empty = !archivedEntries.total && !members.length && !links.length && !records.total && !threads.length;
-  const Section = ({ id, title, count, children }: { id: string; title: string; count: number; children: React.ReactNode }) =>
-    count ? (
-      <section aria-labelledby={id} className="flex flex-col gap-3">
-        <h2 id={id} className="pw-double-rule font-display text-h3">
-          {title} <span className="font-mono text-meta text-ink-3">{count}</span>
-        </h2>
-        {children}
-      </section>
-    ) : null;
   return (
     <>
       <DeskHead
