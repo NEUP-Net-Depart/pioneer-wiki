@@ -8,8 +8,7 @@ This directory recognises the friends who support Pioneer Wiki and share in its 
 
 ## 名录 · Directory
 
-待补充；确认名字后在这里列出。<br />
-Names will be listed here once confirmed.
+- [gibeon](https://github.com/gibeon)
 
 <!-- Add confirmed names as list items here. A public profile link is optional. -->
 

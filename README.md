@@ -28,7 +28,8 @@
   <a href="#docker-部署">📦 部署 / Deployment</a> ·
   <a href="CONTRIBUTING.md">🤝 参与贡献 / Contributing</a> ·
   <a href="#special-thanks">❤️ Special Thanks</a> ·
-  <a href="#friends">🌷 Friends</a>
+  <a href="#friends">🌷 Friends</a> ·
+  <a href="#sponsors">💛 Sponsors</a>
 </p>
 
 <table align="center">
@@ -68,6 +69,7 @@
 - [参与贡献](#参与贡献)
 - [特别感谢 · Special Thanks](#special-thanks)
 - [Friends · 朋友名录](#friends)
+- [爱发电赞助者 · Afdian Sponsors](#sponsors)
 - [许可证](#许可证)
 
 </details>
@@ -283,6 +285,7 @@ supabase/migrations/      数据库与 Row Level Security 迁移
 - [Contributing](#contributing)
 - [Special Thanks](#special-thanks)
 - [Friends](#friends)
+- [Afdian Sponsors](#sponsors)
 - [License](#license)
 
 </details>
@@ -496,11 +499,22 @@ Thank you to everyone who contributes code, content, translations, tests and doc
 
 <h2 id="friends">🌷 Friends · 朋友名录</h2>
 
-这里留给一路支持、交流与陪伴 Pioneer Wiki 的朋友们。名录将在确认名字后逐步补充。<br />
-A place for the friends who support Pioneer Wiki and share in its journey. Names will be added as they are confirmed.
+这里记录一路支持、交流与陪伴 Pioneer Wiki 的朋友们。<br />
+Friends who support Pioneer Wiki and share in its journey are listed here.
+
+- [gibeon](https://github.com/gibeon)
 
 完整名录与添加方式见 [`friends/README.md`](friends/README.md)。<br />
 See [`friends/README.md`](friends/README.md) for the directory and how to add a name.
+
+---
+
+<h2 id="sponsors">💛 爱发电赞助者 · Afdian Sponsors</h2>
+
+感谢通过爱发电支持 Pioneer Wiki 的朋友。名单暂为空，后续将在获得公开确认后补充。<br />
+Thank you to everyone who supports Pioneer Wiki through Afdian. The list is currently empty and will be updated after public confirmation.
+
+<!-- Add sponsors here only with their confirmed public display name. -->
 
 ---
 
