@@ -1,40 +1,27 @@
 import "server-only";
 import type {
-  Account,
-  Asset,
-  Author,
   Category,
   Chronicle,
   ChronicleDetail,
   ChronicleResource,
-  Entry,
-  EntrySummary,
-  EntryTaxonomy,
+  ContentVersion,
   Family,
+  ForumPost,
+  ForumThread,
   FriendLink,
   Member,
   MemberCover,
-  MemberPatch,
-  Relation,
-  Revision,
-  Source,
-  Tag,
   TaxonKind,
   TaxonLink,
   TaxonSnapshot,
   TaxonVersion,
-  ForumPost,
-  ForumThread,
 } from "@/lib/model/types";
 import type {
+  ArchiveView,
   ChronicleQuery,
   ChronicleRepository,
   CommunityRepository,
-  DraftInput,
-  EntryQuery,
-  EntryRepository,
-  ReferenceRepository,
-  ReviewTransitionInput,
+  MemberAdminPatch,
   SearchAdapter,
   SearchQuery,
   SearchResult,
@@ -43,357 +30,39 @@ import type {
   WikiServices,
 } from "./contracts";
 import { ServiceError } from "./contracts";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAuthAdapter } from "./supabase-auth";
+import { createEntryRepository } from "./supabase-entries";
+import {
+  createAccountRepository,
+  createAuditRepository,
+  createOperationsAdapter,
+  createReferenceRepository,
+} from "./supabase-admin";
+import {
+  bool,
+  client,
+  jsonList,
+  localized,
+  number,
+  optionalText,
+  result,
+  rpc,
+  text,
+  type Row,
+  type SupabaseClient,
+} from "./supabase-shared";
 import { readProjects } from "@/lib/members/project-validation";
 import { readMemberGithub, readMemberLinks, validateMemberPatch } from "@/lib/members/validation";
 import { validatePost, validateThread } from "@/lib/forum/validation";
 import { facetsOf, searchWords } from "@/lib/chronicles/query";
-
-type Row = Record<string, unknown>;
-const text = (value: unknown): string => (typeof value === "string" ? value : "");
-const optionalText = (value: unknown): string | undefined => (typeof value === "string" && value ? value : undefined);
-const number = (value: unknown): number => (typeof value === "number" ? value : Number(value ?? 0));
-const bool = (value: unknown): boolean => Boolean(value);
-const localized = (row: Row, zh: string, en: string) => ({ zh: text(row[zh]), en: text(row[en]) });
-
-async function result<T>(value: { data: T | null; error: { message: string; code?: string } | null }): Promise<T> {
-  if (value.error) {
-    const code =
-      value.error.code === "42501"
-        ? "forbidden"
-        : value.error.code === "40001"
-          ? "conflict"
-          : value.error.code === "22023"
-            ? "invalid"
-            : "unavailable";
-    throw new ServiceError(code, value.error.message);
-  }
-  return value.data as T;
-}
-
-function mapAuthor(row: Row): Author {
-  return {
-    id: text(row.id),
-    handle: text(row.handle),
-    name: localized(row, "name_zh", "name_en"),
-    affiliation: localized(row, "affiliation_zh", "affiliation_en"),
-    role: row.role as Author["role"],
-    sigil: text(row.sigil),
-  };
-}
-function mapSource(row: Row): Source {
-  return {
-    id: text(row.id),
-    kind: row.kind as Source["kind"],
-    title: text(row.title),
-    creators: text(row.creators),
-    year: row.year == null ? undefined : number(row.year),
-    publisher: optionalText(row.publisher),
-    url: optionalText(row.url),
-    locator: optionalText(row.locator),
-  };
-}
-function mapTag(row: Row): Tag {
-  return { id: text(row.id), label: localized(row, "label_zh", "label_en") };
-}
-function mapAsset(row: Row): Asset {
-  return {
-    id: text(row.id),
-    src: text(row.src),
-    width: number(row.width),
-    height: number(row.height),
-    alt: localized(row, "alt_zh", "alt_en"),
-    caption: localized(row, "caption_zh", "caption_en"),
-    credit: text(row.credit),
-    license: text(row.license),
-    sourceUrl: optionalText(row.source_url),
-  };
-}
-
-function mapSummary(row: Row, revision?: number, published = false): EntrySummary {
-  const analogueName = localized(row, "analogue_name_zh", "analogue_name_en");
-  return {
-    id: text(row.id),
-    slug: text(row.slug),
-    title: localized(row, "title_zh", "title_en"),
-    summary: localized(row, "summary_zh", "summary_en"),
-    analogue:
-      analogueName.zh || analogueName.en
-        ? { name: analogueName, note: localized(row, "analogue_note_zh", "analogue_note_en") }
-        : undefined,
-    domain: optionalText(row.domain) as EntrySummary["domain"],
-    categoryId: text(row.category_id),
-    auxiliaryCategoryIds: [],
-    species: optionalText(row.species),
-    level: (optionalText(row.level) ?? "concept") as EntrySummary["level"],
-    contentRole: (optionalText(row.content_role) ?? "foundation") as EntrySummary["contentRole"],
-    scale: row.scale as EntrySummary["scale"],
-    role: row.role as EntrySummary["role"],
-    status: published ? "published" : (row.status as EntrySummary["status"]),
-    authorId: text(row.author_id),
-    contributorIds: [],
-    sourceIds: [],
-    tagIds: [],
-    bodyLanguages: ["zh", "en"],
-    heroAssetId: optionalText(row.hero_asset_id),
-    createdAt: text(row.created_at),
-    updatedAt: text(row.updated_at),
-    revision: revision ?? number(row.published_revision_number ?? row.latest_revision_number),
-    featured: bool(row.featured),
-  };
-}
-
-function mapRevision(row: Row): Revision {
-  return {
-    id: text(row.id),
-    entryId: text(row.entry_id),
-    number: number(row.number),
-    parentId: optionalText(row.parent_id),
-    authorId: text(row.author_id),
-    createdAt: text(row.created_at),
-    note: text(row.note),
-    state: row.state as Revision["state"],
-    taxonomy: (row.metadata as { taxonomy?: EntryTaxonomy } | null)?.taxonomy,
-    stats: { added: number(row.added_lines), removed: number(row.removed_lines) },
-  };
-}
-
-async function ids(
-  client: Awaited<ReturnType<typeof createSupabaseServerClient>>,
-  table: string,
-  id: string,
-  key: string,
-): Promise<string[]> {
-  const rows = (await result(await client.from(table).select(key).eq("entry_id", id))) as unknown as Row[];
-  return rows.map((row) => text(row[key]));
-}
-
-async function summary(
-  client: Awaited<ReturnType<typeof createSupabaseServerClient>>,
-  row: Row,
-  revision?: number,
-  published = false,
-): Promise<EntrySummary> {
-  const value = mapSummary(row, revision, published);
-  const [contributorIds, sourceIds, tagIds, auxiliaryCategoryIds] = await Promise.all([
-    ids(client, "entry_contributors", value.id, "author_id"),
-    ids(client, "entry_sources", value.id, "source_id"),
-    ids(client, "entry_tags", value.id, "tag_id"),
-    ids(client, "entry_auxiliary_categories", value.id, "category_id"),
-  ]);
-  return { ...value, contributorIds, sourceIds, tagIds, auxiliaryCategoryIds };
-}
-
-function revisionFor(row: Row, account: Account | null): { number: number; published: boolean } {
-  const privileged = Boolean(account?.role === "admin" || (account?.authorId && account.authorId === row.author_id));
-  return {
-    number: privileged ? number(row.latest_revision_number) : number(row.published_revision_number),
-    published: !privileged,
-  };
-}
-async function visibleRevision(row: Row): Promise<{ number: number; published: boolean }> {
-  return revisionFor(row, await createSupabaseAuthAdapter().getCurrentAccount());
-}
-
-function createEntryRepository(): EntryRepository {
-  return {
-    async listEntries(query: EntryQuery = {}) {
-      const client = await createSupabaseServerClient();
-      let request = client.from("entries").select("*").is("deleted_at", null);
-      if (query.domain?.length) request = request.in("domain", query.domain);
-      if (query.categoryId?.length) request = request.in("category_id", query.categoryId);
-      if (query.familyId?.length) {
-        const genera = (await result(
-          await client.from("taxon_categories").select("id").in("family_id", query.familyId),
-        )) as Row[];
-        request = request.in(
-          "category_id",
-          genera.map((row) => text(row.id)),
-        );
-      }
-      if (query.auxiliaryCategoryId?.length) {
-        const linked = (await result(
-          await client
-            .from("entry_auxiliary_categories")
-            .select("entry_id")
-            .in("category_id", query.auxiliaryCategoryId),
-        )) as Row[];
-        request = request.in(
-          "id",
-          linked.map((row) => text(row.entry_id)),
-        );
-      }
-      if (query.scale?.length) request = request.in("scale", query.scale);
-      if (query.status?.length) request = request.in("status", query.status);
-      if (query.featured !== undefined) request = request.eq("featured", query.featured);
-      const rows = (await result(
-        await request
-          .order(query.sort === "created" ? "created_at" : "updated_at", { ascending: false })
-          .limit(query.limit ?? 1000),
-      )) as Row[];
-      if (!rows.length) return [];
-      const entryIds = rows.map((row) => text(row.id));
-      const load = async (table: string, key: string) => {
-        const grouped = new Map<string, string[]>();
-        for (let offset = 0; ; offset += 1000) {
-          const linked = (await result(
-            await client
-              .from(table)
-              .select("*")
-              .in("entry_id", entryIds)
-              .order("entry_id")
-              .order(key)
-              .range(offset, offset + 999),
-          )) as unknown as Row[];
-          for (const row of linked) {
-            const id = text(row.entry_id);
-            grouped.set(id, [...(grouped.get(id) ?? []), text(row[key])]);
-          }
-          if (linked.length < 1000) break;
-        }
-        return grouped;
-      };
-      const [account, contributors, sources, tags, auxiliary] = await Promise.all([
-        createSupabaseAuthAdapter().getCurrentAccount(),
-        load("entry_contributors", "author_id"),
-        load("entry_sources", "source_id"),
-        load("entry_tags", "tag_id"),
-        load("entry_auxiliary_categories", "category_id"),
-      ]);
-      return rows.map((row) => {
-        const visible = revisionFor(row, account);
-        const entry = mapSummary(row, visible.number, visible.published);
-        return {
-          ...entry,
-          contributorIds: contributors.get(entry.id) ?? [],
-          sourceIds: sources.get(entry.id) ?? [],
-          tagIds: tags.get(entry.id) ?? [],
-          auxiliaryCategoryIds: auxiliary.get(entry.id) ?? [],
-        };
-      });
-    },
-    async getEntry(slug) {
-      const client = await createSupabaseServerClient();
-      const row = (await result(
-        await client.from("entries").select("*").eq("slug", slug).is("deleted_at", null).maybeSingle(),
-      )) as Row | null;
-      if (!row) return null;
-      const visible = await visibleRevision(row);
-      if (!visible.number) return null;
-      const bodyRow = (await result(
-        await client
-          .from("entry_revision_bodies")
-          .select("body")
-          .eq("revision_id", `${text(row.id)}@r${visible.number}`)
-          .maybeSingle(),
-      )) as Row | null;
-      return { ...(await summary(client, row, visible.number, visible.published)), body: text(bodyRow?.body) } as Entry;
-    },
-    async getEntryById(id) {
-      const client = await createSupabaseServerClient();
-      const row = (await result(
-        await client.from("entries").select("slug").eq("id", id).is("deleted_at", null).maybeSingle(),
-      )) as Row | null;
-      return row ? this.getEntry(text(row.slug)) : null;
-    },
-    async listRevisions(entryId) {
-      const client = await createSupabaseServerClient();
-      return (
-        (await result(
-          await client
-            .from("entry_revisions")
-            .select("*")
-            .eq("entry_id", entryId)
-            .order("number", { ascending: false }),
-        )) as Row[]
-      ).map(mapRevision);
-    },
-    async getRevisionBody(revisionId) {
-      const client = await createSupabaseServerClient();
-      const row = (await result(
-        await client.from("entry_revision_bodies").select("body").eq("revision_id", revisionId).maybeSingle(),
-      )) as Row | null;
-      return row ? text(row.body) : null;
-    },
-    async listRelations(entryId) {
-      const client = await createSupabaseServerClient();
-      let request = client.from("relations").select("*");
-      if (entryId) request = request.or(`from_entry_id.eq.${entryId},to_entry_id.eq.${entryId}`);
-      const rows = (await result(await request)) as Row[];
-      return rows.map((row) => ({
-        id: text(row.id),
-        from: text(row.from_entry_id),
-        to: text(row.to_entry_id),
-        kind: row.kind as Relation["kind"],
-        note: localized(row, "note_zh", "note_en"),
-        strength: number(row.strength) as Relation["strength"],
-      }));
-    },
-    async saveDraft(input: DraftInput) {
-      const client = await createSupabaseServerClient();
-      return (await result(
-        await client.rpc("pw_save_draft", {
-          p_entry_id: input.entryId ?? null,
-          p_domain: input.domain ?? null,
-          p_title_zh: input.title.zh,
-          p_title_en: input.title.en,
-          p_summary_zh: input.summary.zh,
-          p_summary_en: input.summary.en,
-          p_body: input.body,
-          p_note: input.note,
-          p_base_revision: input.baseRevision ?? null,
-          p_metadata: input.metadata ?? null,
-          p_category_id: input.categoryId ?? null,
-        }),
-      )) as Revision;
-    },
-    async transition(input: ReviewTransitionInput) {
-      const client = await createSupabaseServerClient();
-      return (await result(
-        await client.rpc("pw_transition_entry", {
-          p_entry_id: input.entryId,
-          p_action: input.action,
-          p_target_revision_id: input.targetRevisionId ?? null,
-          p_note: input.note ?? null,
-        }),
-      )) as Revision;
-    },
-  };
-}
-
-function createReferenceRepository(): ReferenceRepository {
-  return {
-    async listAuthors() {
-      const c = await createSupabaseServerClient();
-      return ((await result(await c.from("authors").select("*"))) as Row[]).map(mapAuthor);
-    },
-    async listSources() {
-      const c = await createSupabaseServerClient();
-      return ((await result(await c.from("sources").select("*"))) as Row[]).map(mapSource);
-    },
-    async listTags() {
-      const c = await createSupabaseServerClient();
-      return ((await result(await c.from("tags").select("*"))) as Row[]).map(mapTag);
-    },
-    async listAssets() {
-      const c = await createSupabaseServerClient();
-      return ((await result(await c.from("assets").select("*"))) as Row[]).map(mapAsset);
-    },
-    async getAsset(id) {
-      const c = await createSupabaseServerClient();
-      const row = (await result(await c.from("assets").select("*").eq("id", id).maybeSingle())) as Row | null;
-      return row ? mapAsset(row) : null;
-    },
-  };
-}
+import { STORED_NAME } from "@/lib/media/store";
 
 function createSearchAdapter(): SearchAdapter {
   return {
     async search(query: SearchQuery): Promise<SearchResult> {
-      const c = await createSupabaseServerClient();
-      const payload = (await result(
-        await c.rpc("pw_search_entries_v2", {
+      const payload = await rpc<{ hits: SearchResult["hits"]; total: number; facets: SearchResult["facets"] }>(
+        "pw_search_entries_v2",
+        {
           p_text: query.text,
           p_domain: query.filters?.domain ?? [],
           p_scale: query.filters?.scale ?? [],
@@ -404,12 +73,8 @@ function createSearchAdapter(): SearchAdapter {
           p_offset: query.offset ?? 0,
           p_family: query.filters?.familyId ?? [],
           p_category: query.filters?.categoryId ?? [],
-        }),
-      )) as {
-        hits: SearchResult["hits"];
-        total: number;
-        facets: SearchResult["facets"];
-      };
+        },
+      );
       return {
         hits: payload.hits.map((row) => ({
           entry: row.entry,
@@ -483,26 +148,23 @@ function createTaxonomyRepository(): TaxonomyRepository {
   const table = (kind: TaxonKind) => (kind === "family" ? "taxon_families" : "taxon_categories");
   /** By slug or a former slug; the current slug wins if both match. */
   const bySlug = async (kind: TaxonKind, slug: string, includeArchived = false): Promise<Row | null> => {
-    const client = await createSupabaseServerClient();
-    let request = client.from(table(kind)).select("*").or(`slug.eq.${slug},former_slugs.cs.{${slug}}`);
+    const c = await client();
+    let request = c.from(table(kind)).select("*").or(`slug.eq.${slug},former_slugs.cs.{${slug}}`);
     if (!includeArchived) request = request.eq("status", "active");
     const rows = (await result(await request)) as Row[];
     return rows.find((row) => row.slug === slug) ?? rows[0] ?? null;
   };
-  const rpc = async (name: string, args: Record<string, unknown>) => {
-    const client = await createSupabaseServerClient();
-    return mapTaxonVersion((await result(await client.rpc(name, args))) as Row);
-  };
+  const versionRpc = async (name: string, args: Record<string, unknown>) => mapTaxonVersion(await rpc<Row>(name, args));
   return {
     async listFamilies(query = {}) {
-      const client = await createSupabaseServerClient();
-      let request = client.from("taxon_families").select("*");
+      const c = await client();
+      let request = c.from("taxon_families").select("*");
       if (!query.includeArchived) request = request.eq("status", "active");
       return ((await result(await request.order("sort_order").order("id"))) as Row[]).map(mapTaxon);
     },
     async listCategories(query = {}) {
-      const client = await createSupabaseServerClient();
-      let request = client.from("taxon_categories").select("*, taxon_families(sort_order)");
+      const c = await client();
+      let request = c.from("taxon_categories").select("*, taxon_families(sort_order)");
       if (!query.includeArchived) request = request.eq("status", "active");
       if (query.familyId) request = request.eq("family_id", query.familyId);
       const rows = (await result(await request)) as Array<Row & { taxon_families?: { sort_order?: number } }>;
@@ -524,7 +186,7 @@ function createTaxonomyRepository(): TaxonomyRepository {
       return row ? mapCategory(row) : null;
     },
     async saveTaxon(input) {
-      return rpc("pw_save_taxon", {
+      return versionRpc("pw_save_taxon", {
         p_kind: input.kind,
         p_id: input.id ?? null,
         p_patch: input.patch satisfies TaxonPatch,
@@ -533,15 +195,15 @@ function createTaxonomyRepository(): TaxonomyRepository {
       });
     },
     async archiveTaxon(kind, id, _actorId, note) {
-      return rpc("pw_set_taxon_status", { p_kind: kind, p_id: id, p_status: "archived", p_note: note ?? null });
+      return versionRpc("pw_set_taxon_status", { p_kind: kind, p_id: id, p_status: "archived", p_note: note ?? null });
     },
     async restoreTaxon(kind, id, _actorId, note) {
-      return rpc("pw_set_taxon_status", { p_kind: kind, p_id: id, p_status: "active", p_note: note ?? null });
+      return versionRpc("pw_set_taxon_status", { p_kind: kind, p_id: id, p_status: "active", p_note: note ?? null });
     },
     async listTaxonVersions(kind, id) {
-      const client = await createSupabaseServerClient();
+      const c = await client();
       const rows = (await result(
-        await client
+        await c
           .from("taxon_versions")
           .select("*")
           .eq("kind", kind)
@@ -551,13 +213,13 @@ function createTaxonomyRepository(): TaxonomyRepository {
       return rows.map(mapTaxonVersion);
     },
     async revertTaxon(kind, id, versionNumber) {
-      return rpc("pw_revert_taxon", { p_kind: kind, p_id: id, p_number: versionNumber });
+      return versionRpc("pw_revert_taxon", { p_kind: kind, p_id: id, p_number: versionNumber });
     },
     async snapshots(scientificNames) {
       if (!scientificNames.length) return {};
-      const client = await createSupabaseServerClient();
+      const c = await client();
       const rows = (await result(
-        await client.from("taxon_snapshots").select("*").in("scientific_name", scientificNames),
+        await c.from("taxon_snapshots").select("*").in("scientific_name", scientificNames),
       )) as Row[];
       return Object.fromEntries(rows.map((row) => [text(row.scientific_name), mapSnapshot(row)]));
     },
@@ -594,6 +256,23 @@ function mapMember(row: Row): Member {
     github: readMemberGithub(row.github),
     projects: readProjects(row.projects),
     sample: bool(row.sample),
+    archivedAt: optionalText(row.archived_at),
+    version: row.version == null ? undefined : number(row.version),
+  };
+}
+
+function mapLink(row: Row): FriendLink {
+  return {
+    id: text(row.id),
+    name: localized(row, "name_zh", "name_en"),
+    url: text(row.url),
+    description: localized(row, "description_zh", "description_en"),
+    emblem: text(row.emblem),
+    since: text(row.since),
+    sample: bool(row.sample),
+    archivedAt: optionalText(row.archived_at),
+    sortOrder: number(row.sort_order),
+    version: row.version == null ? undefined : number(row.version),
   };
 }
 
@@ -609,6 +288,10 @@ function mapThread(row: Row, postCount = 0, excerpt = "", lastActivityAt?: strin
     lastActivityAt: lastActivityAt ?? text(row.created_at),
     postCount,
     excerpt,
+    lockedAt: optionalText(row.locked_at),
+    hiddenAt: optionalText(row.deleted_at),
+    moderationNote: optionalText(row.moderation_note),
+    hiddenPosts: row.hidden_posts == null ? undefined : number(row.hidden_posts),
   };
 }
 function mapPost(row: Row): ForumPost {
@@ -619,10 +302,10 @@ function mapPost(row: Row): ForumPost {
     memberId: optionalText(row.member_id),
     body: text(row.body),
     createdAt: text(row.created_at),
+    hiddenAt: optionalText(row.deleted_at),
+    moderationNote: optionalText(row.moderation_note),
   };
 }
-
-const jsonList = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 
 function mapChronicle(row: Row): ChronicleDetail {
   return {
@@ -638,12 +321,14 @@ function mapChronicle(row: Row): ChronicleDetail {
     tags: jsonList<string>(row.tags),
     sample: bool(row.sample),
     body: optionalText(row.body),
+    archivedAt: optionalText(row.archived_at),
+    version: row.version == null ? undefined : number(row.version),
   };
 }
 
 /** A list row: everything but the account, which only the record page reads. */
 const CHRONICLE_LIST_COLUMNS =
-  "id, number, date, kind, title_zh, title_en, summary_zh, summary_en, host_ids, resources, gallery, tags, sample";
+  "id, number, date, kind, title_zh, title_en, summary_zh, summary_en, host_ids, resources, gallery, tags, sample, archived_at, version";
 const CHRONICLE_TEXT_COLUMNS = ["title_zh", "title_en", "summary_zh", "summary_en", "body"];
 
 /**
@@ -659,16 +344,14 @@ export function chronicleTextFilter(words: string): string {
   return CHRONICLE_TEXT_COLUMNS.map((column) => `${column}.imatch.${quoted}`).join(",");
 }
 
-type SupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
-
-/** The filtered request, before any order or range: the count and every page share it. */
+/** The filtered public request, before any order or range: the count and every page share it. */
 function chronicleRequest(
   c: SupabaseClient,
   columns: string,
   query: ChronicleQuery | undefined,
   count?: { count: "exact"; head: true },
 ) {
-  let request = c.from("chronicles").select(columns, count);
+  let request = c.from("chronicles").select(columns, count).is("archived_at", null);
   if (query?.kind?.length) request = request.in("kind", query.kind);
   if (query?.year) request = request.gte("date", `${query.year}-01-01`).lte("date", `${query.year}-12-31`);
   if (query?.member) request = request.contains("host_ids", [query.member]);
@@ -680,7 +363,7 @@ function chronicleRequest(
 function createChronicleRepository(): ChronicleRepository {
   return {
     async listChronicles(query) {
-      const c = await createSupabaseServerClient();
+      const c = await client();
       const offset = query?.offset ?? 0;
       const rows = (await result(
         await chronicleRequest(c, CHRONICLE_LIST_COLUMNS, query)
@@ -691,13 +374,13 @@ function createChronicleRepository(): ChronicleRepository {
       return rows.map(mapChronicle);
     },
     async countChronicles(query) {
-      const c = await createSupabaseServerClient();
+      const c = await client();
       const { count, error } = await chronicleRequest(c, "id", query, { count: "exact", head: true });
       await result({ data: null, error });
       return count ?? 0;
     },
     async chronicleFacets() {
-      const c = await createSupabaseServerClient();
+      const c = await client();
       // Read in pages of 1000 (the API's row cap), so a long archive is never counted short.
       const rows: Row[] = [];
       for (let from = 0; ; from += 1000) {
@@ -705,6 +388,7 @@ function createChronicleRepository(): ChronicleRepository {
           await c
             .from("chronicles")
             .select("date, kind, host_ids, sample")
+            .is("archived_at", null)
             .order("number")
             .range(from, from + 999),
         )) as Row[];
@@ -721,9 +405,9 @@ function createChronicleRepository(): ChronicleRepository {
       );
     },
     async adjacentChronicles(id) {
-      const c = await createSupabaseServerClient();
+      const c = await client();
       const at = (await result(
-        await c.from("chronicles").select("date, number").eq("id", id).maybeSingle(),
+        await c.from("chronicles").select("date, number").eq("id", id).is("archived_at", null).maybeSingle(),
       )) as Row | null;
       if (!at) return { older: null, newer: null };
       const date = text(at.date);
@@ -732,6 +416,7 @@ function createChronicleRepository(): ChronicleRepository {
         c
           .from("chronicles")
           .select(CHRONICLE_LIST_COLUMNS)
+          .is("archived_at", null)
           .or(`date.lt.${date},and(date.eq.${date},number.lt.${n})`)
           .order("date", { ascending: false })
           .order("number", { ascending: false })
@@ -740,6 +425,7 @@ function createChronicleRepository(): ChronicleRepository {
         c
           .from("chronicles")
           .select(CHRONICLE_LIST_COLUMNS)
+          .is("archived_at", null)
           .or(`date.gt.${date},and(date.eq.${date},number.gt.${n})`)
           .order("date")
           .order("number")
@@ -752,165 +438,270 @@ function createChronicleRepository(): ChronicleRepository {
       };
       return { older: await row(older), newer: await row(newer) };
     },
-    async getChronicle(id) {
-      const c = await createSupabaseServerClient();
-      const row = (await result(await c.from("chronicles").select("*").eq("id", id).maybeSingle())) as Row | null;
+    async getChronicle(id, query) {
+      const c = await client();
+      let request = c.from("chronicles").select("*").eq("id", id);
+      if (!query?.includeArchived) request = request.is("archived_at", null);
+      const row = (await result(await request.maybeSingle())) as Row | null;
       return row ? mapChronicle(row) : null;
+    },
+    async listForAdmin(query = {}) {
+      const c = await client();
+      const offset = query.offset ?? 0;
+      let request = c.from("chronicles").select("*", { count: "exact" });
+      if ((query.view ?? "active") === "active") request = request.is("archived_at", null);
+      if (query.view === "archived") request = request.not("archived_at", "is", null);
+      const words = searchWords(query.q);
+      if (words) request = request.or(chronicleTextFilter(words));
+      const response = await request
+        .order("date", { ascending: false })
+        .order("number", { ascending: false })
+        .range(offset, offset + (query.limit ?? 25) - 1);
+      const rows = (await result(response)) as Row[];
+      return { rows: rows.map(mapChronicle), total: response.count ?? rows.length };
+    },
+    async saveChronicle(id, patch, baseVersion) {
+      return mapChronicle(
+        await rpc<Row>("pw_admin_save_chronicle", { p_id: id, p_patch: patch, p_base_version: baseVersion ?? null }),
+      );
+    },
+    async setChronicleArchived(id, archived, reason) {
+      return mapChronicle(
+        await rpc<Row>("pw_admin_set_chronicle_archived", { p_id: id, p_archived: archived, p_reason: reason ?? null }),
+      );
     },
   };
 }
 
-function createCommunityRepository(): CommunityRepository {
+const byView = <T extends { is: (column: string, value: null) => T; not: (c: string, op: string, v: null) => T }>(
+  request: T,
+  column: string,
+  view: ArchiveView = "active",
+) => (view === "active" ? request.is(column, null) : view === "archived" ? request.not(column, "is", null) : request);
+
+/** Validates the owner's fields in TypeScript (as the mock does) and passes the administrators' through. */
+function memberPatchArgs(patch: MemberAdminPatch) {
+  const { handle, joined, sample, authorId, ...owner } = patch;
   return {
-    async listLinks() {
-      const c = await createSupabaseServerClient();
-      const rows = (await result(await c.from("friend_links").select("*"))) as Row[];
-      return rows.map(
-        (r) =>
-          ({
-            id: text(r.id),
-            name: localized(r, "name_zh", "name_en"),
-            url: text(r.url),
-            description: localized(r, "description_zh", "description_en"),
-            emblem: text(r.emblem),
-            since: text(r.since),
-            sample: bool(r.sample),
-          }) satisfies FriendLink,
+    ...validateMemberPatch(owner),
+    ...(handle !== undefined ? { handle } : {}),
+    ...(joined !== undefined ? { joined } : {}),
+    ...(sample !== undefined ? { sample } : {}),
+    ...(authorId !== undefined ? { authorId } : {}),
+  };
+}
+
+const COVER_BUCKET = "member-covers";
+
+/** Best effort: a replaced page image whose removal fails is listed later as an orphan file. */
+async function removeCoverFile(c: SupabaseClient, src: string | undefined) {
+  const name = src?.split("/").at(-1) ?? "";
+  if (!STORED_NAME.test(name)) return;
+  await c.storage.from(COVER_BUCKET).remove([name]);
+}
+
+function createCommunityRepository(): CommunityRepository {
+  const memberRow = async (handle: string, includeArchived = false): Promise<Row | null> => {
+    const c = await client();
+    let request = c.from("members").select("*").or(`handle.eq.${handle},former_handles.cs.{${handle}}`);
+    if (!includeArchived) request = request.is("archived_at", null);
+    const rows = (await result(await request)) as Row[];
+    return rows.find((row) => row.handle === handle) ?? rows[0] ?? null;
+  };
+  const memberId = async (handle: string) => {
+    const row = await memberRow(handle, true);
+    if (!row) throw new ServiceError("not_found", "member_not_found");
+    return text(row.id);
+  };
+  return {
+    async listLinks(query) {
+      const c = await client();
+      const rows = (await result(
+        await byView(c.from("friend_links").select("*"), "archived_at", query?.view)
+          .order("since")
+          .order("id"),
+      )) as Row[];
+      return rows.map(mapLink);
+    },
+    async saveLink(id, patch, baseVersion) {
+      return mapLink(await rpc<Row>("pw_admin_save_link", { p_id: id, p_patch: patch, p_base_version: baseVersion ?? null }));
+    },
+    async setLinkArchived(id, archived, reason) {
+      return mapLink(
+        await rpc<Row>("pw_admin_set_link_archived", { p_id: id, p_archived: archived, p_reason: reason ?? null }),
       );
     },
-    async listMembers() {
-      const c = await createSupabaseServerClient();
-      return ((await result(await c.from("members").select("*"))) as Row[]).map(mapMember);
+    async listMembers(query) {
+      const c = await client();
+      const rows = (await result(
+        await byView(c.from("members").select("*"), "archived_at", query?.view).order("plate_number").order("id"),
+      )) as Row[];
+      return rows.map(mapMember);
     },
-    async getMember(handle) {
-      const c = await createSupabaseServerClient();
-      const row = (await result(await c.from("members").select("*").eq("handle", handle).maybeSingle())) as Row | null;
+    async getMember(handle, query) {
+      const row = await memberRow(handle, query?.includeArchived);
       return row ? mapMember(row) : null;
     },
-    async updateMember(handle, patch: MemberPatch) {
-      patch = validateMemberPatch(patch);
-      const c = await createSupabaseServerClient();
-      const values: Row = {};
-      if (patch.projects !== undefined) values.projects = patch.projects;
-      if (patch.name) {
-        values.name_zh = patch.name.zh;
-        values.name_en = patch.name.en;
-      }
-      if (patch.role) {
-        values.role_zh = patch.role.zh;
-        values.role_en = patch.role.en;
-      }
-      if (patch.bio) {
-        values.bio_zh = patch.bio.zh;
-        values.bio_en = patch.bio.en;
-      }
-      if (patch.about !== undefined) values.about = patch.about;
-      if (patch.links !== undefined) values.links = patch.links;
-      if (patch.github !== undefined) values.github = patch.github;
-      if (patch.plate) for (const [key, value] of Object.entries(patch.plate)) values[`plate_${key}`] = value;
-      if (patch.coverPrint !== undefined) values.cover_print = patch.coverPrint;
-      const row = (await result(
-        await c.from("members").update(values).eq("handle", handle).select("*").maybeSingle(),
-      )) as Row | null;
-      return row ? mapMember(row) : null;
+    async updateMember(handle, patch, baseVersion) {
+      const row = await memberRow(handle, true);
+      if (!row) return null;
+      return mapMember(
+        await rpc<Row>("pw_save_member", {
+          p_member_id: text(row.id),
+          p_patch: memberPatchArgs(patch),
+          p_base_version: baseVersion ?? null,
+        }),
+      );
     },
     async setMemberCover(handle, cover) {
-      const c = await createSupabaseServerClient();
-      const values = cover
-        ? { cover_src: cover.src, cover_width: cover.width, cover_height: cover.height, cover_print: cover.print }
-        : { cover_src: null, cover_width: null, cover_height: null, cover_print: null };
-      const row = (await result(
-        await c.from("members").update(values).eq("handle", handle).select("*").maybeSingle(),
-      )) as Row | null;
-      return row ? mapMember(row) : null;
+      const row = await memberRow(handle, true);
+      if (!row) return null;
+      return mapMember(await rpc<Row>("pw_set_member_cover", { p_member_id: text(row.id), p_cover: cover }));
+    },
+    async uploadMemberCover(handle, image, print) {
+      const row = await memberRow(handle, true);
+      if (!row) throw new ServiceError("not_found", "member_not_found");
+      await rpc("pw_upload_allowance", { p_kind: "cover" });
+      const c = await client();
+      const stored = await c.storage
+        .from(COVER_BUCKET)
+        .upload(image.name, image.data, { contentType: "image/webp", upsert: false });
+      if (stored.error) throw new ServiceError("unavailable", "upload_failed");
+      let member: Member;
+      try {
+        await rpc("pw_register_cover_media", { p_object_path: image.name, p_width: image.width, p_height: image.height });
+        const src = c.storage.from(COVER_BUCKET).getPublicUrl(image.name).data.publicUrl;
+        member = mapMember(
+          await rpc<Row>("pw_set_member_cover", {
+            p_member_id: text(row.id),
+            p_cover: { src, width: image.width, height: image.height, print },
+          }),
+        );
+      } catch (error) {
+        await c.storage.from(COVER_BUCKET).remove([image.name]);
+        throw error;
+      }
+      await removeCoverFile(c, optionalText(row.cover_src));
+      return member;
+    },
+    async removeMemberCover(handle) {
+      const row = await memberRow(handle, true);
+      if (!row) throw new ServiceError("not_found", "member_not_found");
+      const member = mapMember(await rpc<Row>("pw_set_member_cover", { p_member_id: text(row.id), p_cover: null }));
+      await removeCoverFile(await client(), optionalText(row.cover_src));
+      return member;
+    },
+    async readMemberImage(name) {
+      if (!STORED_NAME.test(name)) return null;
+      const c = await client();
+      const { data, error } = await c.storage.from(COVER_BUCKET).download(name);
+      return error || !data ? null : Buffer.from(await data.arrayBuffer());
+    },
+    async createMember(input) {
+      return mapMember(await rpc<Row>("pw_admin_create_member", { p_patch: input }));
+    },
+    async setMemberArchived(handle, archived, reason) {
+      return mapMember(
+        await rpc<Row>("pw_admin_set_member_archived", {
+          p_id: await memberId(handle),
+          p_archived: archived,
+          p_reason: reason ?? null,
+        }),
+      );
+    },
+    async listVersions(kind, objectId) {
+      const c = await client();
+      const rows = (await result(
+        await c
+          .from("content_versions")
+          .select("*")
+          .eq("kind", kind)
+          .eq("object_id", objectId)
+          .order("number", { ascending: false })
+          .limit(50),
+      )) as Row[];
+      return rows.map(
+        (row): ContentVersion => ({
+          kind,
+          objectId,
+          number: number(row.number),
+          note: text(row.note),
+          actorId: optionalText(row.actor_id),
+          createdAt: text(row.created_at),
+          data: (row.data ?? {}) as Record<string, unknown>,
+        }),
+      );
+    },
+    async restoreVersion(kind, objectId, versionNumber) {
+      await rpc("pw_restore_content_version", { p_kind: kind, p_id: objectId, p_number: versionNumber });
     },
     async listPostsBy(memberId) {
-      const c = await createSupabaseServerClient();
-      const posts = (await result(
+      const c = await client();
+      const rows = (await result(
         await c
           .from("forum_posts")
-          .select("*")
+          .select("*, forum_threads(*)")
           .eq("member_id", memberId)
           .is("deleted_at", null)
-          .order("created_at", { ascending: false }),
-      )) as Row[];
-      const items = await Promise.all(
-        posts.map(async (post) => {
-          const thread = (await result(
-            await c.from("forum_threads").select("*").eq("id", post.thread_id).maybeSingle(),
-          )) as Row | null;
-          return thread ? { post: mapPost(post), thread: mapThread(thread) } : null;
-        }),
+          .order("created_at", { ascending: false })
+          .limit(200),
+      )) as Array<Row & { forum_threads?: Row | null }>;
+      return rows.flatMap((row) =>
+        row.forum_threads && !row.forum_threads.deleted_at
+          ? [{ post: mapPost(row), thread: mapThread(row.forum_threads) }]
+          : [],
       );
-      return items.filter((item): item is { post: ForumPost; thread: ForumThread } => Boolean(item));
     },
     async listThreads(query) {
-      const c = await createSupabaseServerClient();
-      let request = c.from("forum_threads").select("*").is("deleted_at", null);
-      if (query?.category) request = request.eq("category", query.category);
-      const rows = (await result(
-        await request.order("created_at", { ascending: false }).limit(query?.limit ?? 100),
-      )) as Row[];
-      return Promise.all(
-        rows.map(async (row) => {
-          const posts = (await result(
-            await c
-              .from("forum_posts")
-              .select("body,created_at")
-              .eq("thread_id", row.id)
-              .is("deleted_at", null)
-              .order("created_at", { ascending: false }),
-          )) as Row[];
-          return mapThread(
-            row,
-            posts.length,
-            posts.at(-1) ? text(posts.at(-1)?.body).slice(0, 90) : "",
-            posts[0] ? text(posts[0].created_at) : text(row.created_at),
-          );
-        }),
+      const payload = await rpc<{ rows: Row[] }>("pw_list_threads", {
+        p_category: query?.category ?? null,
+        p_view: query?.view ?? "public",
+        p_limit: query?.limit ?? 100,
+        p_offset: query?.offset ?? 0,
+      });
+      return jsonList<Row>(payload.rows).map((row) =>
+        mapThread(row, number(row.post_count), text(row.excerpt), text(row.last_activity_at)),
       );
     },
-    async getThread(id) {
-      const c = await createSupabaseServerClient();
-      const thread = (await result(
-        await c.from("forum_threads").select("*").eq("id", id).is("deleted_at", null).maybeSingle(),
-      )) as Row | null;
+    async getThread(id, query) {
+      const c = await client();
+      let threadRequest = c.from("forum_threads").select("*").eq("id", id);
+      if (!query?.includeHidden) threadRequest = threadRequest.is("deleted_at", null);
+      const thread = (await result(await threadRequest.maybeSingle())) as Row | null;
       if (!thread) return null;
-      const posts = (await result(
-        await c.from("forum_posts").select("*").eq("thread_id", id).is("deleted_at", null).order("created_at"),
-      )) as Row[];
+      let postRequest = c.from("forum_posts").select("*").eq("thread_id", id);
+      if (!query?.includeHidden) postRequest = postRequest.is("deleted_at", null);
+      const posts = (await result(await postRequest.order("created_at").order("id"))) as Row[];
+      const visible = posts.filter((post) => !post.deleted_at);
       return {
         thread: mapThread(
           thread,
-          posts.length,
-          posts[0] ? text(posts[0].body).slice(0, 90) : "",
-          posts.at(-1) ? text(posts.at(-1)?.created_at) : text(thread.created_at),
+          visible.length,
+          visible[0] ? text(visible[0].body).slice(0, 90) : "",
+          visible.at(-1) ? text(visible.at(-1)?.created_at) : text(thread.created_at),
         ),
         posts: posts.map(mapPost),
       };
     },
     async createThread(input) {
       input = validateThread(input);
-      const c = await createSupabaseServerClient();
-      const row = (await result(
-        await c.rpc("pw_create_forum_thread", {
-          p_title: input.title,
-          p_body: input.body,
-          p_category: input.category,
-        }),
-      )) as Row;
+      const row = await rpc<Row>("pw_create_forum_thread", {
+        p_title: input.title,
+        p_body: input.body,
+        p_category: input.category,
+      });
       return mapThread(row, number(row.post_count), text(row.excerpt), text(row.last_activity_at));
     },
     async reply(input) {
       input = validatePost(input);
-      const c = await createSupabaseServerClient();
-      const row = (await result(
-        await c.rpc("pw_reply_forum_thread", {
-          p_thread_id: input.threadId,
-          p_body: input.body,
-        }),
-      )) as Row | null;
+      const row = await rpc<Row | null>("pw_reply_forum_thread", { p_thread_id: input.threadId, p_body: input.body });
       return row ? mapPost(row) : null;
+    },
+    async moderateThread(id, action, reason) {
+      return mapThread(await rpc<Row>("pw_admin_moderate_thread", { p_id: id, p_action: action, p_reason: reason ?? null }));
+    },
+    async moderatePost(id, action, reason) {
+      return mapPost(await rpc<Row>("pw_admin_moderate_post", { p_id: id, p_action: action, p_reason: reason ?? null }));
     },
   };
 }
@@ -922,7 +713,10 @@ export function createSupabaseServices(): WikiServices {
     references: createReferenceRepository(),
     search: createSearchAdapter(),
     auth: createSupabaseAuthAdapter(),
+    accounts: createAccountRepository(),
+    audit: createAuditRepository(),
     community: createCommunityRepository(),
     chronicles: createChronicleRepository(),
+    operations: createOperationsAdapter(),
   };
 }

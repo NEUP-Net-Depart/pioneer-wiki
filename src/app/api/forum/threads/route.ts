@@ -1,41 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { handle, ok, readJson, requireAccount } from "@/lib/http/route";
 import { getServices } from "@/lib/services";
-import { ServiceError, type NewThreadInput } from "@/lib/services/contracts";
+import type { NewThreadInput } from "@/lib/services/contracts";
 import type { ForumCategory } from "@/lib/model/types";
-import { verifiedAccountOrResponse } from "@/lib/auth/server";
-
-const status = (e: ServiceError) =>
-  e.code === "forbidden" ? 403 : e.code === "conflict" ? 409 : e.code === "unavailable" ? 503 : 422;
 
 /** GET /api/forum/threads?category=&limit= → ForumThread[] (most recently active first). */
 export async function GET(request: NextRequest) {
-  const p = request.nextUrl.searchParams;
-  const threads = await getServices().community.listThreads({
-    category: (p.get("category") as ForumCategory | null) ?? undefined,
-    limit: p.has("limit") ? Number(p.get("limit")) : undefined,
+  return handle(async () => {
+    const p = request.nextUrl.searchParams;
+    return ok(
+      await getServices().community.listThreads({
+        category: (p.get("category") as ForumCategory | null) ?? undefined,
+        limit: p.has("limit") ? Math.min(200, Math.max(1, Number(p.get("limit")) || 100)) : undefined,
+      }),
+    );
   });
-  return NextResponse.json(threads);
 }
 
-/** POST /api/forum/threads { title, body, category } → ForumThread (201). Identity comes from the verified session. */
-export async function POST(request: NextRequest) {
-  try {
-    const input = (await request.json()) as Partial<NewThreadInput>;
-    const gate = await verifiedAccountOrResponse();
-    if ("response" in gate) return gate.response;
+/**
+ * POST { title, body, category } → ForumThread (201). The signature comes
+ * from the session (the database derives it); the fixtures use the bound page.
+ */
+export async function POST(request: Request) {
+  return handle(async () => {
+    const account = await requireAccount();
+    const input = await readJson<Partial<NewThreadInput>>(request);
     const { community } = getServices();
-    const members = await community.listMembers();
-    const member = gate.account.authorId ? members.find((m) => m.authorId === gate.account.authorId) : undefined;
+    const member = account.memberId ? await community.getMember(account.memberId) : null;
     const thread = await community.createThread({
       title: input.title ?? "",
       body: input.body ?? "",
       category: input.category ?? "general",
-      authorName: member?.name.zh || gate.account.name.zh,
+      authorName: member?.name.zh || account.name.zh,
       memberId: member?.id,
     });
-    return NextResponse.json(thread, { status: 201 });
-  } catch (error) {
-    const e = error instanceof ServiceError ? error : new ServiceError("invalid", "Invalid thread payload");
-    return NextResponse.json({ error: { code: e.code, message: e.message } }, { status: status(e) });
-  }
+    return ok(thread, 201);
+  });
 }

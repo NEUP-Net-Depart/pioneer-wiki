@@ -1,30 +1,35 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getSupabaseConfig } from "@/lib/supabase/config";
+import { handle, readJson } from "@/lib/http/route";
+import { authClient, siteUrl, throttle, validEmail, validPassword } from "@/lib/http/site";
 import { authInputError } from "@/lib/auth/validation";
+import { ServiceError } from "@/lib/services/contracts";
 
+/**
+ * Registers a reader. The answer is the same whether or not the address
+ * already has an account, so the form cannot be used to find who is a member.
+ */
 export async function POST(request: Request) {
-  if (!getSupabaseConfig())
-    return NextResponse.json(
-      { error: { message: "Supabase is not configured for this environment." } },
-      { status: 503 },
-    );
-  const input = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-  const invalid = authInputError(input, "signup");
-  if (invalid) return NextResponse.json({ error: invalid }, { status: 422 });
-
-  const email = String(input.email).trim().toLowerCase();
-  const password = String(input.password);
-  const displayName = String(input.displayName).trim();
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: new URL("/auth/callback?next=/account", request.url).toString(),
-      data: { display_name: displayName },
-    },
+  return handle(async () => {
+    const supabase = await authClient();
+    const input = await readJson(request);
+    const invalid = authInputError(input, "signup");
+    if (invalid) return NextResponse.json({ error: { ...invalid, code: "invalid", reason: "invalid_payload" } }, { status: 422 });
+    const email = validEmail(input.email);
+    const password = validPassword(input.password, input.confirmPassword);
+    await throttle(request, "signup");
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${siteUrl(request)}/auth/confirm?next=/account`,
+        data: { display_name: String(input.displayName).trim() },
+      },
+    });
+    if (error) {
+      if (error.status === 429) throw new ServiceError("rate_limited", "throttled");
+      if (/password/i.test(error.message)) throw new ServiceError("invalid", "invalid_password");
+      throw new ServiceError("unavailable", "unavailable");
+    }
+    return NextResponse.json({ needsVerification: true }, { status: 201 });
   });
-  if (error) return NextResponse.json({ error: { message: error.message } }, { status: 400 });
-  return NextResponse.json({ needsVerification: !data.session, userId: data.user?.id ?? null }, { status: 201 });
 }

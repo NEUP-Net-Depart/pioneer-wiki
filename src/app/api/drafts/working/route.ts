@@ -1,39 +1,40 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verifiedAccountOrResponse } from "@/lib/auth/server";
-import { getSupabaseConfig } from "@/lib/supabase/config";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { NextRequest } from "next/server";
+import { handle, ok, readJson, requireAccount } from "@/lib/http/route";
+import { getServices } from "@/lib/services";
+import type { WorkingDraftSave } from "@/lib/services/contracts";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export async function POST(request: NextRequest) {
-  const gate = await verifiedAccountOrResponse();
-  if ("response" in gate) return gate.response;
-  if (!gate.account.authorId)
-    return NextResponse.json(
-      { error: { code: "forbidden", message: "Bind a Wiki author before editing." } },
-      { status: 403 },
+/** GET ?entryId= | ?id= → this account's autosaved working copy, or null. */
+export async function GET(request: NextRequest) {
+  return handle(async () => {
+    await requireAccount({ author: true });
+    const params = request.nextUrl.searchParams;
+    const id = params.get("id");
+    const draft = await getServices().entries.getWorkingDraft({
+      id: id && UUID.test(id) ? id : undefined,
+      entryId: params.get("entryId") ?? undefined,
+    });
+    return ok({ draft });
+  });
+}
+
+/**
+ * POST { id?, entryId?, baseRevision?, payload, knownVersion? } → { conflict, id, version, savedAt }.
+ * A newer copy saved elsewhere is returned (conflict: true), never overwritten.
+ */
+export async function POST(request: Request) {
+  return handle(async () => {
+    await requireAccount({ author: true });
+    const input = await readJson<WorkingDraftSave>(request);
+    return ok(
+      await getServices().entries.saveWorkingDraft({
+        id: input.id && UUID.test(input.id) ? input.id : undefined,
+        entryId: input.entryId || undefined,
+        baseRevision: typeof input.baseRevision === "number" ? input.baseRevision : undefined,
+        payload: input.payload && typeof input.payload === "object" ? input.payload : {},
+        knownVersion: typeof input.knownVersion === "number" ? input.knownVersion : undefined,
+      }),
     );
-  if (!getSupabaseConfig()) return NextResponse.json({ ok: true, localOnly: true });
-  const input = (await request.json()) as { id?: string; entryId?: string; baseRevision?: number; payload?: unknown };
-  const id = input.id && UUID.test(input.id) ? input.id : crypto.randomUUID();
-  if (!input.payload || JSON.stringify(input.payload).length > 2_000_000)
-    return NextResponse.json(
-      { error: { code: "invalid", message: "Draft payload is empty or too large." } },
-      { status: 422 },
-    );
-  const client = await createSupabaseServerClient();
-  const { error } = await client.from("entry_working_drafts").upsert(
-    {
-      id,
-      entry_id: input.entryId ?? null,
-      owner_id: gate.account.id,
-      author_id: gate.account.authorId,
-      base_revision: input.baseRevision ?? null,
-      payload: input.payload,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "id" },
-  );
-  if (error) return NextResponse.json({ error: { code: "unavailable", message: error.message } }, { status: 503 });
-  return NextResponse.json({ ok: true, draftId: id, savedAt: new Date().toISOString() });
+  });
 }

@@ -1,18 +1,20 @@
-import { NextResponse } from "next/server";
-import { adminAccountOrResponse } from "@/lib/auth/admin";
-import { getSupabaseConfig } from "@/lib/supabase/config";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { NextRequest } from "next/server";
+import { handle, ok, requireAccount } from "@/lib/http/route";
+import { getServices } from "@/lib/services";
 
-export async function GET() {
-  const gate = await adminAccountOrResponse();
-  if ("response" in gate) return gate.response;
-  if (!getSupabaseConfig()) return NextResponse.json({ logs: [] });
-  const client = await createSupabaseServerClient();
-  const { data, error } = await client
-    .from("audit_logs")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100);
-  if (error) return NextResponse.json({ error: { code: "unavailable", message: error.message } }, { status: 503 });
-  return NextResponse.json({ logs: data ?? [] });
+/** GET ?type=&id=&action=&offset= → one page of audit events, newest first. */
+export async function GET(request: NextRequest) {
+  return handle(async () => {
+    await requireAccount({ admin: true });
+    const p = request.nextUrl.searchParams;
+    return ok(
+      await getServices().audit.listAudit({
+        objectType: p.get("type") ?? undefined,
+        objectId: p.get("id") ?? undefined,
+        action: p.get("action") ?? undefined,
+        limit: 50,
+        offset: Math.max(0, Number(p.get("offset")) || 0),
+      }),
+    );
+  });
 }

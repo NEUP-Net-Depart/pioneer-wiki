@@ -1,56 +1,32 @@
-import { NextRequest, NextResponse } from "next/server";
+import { handle, ok, readJson, requireAccount } from "@/lib/http/route";
 import { getServices } from "@/lib/services";
 import { ServiceError, type ReviewAction } from "@/lib/services/contracts";
-import { verifiedAccountOrResponse } from "@/lib/auth/server";
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const gate = await verifiedAccountOrResponse();
-    if ("response" in gate) return gate.response;
-    if (!gate.account.authorId)
-      return NextResponse.json(
-        { error: { code: "forbidden", message: "An administrator must bind you to a wiki author before editing." } },
-        { status: 403 },
-      );
+const ACTIONS: ReviewAction[] = ["submit", "withdraw", "return", "publish", "rollback"];
+const ADMIN_ACTIONS: ReviewAction[] = ["return", "publish", "rollback"];
+
+/**
+ * POST { action, expectedRevision?, targetRevisionId?, note? } → the new revision.
+ * The database decides; these checks only answer early with the same reasons.
+ */
+export async function POST(request: Request, { params }: RouteContext<"/api/entries/[id]/transition">) {
+  return handle(async () => {
+    const account = await requireAccount({ author: true });
     const { id } = await params;
-    const input = (await request.json()) as { action: ReviewAction; targetRevisionId?: string; note?: string };
-    if ((input.action === "publish" || input.action === "rollback") && gate.account.role !== "admin") {
-      return NextResponse.json(
-        { error: { code: "forbidden", message: "Only administrators can publish or roll back entries." } },
-        { status: 403 },
-      );
-    }
-    if (input.action === "submit") {
-      const entry = await getServices().entries.getEntryById(id);
-      const body = entry?.body ?? "";
-      const missing =
-        [entry?.title.zh, entry?.title.en, entry?.summary.zh, entry?.summary.en].some((value) => !value?.trim()) ||
-        !body.includes(":::zh") ||
-        !body.includes(":::en");
-      if (missing)
-        return NextResponse.json(
-          {
-            error: {
-              code: "invalid",
-              message: "A submission needs bilingual title, summary and :::zh / :::en body blocks.",
-            },
-          },
-          { status: 422 },
-        );
-    }
-    const revision = await getServices().entries.transition({ entryId: id, actorId: gate.account.authorId, ...input });
-    return NextResponse.json(revision);
-  } catch (error) {
-    const serviceError =
-      error instanceof ServiceError ? error : new ServiceError("invalid", "Invalid transition payload");
-    const status =
-      serviceError.code === "forbidden"
-        ? 403
-        : serviceError.code === "conflict"
-          ? 409
-          : serviceError.code === "unavailable"
-            ? 503
-            : 422;
-    return NextResponse.json({ error: { code: serviceError.code, message: serviceError.message } }, { status });
-  }
+    const input = await readJson<{ action?: ReviewAction; expectedRevision?: number; targetRevisionId?: string; note?: string }>(
+      request,
+    );
+    if (!input.action || !ACTIONS.includes(input.action)) throw new ServiceError("invalid", "invalid_action");
+    if (ADMIN_ACTIONS.includes(input.action) && account.role !== "admin") throw new ServiceError("forbidden", "admin_required");
+    return ok(
+      await getServices().entries.transition({
+        entryId: id,
+        action: input.action,
+        actorId: account.authorId ?? "",
+        expectedRevision: typeof input.expectedRevision === "number" ? input.expectedRevision : undefined,
+        targetRevisionId: input.targetRevisionId,
+        note: input.note,
+      }),
+    );
+  });
 }
