@@ -13,7 +13,9 @@ export function BodyDiff({ chunks, lang }: { chunks: DiffChunk[]; lang: "zh" | "
   const [open, setOpen] = useState<Set<number>>(new Set());
   const changed = chunks.some((chunk) => chunk.kind !== "context");
   if (!changed)
-    return <p className="pw-well p-4 text-small text-ink-3">{lang === "zh" ? "正文没有变化。" : "The body is unchanged."}</p>;
+    return (
+      <p className="pw-well p-4 text-small text-ink-3">{lang === "zh" ? "正文没有变化。" : "The body is unchanged."}</p>
+    );
   return (
     <div className="pw-well max-h-[40rem] overflow-auto py-2 font-mono text-[0.8125rem] leading-relaxed" tabIndex={0}>
       {chunks.map((chunk, index) => {
@@ -42,7 +44,15 @@ export function BodyDiff({ chunks, lang }: { chunks: DiffChunk[]; lang: "zh" | "
               {chunk.kind === "added" ? "+" : chunk.kind === "removed" ? "−" : " "}
             </span>
             <span className="sr-only">
-              {chunk.kind === "added" ? (lang === "zh" ? "新增：" : "Added: ") : chunk.kind === "removed" ? (lang === "zh" ? "删除：" : "Removed: ") : ""}
+              {chunk.kind === "added"
+                ? lang === "zh"
+                  ? "新增："
+                  : "Added: "
+                : chunk.kind === "removed"
+                  ? lang === "zh"
+                    ? "删除："
+                    : "Removed: "
+                  : ""}
             </span>
             <span className="whitespace-pre-wrap break-words">{line || " "}</span>
           </div>
@@ -86,11 +96,16 @@ export function ReviewActions({
   const zh = lang === "zh";
   const router = useRouter();
   const { notice, succeed } = useAction();
-  const [target, setTarget] = useState(rollbackTargets.find((t) => t.number !== publishedRevision)?.id ?? rollbackTargets[0]?.id ?? "");
+  const [target, setTarget] = useState(
+    rollbackTargets.find((t) => t.number !== publishedRevision)?.id ?? rollbackTargets[0]?.id ?? "",
+  );
   const reviewing = status === "in_review" && !archived;
   const chosen = rollbackTargets.find((t) => t.id === target);
   return (
-    <section aria-labelledby="decide" className="pw-sheet sticky bottom-3 z-10 flex flex-col gap-4 p-5 shadow-lifted sm:p-6">
+    <section
+      aria-labelledby="decide"
+      className="pw-sheet sticky bottom-3 z-10 flex flex-col gap-4 p-5 shadow-lifted sm:p-6"
+    >
       <h2 id="decide" className="font-display text-h4">
         {zh ? "审核决定" : "Decision"}
       </h2>
@@ -115,7 +130,11 @@ export function ReviewActions({
       <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
         <ConfirmAction
           disabled={!reviewing}
-          trigger={<span className="pw-stamp-button [--draft:var(--color-moss-ink)]">{zh ? `发布 r${expectedRevision}` : `Publish r${expectedRevision}`}</span>}
+          trigger={
+            <span className="pw-stamp-button [--draft:var(--color-moss-ink)]">
+              {zh ? `发布 r${expectedRevision}` : `Publish r${expectedRevision}`}
+            </span>
+          }
           plainTrigger
           title={zh ? `发布《${title}》r${expectedRevision}？` : `Publish r${expectedRevision} of “${title}”?`}
           description={
@@ -142,7 +161,11 @@ export function ReviewActions({
           reason={{ label: zh ? "退回原因（作者可见）" : "Reason (shown to the author)", required: true }}
           confirmLabel={zh ? "退回给作者" : "Return to the author"}
           onConfirm={async (reason) => {
-            await api(`/api/entries/${entryId}/transition`, "POST", { action: "return", expectedRevision, note: reason });
+            await api(`/api/entries/${entryId}/transition`, "POST", {
+              action: "return",
+              expectedRevision,
+              note: reason,
+            });
             router.push("/admin/review?done=returned");
           }}
         />
@@ -150,7 +173,8 @@ export function ReviewActions({
           {zh ? "在编辑器中查看" : "Open in the editor"}
         </a>
       </div>
-      {rollbackTargets.length > 1 || (rollbackTargets.length === 1 && rollbackTargets[0].number !== publishedRevision) ? (
+      {rollbackTargets.length > 1 ||
+      (rollbackTargets.length === 1 && rollbackTargets[0].number !== publishedRevision) ? (
         <div className="pw-ink-over flex flex-wrap items-end gap-x-6 gap-y-3">
           <label className="flex min-w-60 flex-1 flex-col gap-1">
             <span className="pw-label">{zh ? "回滚到曾公开的修订" : "Roll back to a once-public revision"}</span>
@@ -176,7 +200,9 @@ export function ReviewActions({
             confirmLabel={zh ? "回滚并公开" : "Roll back and publish"}
             onConfirm={async () => {
               await api(`/api/entries/${entryId}/transition`, "POST", { action: "rollback", targetRevisionId: target });
-              succeed(zh ? "已回滚，读者现在看到所选修订的内容。" : "Rolled back; readers now see the chosen revision.");
+              succeed(
+                zh ? "已回滚，读者现在看到所选修订的内容。" : "Rolled back; readers now see the chosen revision.",
+              );
             }}
           />
         </div>

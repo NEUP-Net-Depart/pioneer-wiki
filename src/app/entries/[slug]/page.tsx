@@ -91,9 +91,7 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
   const minutes = Math.max(
     1,
     Math.round(
-      lang === "zh"
-        ? (prose.match(/[㐀-鿿]/g)?.length ?? 0) / 400
-        : (prose.match(/[A-Za-z]+/g)?.length ?? 0) / 220,
+      lang === "zh" ? (prose.match(/[㐀-鿿]/g)?.length ?? 0) / 400 : (prose.match(/[A-Za-z]+/g)?.length ?? 0) / 220,
     ),
   );
 
@@ -176,7 +174,6 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
           {opensWithSummary(entry.body, pick(entry.summary, lang), lang) ? null : (
             <p className="mt-5 max-w-(--measure) text-lead text-ink-2">{pick(entry.summary, lang)}</p>
           )}
-
 
           <div className="pw-ink-both mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-small">
             {author ? (

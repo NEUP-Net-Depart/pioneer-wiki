@@ -26,7 +26,12 @@ export function Field({
   hint?: string;
   error?: string;
   required?: boolean;
-  children: (props: { id: string; "aria-invalid"?: true; "aria-describedby"?: string; required?: boolean }) => React.ReactNode;
+  children: (props: {
+    id: string;
+    "aria-invalid"?: true;
+    "aria-describedby"?: string;
+    required?: boolean;
+  }) => React.ReactNode;
 }) {
   const id = useId();
   const { lang } = useI18n();
@@ -77,7 +82,13 @@ function useForm() {
 
 function Submit({ busy, label, busyLabel }: { busy: boolean; label: string; busyLabel: string }) {
   return (
-    <button type="submit" disabled={busy} aria-busy={busy || undefined} data-busy={busy || undefined} className="pw-stamp-button self-start [--draft:var(--color-ink)]">
+    <button
+      type="submit"
+      disabled={busy}
+      aria-busy={busy || undefined}
+      data-busy={busy || undefined}
+      className="pw-stamp-button self-start [--draft:var(--color-ink)]"
+    >
       {busy ? busyLabel : label}
     </button>
   );
@@ -96,8 +107,18 @@ export function ProfileForm({ name }: { name: Localized }) {
       onSubmit={(event) => {
         event.preventDefault();
         const next = {
-          zh: !value.zh.trim() || value.zh.length > 40 ? (zh ? "请填写 1–40 个字符。" : "Use 1–40 characters.") : undefined,
-          en: !value.en.trim() || value.en.length > 40 ? (zh ? "请填写 1–40 个字符。" : "Use 1–40 characters.") : undefined,
+          zh:
+            !value.zh.trim() || value.zh.length > 40
+              ? zh
+                ? "请填写 1–40 个字符。"
+                : "Use 1–40 characters."
+              : undefined,
+          en:
+            !value.en.trim() || value.en.length > 40
+              ? zh
+                ? "请填写 1–40 个字符。"
+                : "Use 1–40 characters."
+              : undefined,
         };
         setErrors(next);
         if (next.zh || next.en) {
@@ -112,10 +133,26 @@ export function ProfileForm({ name }: { name: Localized }) {
     >
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label={zh ? "中文显示名" : "Chinese display name"} error={errors.zh} required>
-          {(props) => <input {...props} value={value.zh} maxLength={40} onChange={(e) => setValue({ ...value, zh: e.target.value })} className="pw-field" />}
+          {(props) => (
+            <input
+              {...props}
+              value={value.zh}
+              maxLength={40}
+              onChange={(e) => setValue({ ...value, zh: e.target.value })}
+              className="pw-field"
+            />
+          )}
         </Field>
         <Field label={zh ? "英文显示名" : "English display name"} error={errors.en} required>
-          {(props) => <input {...props} value={value.en} maxLength={40} onChange={(e) => setValue({ ...value, en: e.target.value })} className="pw-field" />}
+          {(props) => (
+            <input
+              {...props}
+              value={value.en}
+              maxLength={40}
+              onChange={(e) => setValue({ ...value, en: e.target.value })}
+              className="pw-field"
+            />
+          )}
         </Field>
       </div>
       <p className="text-meta text-ink-3">
@@ -165,7 +202,16 @@ export function EmailForm({ current }: { current: string }) {
         <span className="font-mono">{current}</span>
       </p>
       <Field label={zh ? "新邮箱" : "New email"} error={error} required>
-        {(props) => <input {...props} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="pw-field" />}
+        {(props) => (
+          <input
+            {...props}
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="pw-field"
+          />
+        )}
       </Field>
       <Submit busy={busy} label={zh ? "发送确认邮件" : "Send confirmation"} busyLabel={zh ? "发送中…" : "Sending…"} />
       <NoticeLine notice={notice} />
@@ -199,7 +245,11 @@ export function PasswordForm() {
         }
         void submit(async () => {
           try {
-            await api("/api/account/password", "POST", { currentPassword: current, password, confirmPassword: confirm });
+            await api("/api/account/password", "POST", {
+              currentPassword: current,
+              password,
+              confirmPassword: confirm,
+            });
           } catch (cause) {
             if (cause instanceof ApiError && cause.reason === "wrong_password") setErrors({ current: cause.message });
             throw cause;
@@ -212,14 +262,46 @@ export function PasswordForm() {
       }}
     >
       <Field label={zh ? "当前密码" : "Current password"} error={errors.current} required>
-        {(props) => <input {...props} type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} className="pw-field" />}
+        {(props) => (
+          <input
+            {...props}
+            type="password"
+            autoComplete="current-password"
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+            className="pw-field"
+          />
+        )}
       </Field>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label={zh ? "新密码" : "New password"} hint={zh ? "至少 8 个字符。" : "At least 8 characters."} error={errors.password} required>
-          {(props) => <input {...props} type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className="pw-field" />}
+        <Field
+          label={zh ? "新密码" : "New password"}
+          hint={zh ? "至少 8 个字符。" : "At least 8 characters."}
+          error={errors.password}
+          required
+        >
+          {(props) => (
+            <input
+              {...props}
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pw-field"
+            />
+          )}
         </Field>
         <Field label={zh ? "再次输入新密码" : "Repeat the new password"} error={errors.confirm} required>
-          {(props) => <input {...props} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="pw-field" />}
+          {(props) => (
+            <input
+              {...props}
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="pw-field"
+            />
+          )}
         </Field>
       </div>
       <Submit busy={busy} label={zh ? "更新密码" : "Change password"} busyLabel={zh ? "更新中…" : "Changing…"} />
@@ -240,12 +322,16 @@ export function ClosureControl({ requestedAt }: { requestedAt?: string }) {
           <p className="text-small text-ink-2">
             {zh ? "你已于 " : "You asked on "}
             <time dateTime={requestedAt}>{new Date(requestedAt).toLocaleDateString(zh ? "zh-CN" : "en-GB")}</time>
-            {zh ? " 申请注销，等待管理员处理。处理前你可以撤回。" : " to close this account; an administrator will process it. You can withdraw until then."}
+            {zh
+              ? " 申请注销，等待管理员处理。处理前你可以撤回。"
+              : " to close this account; an administrator will process it. You can withdraw until then."}
           </p>
           <ConfirmAction
             trigger={zh ? "撤回注销申请" : "Withdraw the request"}
             title={zh ? "撤回注销申请？" : "Withdraw the closure request?"}
-            description={zh ? "账号将保持原样，可以继续使用。" : "The account stays as it is and can be used as before."}
+            description={
+              zh ? "账号将保持原样，可以继续使用。" : "The account stays as it is and can be used as before."
+            }
             confirmLabel={zh ? "撤回申请" : "Withdraw request"}
             onConfirm={async () => {
               await api("/api/account/closure", "DELETE");
@@ -261,9 +347,21 @@ export function ClosureControl({ requestedAt }: { requestedAt?: string }) {
           title={zh ? "申请注销账号？" : "Ask to close your account?"}
           description={
             <ul className="list-disc space-y-1 pl-5">
-              <li>{zh ? "管理员处理后：登录邮箱、密码与显示名会被删除，所有登录失效，且无法恢复。" : "Once processed: your sign-in email, password and display name are removed and every session ends. This cannot be undone."}</li>
-              <li>{zh ? "公开成员主页会被归档；论坛帖子保留但署名改为“已注销账号”。" : "Your public page is archived; forum posts stay, signed “closed account”."}</li>
-              <li>{zh ? "已发布条目的历史署名按作者记录保留。处理前可以随时撤回。" : "Published entries keep their historical credit. You can withdraw until it is processed."}</li>
+              <li>
+                {zh
+                  ? "管理员处理后：登录邮箱、密码与显示名会被删除，所有登录失效，且无法恢复。"
+                  : "Once processed: your sign-in email, password and display name are removed and every session ends. This cannot be undone."}
+              </li>
+              <li>
+                {zh
+                  ? "公开成员主页会被归档；论坛帖子保留但署名改为“已注销账号”。"
+                  : "Your public page is archived; forum posts stay, signed “closed account”."}
+              </li>
+              <li>
+                {zh
+                  ? "已发布条目的历史署名按作者记录保留。处理前可以随时撤回。"
+                  : "Published entries keep their historical credit. You can withdraw until it is processed."}
+              </li>
             </ul>
           }
           reason={{ label: zh ? "原因（可选，仅管理员可见）" : "Reason (optional, administrators only)" }}
@@ -283,11 +381,17 @@ export function ClosureControl({ requestedAt }: { requestedAt?: string }) {
 export function ApplicationForm({ needsAuthor, needsMember }: { needsAuthor: boolean; needsMember: boolean }) {
   const { ref, busy, notice, submit, lang } = useForm();
   const zh = lang === "zh";
-  const [kind, setKind] = useState<ApplicationKind>(needsAuthor && needsMember ? "both" : needsAuthor ? "author" : "member");
+  const [kind, setKind] = useState<ApplicationKind>(
+    needsAuthor && needsMember ? "both" : needsAuthor ? "author" : "member",
+  );
   const [statement, setStatement] = useState("");
   const [handle, setHandle] = useState("");
   const [errors, setErrors] = useState<{ statement?: string; handle?: string }>({});
-  const kinds: ApplicationKind[] = [...(needsAuthor ? (["author"] as const) : []), ...(needsMember ? (["member"] as const) : []), ...(needsAuthor && needsMember ? (["both"] as const) : [])];
+  const kinds: ApplicationKind[] = [
+    ...(needsAuthor ? (["author"] as const) : []),
+    ...(needsMember ? (["member"] as const) : []),
+    ...(needsAuthor && needsMember ? (["both"] as const) : []),
+  ];
   return (
     <form
       ref={ref}
@@ -296,8 +400,18 @@ export function ApplicationForm({ needsAuthor, needsMember }: { needsAuthor: boo
       onSubmit={(event) => {
         event.preventDefault();
         const next = {
-          statement: statement.trim() && statement.length <= 2000 ? undefined : zh ? "请用 1–2000 字说明。" : "Explain in 1–2000 characters.",
-          handle: !handle || /^[a-z0-9]+(-[a-z0-9]+)*$/.test(handle) ? undefined : zh ? "只能使用小写字母、数字和连字符。" : "Use lowercase letters, digits and hyphens.",
+          statement:
+            statement.trim() && statement.length <= 2000
+              ? undefined
+              : zh
+                ? "请用 1–2000 字说明。"
+                : "Explain in 1–2000 characters.",
+          handle:
+            !handle || /^[a-z0-9]+(-[a-z0-9]+)*$/.test(handle)
+              ? undefined
+              : zh
+                ? "只能使用小写字母、数字和连字符。"
+                : "Use lowercase letters, digits and hyphens.",
         };
         setErrors(next);
         if (next.statement || next.handle) {
@@ -317,21 +431,56 @@ export function ApplicationForm({ needsAuthor, needsMember }: { needsAuthor: boo
           {kinds.map((value) => (
             <label key={value} className="flex min-h-9 items-center gap-2">
               <input type="radio" name="kind" checked={kind === value} onChange={() => setKind(value)} />
-              {value === "author" ? (zh ? "Wiki 作者资格" : "Wiki author status") : value === "member" ? (zh ? "公开成员主页" : "A public member page") : zh ? "两者都要" : "Both"}
+              {value === "author"
+                ? zh
+                  ? "Wiki 作者资格"
+                  : "Wiki author status"
+                : value === "member"
+                  ? zh
+                    ? "公开成员主页"
+                    : "A public member page"
+                  : zh
+                    ? "两者都要"
+                    : "Both"}
             </label>
           ))}
         </div>
       </fieldset>
       <Field
         label={zh ? "说明" : "About you"}
-        hint={zh ? "你想写哪些方向、在本会做什么，或附上作品链接。" : "What you would write about, what you do in the society, or links to your work."}
+        hint={
+          zh
+            ? "你想写哪些方向、在本会做什么，或附上作品链接。"
+            : "What you would write about, what you do in the society, or links to your work."
+        }
         error={errors.statement}
         required
       >
-        {(props) => <textarea {...props} value={statement} onChange={(e) => setStatement(e.target.value)} rows={5} maxLength={2000} className="pw-lined min-h-32 resize-y text-small" />}
+        {(props) => (
+          <textarea
+            {...props}
+            value={statement}
+            onChange={(e) => setStatement(e.target.value)}
+            rows={5}
+            maxLength={2000}
+            className="pw-lined min-h-32 resize-y text-small"
+          />
+        )}
       </Field>
-      <Field label={zh ? "希望的主页代号（可选）" : "Preferred handle (optional)"} hint={zh ? "例如 qingkong；最终由管理员确定。" : "e.g. qingkong; administrators decide."} error={errors.handle}>
-        {(props) => <input {...props} value={handle} onChange={(e) => setHandle(e.target.value.toLowerCase())} maxLength={32} className="pw-field font-mono" />}
+      <Field
+        label={zh ? "希望的主页代号（可选）" : "Preferred handle (optional)"}
+        hint={zh ? "例如 qingkong；最终由管理员确定。" : "e.g. qingkong; administrators decide."}
+        error={errors.handle}
+      >
+        {(props) => (
+          <input
+            {...props}
+            value={handle}
+            onChange={(e) => setHandle(e.target.value.toLowerCase())}
+            maxLength={32}
+            className="pw-field font-mono"
+          />
+        )}
       </Field>
       <Submit busy={busy} label={zh ? "提交申请" : "Send application"} busyLabel={zh ? "提交中…" : "Sending…"} />
       <NoticeLine notice={notice} />
@@ -357,7 +506,15 @@ export function WithdrawApplication({ application }: { application: IdentityAppl
   );
 }
 
-export function SectionCard({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
+export function SectionCard({
+  title,
+  children,
+  className,
+}: {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <section className={cn("pw-sheet flex flex-col gap-5 p-6 sm:p-8", className)}>
       <h2 className="pw-double-rule font-display text-h3">{title}</h2>

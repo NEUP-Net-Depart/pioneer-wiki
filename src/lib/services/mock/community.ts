@@ -1,4 +1,9 @@
-import { ServiceError, type CommunityRepository, type LinkPatch, type MemberAdminPatch } from "@/lib/services/contracts";
+import {
+  ServiceError,
+  type CommunityRepository,
+  type LinkPatch,
+  type MemberAdminPatch,
+} from "@/lib/services/contracts";
 import type { ContentVersion, ForumPost, ForumThread, FriendLink, Member } from "@/lib/model/types";
 import { links, members, postSeeds, threadSeeds } from "@/mock/community";
 import { validateMemberPatch } from "@/lib/members/validation";
@@ -24,7 +29,11 @@ export function createMockCommunityRepository(
   context: MockContext = createMockContext(() => null),
   people: Member[] = structuredClone(members).map((m) => ({ ...m, version: 1 })),
 ): CommunityRepository {
-  const directory: FriendLink[] = structuredClone(links).map((link, index) => ({ ...link, version: 1, sortOrder: index }));
+  const directory: FriendLink[] = structuredClone(links).map((link, index) => ({
+    ...link,
+    version: 1,
+    sortOrder: index,
+  }));
   const posts: ForumPost[] = postSeeds.map((p) => ({ ...p }));
   const threads: ForumThread[] = threadSeeds.map((seed) =>
     summarise({ ...seed, lastActivityAt: seed.createdAt, postCount: 0, excerpt: "" }),
@@ -78,7 +87,8 @@ export function createMockCommunityRepository(
     if (coverPrint && next.cover) next.cover = { ...next.cover, print: coverPrint };
     if (handle !== undefined && handle !== m.handle) {
       const value = handle.trim().toLowerCase();
-      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(value) || value.length > 32) throw new ServiceError("invalid", "invalid_member_handle");
+      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(value) || value.length > 32)
+        throw new ServiceError("invalid", "invalid_member_handle");
       if (people.some((p) => p.id !== m.id && p.handle === value) || formerHandles.has(value))
         throw new ServiceError("conflict", "member_handle_taken");
       formerHandles.set(m.handle, m.id);
@@ -109,14 +119,19 @@ export function createMockCommunityRepository(
     },
     async saveLink(id, patch: LinkPatch, baseVersion) {
       context.requireActive(true);
-      if (patch.name && (!patch.name.zh.trim() || !patch.name.en.trim() || patch.name.zh.length > 60 || patch.name.en.length > 60))
+      if (
+        patch.name &&
+        (!patch.name.zh.trim() || !patch.name.en.trim() || patch.name.zh.length > 60 || patch.name.en.length > 60)
+      )
         throw new ServiceError("invalid", "invalid_link_name");
       if (patch.url !== undefined && (!HTTP_URL.test(patch.url.trim()) || patch.url.length > 300))
         throw new ServiceError("invalid", "invalid_link_url");
       if (patch.description && (patch.description.zh.length > 240 || patch.description.en.length > 240))
         throw new ServiceError("invalid", "invalid_link_description");
-      if (patch.emblem !== undefined && !/^geo-[a-z0-9-]+$/.test(patch.emblem)) throw new ServiceError("invalid", "invalid_link_emblem");
-      if (patch.since !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(patch.since)) throw new ServiceError("invalid", "invalid_link_since");
+      if (patch.emblem !== undefined && !/^geo-[a-z0-9-]+$/.test(patch.emblem))
+        throw new ServiceError("invalid", "invalid_link_emblem");
+      if (patch.since !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(patch.since))
+        throw new ServiceError("invalid", "invalid_link_since");
       const url = patch.url?.trim();
       const taken = (except?: string) =>
         url !== undefined && directory.some((l) => l.id !== except && !l.archivedAt && sameUrl(l.url, url));
@@ -124,7 +139,12 @@ export function createMockCommunityRepository(
       if (!id) {
         if (!patch.name || !url) throw new ServiceError("invalid", "link_incomplete");
         if (taken()) throw new ServiceError("conflict", "link_url_taken");
-        const base = patch.name.en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "friend";
+        const base =
+          patch.name.en
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "")
+            .slice(0, 40) || "friend";
         let linkId = `l-${base}`;
         for (let n = 2; directory.some((l) => l.id === linkId); n++) linkId = `l-${base}-${n}`;
         link = {
@@ -142,7 +162,8 @@ export function createMockCommunityRepository(
       } else {
         const at = directory.findIndex((l) => l.id === id);
         if (at < 0) throw new ServiceError("invalid", "link_not_found");
-        if (baseVersion !== undefined && baseVersion !== directory[at].version) throw new ServiceError("conflict", "version_conflict");
+        if (baseVersion !== undefined && baseVersion !== directory[at].version)
+          throw new ServiceError("conflict", "version_conflict");
         if (taken(id)) throw new ServiceError("conflict", "link_url_taken");
         link = { ...directory[at], ...patch, url: url ?? directory[at].url, version: (directory[at].version ?? 1) + 1 };
         directory[at] = link;
@@ -185,14 +206,18 @@ export function createMockCommunityRepository(
       const member = resolve(handle);
       if (!member) return null;
       const admin = ownerOrAdmin(member);
-      if (baseVersion !== undefined && baseVersion !== member.version) throw new ServiceError("conflict", "version_conflict");
+      if (baseVersion !== undefined && baseVersion !== member.version)
+        throw new ServiceError("conflict", "version_conflict");
       return replaceMember(patchMember(member, patch, admin), "Saved");
     },
     async setMemberCover(handle, cover) {
       const member = resolve(handle);
       if (!member) return null;
       ownerOrAdmin(member);
-      return replaceMember({ ...member, cover: cover ?? undefined, version: (member.version ?? 1) + 1 }, cover ? "New page image" : "Removed page image");
+      return replaceMember(
+        { ...member, cover: cover ?? undefined, version: (member.version ?? 1) + 1 },
+        cover ? "New page image" : "Removed page image",
+      );
     },
     async uploadMemberCover(handle, image, print) {
       const member = resolve(handle);
@@ -201,7 +226,11 @@ export function createMockCommunityRepository(
       const src = await writeLocalImage(image);
       const previous = member.cover?.src;
       const next = replaceMember(
-        { ...member, cover: { src, width: image.width, height: image.height, print }, version: (member.version ?? 1) + 1 },
+        {
+          ...member,
+          cover: { src, width: image.width, height: image.height, print },
+          version: (member.version ?? 1) + 1,
+        },
         "New page image",
       );
       await removeLocalImage(previous);
@@ -212,7 +241,10 @@ export function createMockCommunityRepository(
       if (!member) throw new ServiceError("not_found", "member_not_found");
       ownerOrAdmin(member);
       const previous = member.cover?.src;
-      const next = replaceMember({ ...member, cover: undefined, version: (member.version ?? 1) + 1 }, "Removed page image");
+      const next = replaceMember(
+        { ...member, cover: undefined, version: (member.version ?? 1) + 1 },
+        "Removed page image",
+      );
       await removeLocalImage(previous);
       return next;
     },
@@ -222,7 +254,8 @@ export function createMockCommunityRepository(
     async createMember(input) {
       context.requireActive(true);
       const handle = input.handle.trim().toLowerCase();
-      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(handle) || handle.length > 32) throw new ServiceError("invalid", "invalid_member_handle");
+      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(handle) || handle.length > 32)
+        throw new ServiceError("invalid", "invalid_member_handle");
       if (people.some((m) => m.handle === handle || m.id === `m-${handle}`) || formerHandles.has(handle))
         throw new ServiceError("conflict", "member_handle_taken");
       if (!input.name.zh.trim() || !input.name.en.trim()) throw new ServiceError("invalid", "invalid_member_name");
@@ -256,7 +289,11 @@ export function createMockCommunityRepository(
       const member = resolve(handle);
       if (!member) throw new ServiceError("not_found", "member_not_found");
       if (Boolean(member.archivedAt) === archived) throw new ServiceError("conflict", "unchanged_status");
-      const next = { ...member, archivedAt: archived ? new Date().toISOString() : undefined, version: (member.version ?? 1) + 1 };
+      const next = {
+        ...member,
+        archivedAt: archived ? new Date().toISOString() : undefined,
+        version: (member.version ?? 1) + 1,
+      };
       context.audit(archived ? "archive" : "restore", "member", member.id, null, { reason: reason ?? null });
       return replaceMember(next, archived ? "Archived" : "Restored");
     },
@@ -276,7 +313,10 @@ export function createMockCommunityRepository(
         const admin = ownerOrAdmin(member);
         const fields = ["name", "role", "bio", "about", "links", "github", "projects"] as const;
         const patch = Object.fromEntries(fields.map((f) => [f, data[f] ?? (f === "github" ? null : undefined)]));
-        replaceMember(patchMember(member, { ...patch, plate: data.plate as Member["plate"] } as MemberAdminPatch, admin), `Restored version ${number}`);
+        replaceMember(
+          patchMember(member, { ...patch, plate: data.plate as Member["plate"] } as MemberAdminPatch, admin),
+          `Restored version ${number}`,
+        );
       } else if (kind === "link") {
         const { name, url, description, emblem, since, sortOrder } = data as unknown as FriendLink;
         await this.saveLink(objectId, { name, url, description, emblem, since, sortOrder });
@@ -300,7 +340,13 @@ export function createMockCommunityRepository(
       return threads
         .filter((th) => !query?.category || th.category === query.category)
         .filter((th) =>
-          view === "public" ? !th.hiddenAt : view === "hidden" ? Boolean(th.hiddenAt) : view === "locked" ? Boolean(th.lockedAt) : true,
+          view === "public"
+            ? !th.hiddenAt
+            : view === "hidden"
+              ? Boolean(th.hiddenAt)
+              : view === "locked"
+                ? Boolean(th.lockedAt)
+                : true,
         )
         .sort((a, b) => b.lastActivityAt.localeCompare(a.lastActivityAt))
         .slice(offset, offset + (query?.limit ?? Infinity));
@@ -385,7 +431,9 @@ export function createMockCommunityRepository(
       if (Boolean(post.hiddenAt) === (action === "hide")) throw new ServiceError("conflict", "unchanged_status");
       if (action === "hide") {
         if (!reason?.trim()) throw new ServiceError("invalid", "reason_required");
-        const first = posts.filter((p) => p.threadId === post.threadId).sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+        const first = posts
+          .filter((p) => p.threadId === post.threadId)
+          .sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
         if (first?.id === post.id) throw new ServiceError("conflict", "hide_thread_instead");
       }
       post.hiddenAt = action === "hide" ? new Date().toISOString() : undefined;

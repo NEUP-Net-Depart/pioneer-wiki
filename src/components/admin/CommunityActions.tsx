@@ -30,12 +30,16 @@ function Pair({
       <legend className="pw-label mb-1 sm:col-span-2">{label}</legend>
       {(["zh", "en"] as const).map((key) => (
         <label key={key} className="flex flex-col gap-1">
-          <span className="text-meta text-ink-3">{key === "zh" ? (lang === "zh" ? "中文" : "Chinese") : lang === "zh" ? "英文" : "English"}</span>
+          <span className="text-meta text-ink-3">
+            {key === "zh" ? (lang === "zh" ? "中文" : "Chinese") : lang === "zh" ? "英文" : "English"}
+          </span>
           <Field
             value={value[key]}
             maxLength={max}
             lang={key === "zh" ? "zh-CN" : "en"}
-            onChange={(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange({ ...value, [key]: event.target.value })}
+            onChange={(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+              onChange({ ...value, [key]: event.target.value })
+            }
             className={multiline ? "pw-lined min-h-20 resize-y text-small" : "pw-field text-small"}
           />
         </label>
@@ -64,7 +68,9 @@ function Archive({
         <ConfirmAction
           trigger={zh ? "恢复" : "Restore"}
           title={zh ? `恢复${what.zh}「${title}」？` : `Restore the ${what.en} “${title}”?`}
-          description={zh ? "恢复后重新公开，内容与历史不变。" : "It becomes public again with its content and history intact."}
+          description={
+            zh ? "恢复后重新公开，内容与历史不变。" : "It becomes public again with its content and history intact."
+          }
           confirmLabel={zh ? `恢复${what.zh}` : `Restore ${what.en}`}
           onConfirm={async () => {
             await api(endpoint, "POST", { archived: false });
@@ -111,7 +117,8 @@ export function MemberRowActions({ member }: { member: Member }) {
           zh: "成员主页",
           en: "member page",
           zhEffect: "主页从成员名册和公开地址中隐藏；账号、绑定、作品与藏书票都保留。本人仍可看到主页并收到归档提示。",
-          enEffect: "The page leaves the roll and its public address; the account, its binding, works and bookplate are kept. The member still sees it, with a notice.",
+          enEffect:
+            "The page leaves the roll and its public address; the account, its binding, works and bookplate are kept. The member still sees it, with a notice.",
         }}
       />
     </div>
@@ -128,14 +135,24 @@ export function NewMember() {
   return (
     <ConfirmAction
       plainTrigger
-      trigger={<span className="pw-stamp-button [--draft:var(--color-ink)]">{zh ? "新建成员主页" : "New member page"}</span>}
+      trigger={
+        <span className="pw-stamp-button [--draft:var(--color-ink)]">{zh ? "新建成员主页" : "New member page"}</span>
+      }
       title={zh ? "新建成员主页" : "New member page"}
       description={
         <div className="flex flex-col gap-4">
-          <p>{zh ? "新主页立即公开。之后可在账号页把它绑定给某个账号，由本人继续编辑。" : "The page is public at once. Bind it to an account afterwards so its owner can edit it."}</p>
+          <p>
+            {zh
+              ? "新主页立即公开。之后可在账号页把它绑定给某个账号，由本人继续编辑。"
+              : "The page is public at once. Bind it to an account afterwards so its owner can edit it."}
+          </p>
           <label className="flex flex-col gap-1">
             <span className="pw-label">{zh ? "主页地址 /members/…" : "Address /members/…"}</span>
-            <input value={handle} onChange={(event) => setHandle(event.target.value.toLowerCase())} className="pw-field font-mono text-small" />
+            <input
+              value={handle}
+              onChange={(event) => setHandle(event.target.value.toLowerCase())}
+              className="pw-field font-mono text-small"
+            />
           </label>
           <Pair label={zh ? "姓名" : "Name"} value={name} onChange={setName} max={40} />
           <Pair label={zh ? "身份" : "Role"} value={role} onChange={setRole} max={40} />
@@ -169,8 +186,26 @@ export function LinkForm({ link }: { link?: FriendLink }) {
     <>
       <ConfirmAction
         plainTrigger={!link}
-        trigger={link ? (zh ? "编辑" : "Edit") : <span className="pw-stamp-button [--draft:var(--color-ink)]">{zh ? "新增友链" : "New link"}</span>}
-        title={link ? (zh ? `编辑友链「${link.name[lang]}」` : `Edit “${link.name[lang]}”`) : zh ? "新增友链" : "New friend link"}
+        trigger={
+          link ? (
+            zh ? (
+              "编辑"
+            ) : (
+              "Edit"
+            )
+          ) : (
+            <span className="pw-stamp-button [--draft:var(--color-ink)]">{zh ? "新增友链" : "New link"}</span>
+          )
+        }
+        title={
+          link
+            ? zh
+              ? `编辑友链「${link.name[lang]}」`
+              : `Edit “${link.name[lang]}”`
+            : zh
+              ? "新增友链"
+              : "New friend link"
+        }
         description={
           <div className="flex flex-col gap-4">
             <Pair label={zh ? "名称" : "Name"} value={name} onChange={setName} max={60} />
@@ -183,13 +218,27 @@ export function LinkForm({ link }: { link?: FriendLink }) {
                 inputMode="url"
                 className="pw-field font-mono text-small break-all"
               />
-              {urlInvalid ? <span className="text-meta text-brick-ink">{zh ? "请填写 http(s) 开头的完整地址。" : "Use a full http(s) address."}</span> : null}
+              {urlInvalid ? (
+                <span className="text-meta text-brick-ink">
+                  {zh ? "请填写 http(s) 开头的完整地址。" : "Use a full http(s) address."}
+                </span>
+              ) : null}
             </label>
-            <Pair label={zh ? "介绍" : "Description"} value={description} onChange={setDescription} max={240} multiline />
+            <Pair
+              label={zh ? "介绍" : "Description"}
+              value={description}
+              onChange={setDescription}
+              max={240}
+              multiline
+            />
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="flex flex-col gap-1">
                 <span className="pw-label">{zh ? "徽记" : "Emblem"}</span>
-                <select value={emblem} onChange={(event) => setEmblem(event.target.value)} className="pw-field text-small">
+                <select
+                  value={emblem}
+                  onChange={(event) => setEmblem(event.target.value)}
+                  className="pw-field text-small"
+                >
                   {LINK_EMBLEMS.map((value) => (
                     <option key={value} value={value}>
                       {value.replace("geo-", "")}
@@ -199,7 +248,12 @@ export function LinkForm({ link }: { link?: FriendLink }) {
               </label>
               <label className="flex flex-col gap-1">
                 <span className="pw-label">{zh ? "加入日期（决定地图顺序）" : "Joined (orders the chart)"}</span>
-                <input type="date" value={since} onChange={(event) => setSince(event.target.value)} className="pw-field text-small" />
+                <input
+                  type="date"
+                  value={since}
+                  onChange={(event) => setSince(event.target.value)}
+                  className="pw-field text-small"
+                />
               </label>
             </div>
             <label className="flex min-h-8 items-center gap-2 text-small">
@@ -238,7 +292,8 @@ export function LinkRowActions({ link }: { link: FriendLink }) {
           zh: "友链",
           en: "link",
           zhEffect: "友链从目录与地图上移除，其余领地按加入顺序重新分配；记录与版本保留。",
-          enEffect: "The link leaves the directory and the chart, whose territories are redrawn in joining order; its record and versions stay.",
+          enEffect:
+            "The link leaves the directory and the chart, whose territories are redrawn in joining order; its record and versions stay.",
         }}
       />
     </div>
@@ -247,7 +302,13 @@ export function LinkRowActions({ link }: { link: FriendLink }) {
 
 // ── The annals ─────────────────────────────────────────────────────────────
 
-export function ChronicleForm({ record, members }: { record?: ChronicleDetail; members: Array<{ id: string; label: string }> }) {
+export function ChronicleForm({
+  record,
+  members,
+}: {
+  record?: ChronicleDetail;
+  members: Array<{ id: string; label: string }>;
+}) {
   const { lang } = useI18n();
   const zh = lang === "zh";
   const { notice, succeed } = useAction();
@@ -266,18 +327,45 @@ export function ChronicleForm({ record, members }: { record?: ChronicleDetail; m
     <>
       <ConfirmAction
         plainTrigger={!record}
-        trigger={record ? (zh ? "编辑" : "Edit") : <span className="pw-stamp-button [--draft:var(--color-ink)]">{zh ? "新增纪行" : "New record"}</span>}
-        title={record ? (zh ? `编辑 No. ${String(record.number).padStart(3, "0")}` : `Edit No. ${String(record.number).padStart(3, "0")}`) : zh ? "新增纪行" : "New record"}
+        trigger={
+          record ? (
+            zh ? (
+              "编辑"
+            ) : (
+              "Edit"
+            )
+          ) : (
+            <span className="pw-stamp-button [--draft:var(--color-ink)]">{zh ? "新增纪行" : "New record"}</span>
+          )
+        }
+        title={
+          record
+            ? zh
+              ? `编辑 No. ${String(record.number).padStart(3, "0")}`
+              : `Edit No. ${String(record.number).padStart(3, "0")}`
+            : zh
+              ? "新增纪行"
+              : "New record"
+        }
         description={
           <div className="flex flex-col gap-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="flex flex-col gap-1">
                 <span className="pw-label">{zh ? "日期" : "Date"}</span>
-                <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="pw-field text-small" />
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                  className="pw-field text-small"
+                />
               </label>
               <label className="flex flex-col gap-1">
                 <span className="pw-label">{zh ? "类型" : "Kind"}</span>
-                <select value={kind} onChange={(event) => setKind(event.target.value as ChronicleKind)} className="pw-field text-small">
+                <select
+                  value={kind}
+                  onChange={(event) => setKind(event.target.value as ChronicleKind)}
+                  className="pw-field text-small"
+                >
                   {(Object.keys(CHRONICLE_KINDS) as ChronicleKind[]).map((value) => (
                     <option key={value} value={value}>
                       {CHRONICLE_KINDS[value].label[lang]}
@@ -289,8 +377,15 @@ export function ChronicleForm({ record, members }: { record?: ChronicleDetail; m
             <Pair label={zh ? "标题" : "Title"} value={title} onChange={setTitle} max={120} />
             <Pair label={zh ? "摘要" : "Summary"} value={summary} onChange={setSummary} max={400} multiline />
             <label className="flex flex-col gap-1">
-              <span className="pw-label">{zh ? "记述（Markdown，可用 :::zh / :::en）" : "Account (Markdown; :::zh / :::en allowed)"}</span>
-              <textarea value={body} onChange={(event) => setBody(event.target.value)} rows={6} className="pw-lined min-h-32 resize-y font-mono text-small" />
+              <span className="pw-label">
+                {zh ? "记述（Markdown，可用 :::zh / :::en）" : "Account (Markdown; :::zh / :::en allowed)"}
+              </span>
+              <textarea
+                value={body}
+                onChange={(event) => setBody(event.target.value)}
+                rows={6}
+                className="pw-lined min-h-32 resize-y font-mono text-small"
+              />
             </label>
             <fieldset className="flex flex-col gap-1">
               <legend className="pw-label">{zh ? "主持与参与者" : "Hosts and participants"}</legend>
@@ -300,7 +395,11 @@ export function ChronicleForm({ record, members }: { record?: ChronicleDetail; m
                     <input
                       type="checkbox"
                       checked={hosts.includes(member.id)}
-                      onChange={(event) => setHosts((list) => (event.target.checked ? [...list, member.id] : list.filter((id) => id !== member.id)))}
+                      onChange={(event) =>
+                        setHosts((list) =>
+                          event.target.checked ? [...list, member.id] : list.filter((id) => id !== member.id),
+                        )
+                      }
                     />
                     {member.label}
                   </label>
@@ -308,20 +407,45 @@ export function ChronicleForm({ record, members }: { record?: ChronicleDetail; m
               </div>
             </fieldset>
             <fieldset className="flex flex-col gap-3">
-              <legend className="pw-label">{zh ? "录像与资料（外部链接）" : "Recordings and material (external links)"}</legend>
+              <legend className="pw-label">
+                {zh ? "录像与资料（外部链接）" : "Recordings and material (external links)"}
+              </legend>
               {resources.map((item, index) => (
                 <div key={index} className="grid gap-2 border-l-2 border-rule pl-3 sm:grid-cols-[8rem_1fr]">
-                  <select value={item.kind} onChange={(event) => resource(index, { kind: event.target.value as ChronicleResource["kind"] })} className="pw-field text-small">
+                  <select
+                    value={item.kind}
+                    onChange={(event) => resource(index, { kind: event.target.value as ChronicleResource["kind"] })}
+                    className="pw-field text-small"
+                  >
                     {(Object.keys(CHRONICLE_RESOURCE_KINDS) as Array<ChronicleResource["kind"]>).map((value) => (
                       <option key={value} value={value}>
                         {CHRONICLE_RESOURCE_KINDS[value][lang]}
                       </option>
                     ))}
                   </select>
-                  <input value={item.url} placeholder="https://" onChange={(event) => resource(index, { url: event.target.value.trim() })} className="pw-field font-mono text-small" />
-                  <input value={item.label.zh} placeholder={zh ? "中文标签" : "Chinese label"} onChange={(event) => resource(index, { label: { ...item.label, zh: event.target.value } })} className="pw-field text-small" />
-                  <input value={item.label.en} placeholder={zh ? "英文标签" : "English label"} onChange={(event) => resource(index, { label: { ...item.label, en: event.target.value } })} className="pw-field text-small" />
-                  <button type="button" className="pw-link min-h-8 justify-self-start text-meta text-brick-ink sm:col-span-2" onClick={() => setResources((list) => list.filter((_, i) => i !== index))}>
+                  <input
+                    value={item.url}
+                    placeholder="https://"
+                    onChange={(event) => resource(index, { url: event.target.value.trim() })}
+                    className="pw-field font-mono text-small"
+                  />
+                  <input
+                    value={item.label.zh}
+                    placeholder={zh ? "中文标签" : "Chinese label"}
+                    onChange={(event) => resource(index, { label: { ...item.label, zh: event.target.value } })}
+                    className="pw-field text-small"
+                  />
+                  <input
+                    value={item.label.en}
+                    placeholder={zh ? "英文标签" : "English label"}
+                    onChange={(event) => resource(index, { label: { ...item.label, en: event.target.value } })}
+                    className="pw-field text-small"
+                  />
+                  <button
+                    type="button"
+                    className="pw-link min-h-8 justify-self-start text-meta text-brick-ink sm:col-span-2"
+                    onClick={() => setResources((list) => list.filter((_, i) => i !== index))}
+                  >
                     {zh ? "移除这一项" : "Remove"}
                   </button>
                 </div>
@@ -329,7 +453,9 @@ export function ChronicleForm({ record, members }: { record?: ChronicleDetail; m
               <button
                 type="button"
                 className="pw-link min-h-8 self-start text-small text-ink"
-                onClick={() => setResources((list) => [...list, { kind: "link", label: { zh: "", en: "" }, url: "https://" }])}
+                onClick={() =>
+                  setResources((list) => [...list, { kind: "link", label: { zh: "", en: "" }, url: "https://" }])
+                }
               >
                 + {zh ? "添加资源" : "Add a resource"}
               </button>
@@ -370,7 +496,13 @@ export function ChronicleForm({ record, members }: { record?: ChronicleDetail; m
   );
 }
 
-export function ChronicleRowActions({ record, members }: { record: ChronicleDetail; members: Array<{ id: string; label: string }> }) {
+export function ChronicleRowActions({
+  record,
+  members,
+}: {
+  record: ChronicleDetail;
+  members: Array<{ id: string; label: string }>;
+}) {
   const { lang } = useI18n();
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -387,7 +519,8 @@ export function ChronicleRowActions({ record, members }: { record: ChronicleDeta
           zh: "纪行",
           en: "record",
           zhEffect: "记录从编年册与成员页中隐藏；编号、内容与版本保留，可随时恢复。",
-          enEffect: "The record leaves the annals and member pages; its number, content and versions stay and can be restored.",
+          enEffect:
+            "The record leaves the annals and member pages; its number, content and versions stay and can be restored.",
         }}
       />
     </div>

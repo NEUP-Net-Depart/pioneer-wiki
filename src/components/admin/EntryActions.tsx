@@ -44,7 +44,9 @@ export function EntryAdminActions({ entry }: { entry: EditorialEntry }) {
                 </p>
                 {entry.status === "in_review" ? (
                   <p className="mt-2 text-brick-ink">
-                    {zh ? "它正在等待审核；归档期间不能发布。" : "It is waiting for review and cannot be published while archived."}
+                    {zh
+                      ? "它正在等待审核；归档期间不能发布。"
+                      : "It is waiting for review and cannot be published while archived."}
                   </p>
                 ) : null}
               </>
@@ -53,7 +55,9 @@ export function EntryAdminActions({ entry }: { entry: EditorialEntry }) {
             reason={{ label: zh ? "归档原因（记入审计）" : "Reason (kept in the audit log)" }}
             onConfirm={async (reason) => {
               await api(`/api/admin/entries/${entry.id}/archive`, "POST", { archived: true, reason });
-              succeed(zh ? `《${title}》已归档，可在回收站恢复。` : `“${title}” archived; restore it from the archive bin.`);
+              succeed(
+                zh ? `《${title}》已归档，可在回收站恢复。` : `“${title}” archived; restore it from the archive bin.`,
+              );
             }}
           />
         )}

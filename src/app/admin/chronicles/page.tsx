@@ -60,7 +60,11 @@ export default async function AdminChronicles({ searchParams }: PageProps<"/admi
         <>
           <Ledger label={tr(lang, "编年册", "Annals")}>
             {page.rows.map((record) => (
-              <LedgerRow key={record.id} muted={Boolean(record.archivedAt)} className="md:grid-cols-[7rem_minmax(0,1fr)_minmax(12rem,auto)] md:items-start">
+              <LedgerRow
+                key={record.id}
+                muted={Boolean(record.archivedAt)}
+                className="md:grid-cols-[7rem_minmax(0,1fr)_minmax(12rem,auto)] md:items-start"
+              >
                 <div className="font-mono text-meta text-ink-3">
                   <p>No. {String(record.number).padStart(3, "0")}</p>
                   <p>{record.date.slice(0, 10)}</p>
@@ -85,7 +89,14 @@ export default async function AdminChronicles({ searchParams }: PageProps<"/admi
               </LedgerRow>
             ))}
           </Ledger>
-          <Pager lang={lang} path="/admin/chronicles" params={{ q, view: view === "active" ? undefined : view }} offset={offset} limit={LIMIT} total={page.total} />
+          <Pager
+            lang={lang}
+            path="/admin/chronicles"
+            params={{ q, view: view === "active" ? undefined : view }}
+            offset={offset}
+            limit={LIMIT}
+            total={page.total}
+          />
         </>
       )}
     </>

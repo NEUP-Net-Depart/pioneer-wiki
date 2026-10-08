@@ -13,11 +13,15 @@ export async function POST(request: Request, { params }: RouteContext<"/api/entr
   return handle(async () => {
     const account = await requireAccount({ author: true });
     const { id } = await params;
-    const input = await readJson<{ action?: ReviewAction; expectedRevision?: number; targetRevisionId?: string; note?: string }>(
-      request,
-    );
+    const input = await readJson<{
+      action?: ReviewAction;
+      expectedRevision?: number;
+      targetRevisionId?: string;
+      note?: string;
+    }>(request);
     if (!input.action || !ACTIONS.includes(input.action)) throw new ServiceError("invalid", "invalid_action");
-    if (ADMIN_ACTIONS.includes(input.action) && account.role !== "admin") throw new ServiceError("forbidden", "admin_required");
+    if (ADMIN_ACTIONS.includes(input.action) && account.role !== "admin")
+      throw new ServiceError("forbidden", "admin_required");
     return ok(
       await getServices().entries.transition({
         entryId: id,

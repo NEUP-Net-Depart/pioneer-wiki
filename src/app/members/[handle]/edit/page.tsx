@@ -31,7 +31,11 @@ export default async function EditMemberPage({ params }: PageProps<"/members/[ha
     <div className="flex flex-col gap-(--space-block)">
       <RunningHead
         left={
-          <Link href={`/members/${member.handle}`} transitionTypes={["nav-back"]} className="no-underline hover:text-ink">
+          <Link
+            href={`/members/${member.handle}`}
+            transitionTypes={["nav-back"]}
+            className="no-underline hover:text-ink"
+          >
             ← {member.name[lang]}
           </Link>
         }
@@ -40,7 +44,13 @@ export default async function EditMemberPage({ params }: PageProps<"/members/[ha
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-tight tracking-[-0.02em]">
-            {own ? (zh ? "编辑我的主页" : "Edit my page") : zh ? `代为编辑：${member.name.zh}` : `Editing ${member.name.en}’s page`}
+            {own
+              ? zh
+                ? "编辑我的主页"
+                : "Edit my page"
+              : zh
+                ? `代为编辑：${member.name.zh}`
+                : `Editing ${member.name.en}’s page`}
           </h1>
           <p className="mt-2 max-w-prose text-small text-ink-2">
             {zh
@@ -58,7 +68,9 @@ export default async function EditMemberPage({ params }: PageProps<"/members/[ha
         <>
           {member.archivedAt ? (
             <p role="note" className="text-small text-gold-ink">
-              {zh ? "这个主页已归档；你的修改会保存，但读者在恢复前看不到。" : "This page is archived; your edits are kept but readers see nothing until it is restored."}
+              {zh
+                ? "这个主页已归档；你的修改会保存，但读者在恢复前看不到。"
+                : "This page is archived; your edits are kept but readers see nothing until it is restored."}
             </p>
           ) : null}
           <MemberEditor member={member} repositories={repositories} />

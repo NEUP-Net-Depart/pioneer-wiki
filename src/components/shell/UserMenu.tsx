@@ -28,7 +28,10 @@ export function UserMenu({ account, me }: { account: Account | null; user: Autho
   const [busy, setBusy] = useState(false);
   if (!account)
     return (
-      <Link href={`/login?next=${encodeURIComponent(pathname)}`} className="pw-link inline-flex min-h-11 items-center text-small text-ink-2">
+      <Link
+        href={`/login?next=${encodeURIComponent(pathname)}`}
+        className="pw-link inline-flex min-h-11 items-center text-small text-ink-2"
+      >
         {t("user.signIn")}
       </Link>
     );
@@ -42,15 +45,36 @@ export function UserMenu({ account, me }: { account: Account | null; user: Autho
   };
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex size-11 items-center justify-center rounded-full" aria-label={`${t("user.menu")} — ${displayName}`}>
+      <DropdownMenuTrigger
+        className="inline-flex size-11 items-center justify-center rounded-full"
+        aria-label={`${t("user.menu")} — ${displayName}`}
+      >
         <AuthorSigil seed={account.sigil} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
         <DropdownMenuLabel className="flex flex-col">
           <span className="text-small text-ink">{displayName}</span>
           <span className="font-mono text-meta font-normal text-ink-3">
-            {account.role === "admin" ? (zh ? "管理员" : "Administrator") : account.authorId ? (zh ? "作者" : "Author") : zh ? "读者" : "Reader"}
-            {account.status === "suspended" ? (zh ? " · 已停用" : " · suspended") : !account.emailVerified ? (zh ? " · 未验证" : " · unverified") : ""}
+            {account.role === "admin"
+              ? zh
+                ? "管理员"
+                : "Administrator"
+              : account.authorId
+                ? zh
+                  ? "作者"
+                  : "Author"
+                : zh
+                  ? "读者"
+                  : "Reader"}
+            {account.status === "suspended"
+              ? zh
+                ? " · 已停用"
+                : " · suspended"
+              : !account.emailVerified
+                ? zh
+                  ? " · 未验证"
+                  : " · unverified"
+                : ""}
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

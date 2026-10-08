@@ -30,7 +30,18 @@ export default async function ReviewQueuePage({ searchParams }: PageProps<"/admi
       />
       {done ? (
         <p role="status" className="pw-sheet border-moss/40 px-5 py-3 text-small text-moss-ink">
-          ✓ {done === "published" ? tr(lang, "已发布。读者现在看到的是你审阅的版本。", "Published. Readers now see the revision you reviewed.") : tr(lang, "已退回作者，退回原因会显示在作者的编辑器和文章列表中。", "Returned. The author sees your reason in the editor and in their list.")}
+          ✓{" "}
+          {done === "published"
+            ? tr(
+                lang,
+                "已发布。读者现在看到的是你审阅的版本。",
+                "Published. Readers now see the revision you reviewed.",
+              )
+            : tr(
+                lang,
+                "已退回作者，退回原因会显示在作者的编辑器和文章列表中。",
+                "Returned. The author sees your reason in the editor and in their list.",
+              )}
         </p>
       ) : null}
       {!page ? (
@@ -48,13 +59,20 @@ export default async function ReviewQueuePage({ searchParams }: PageProps<"/admi
                   <p className="font-mono text-meta text-ink-3">
                     {entry.id} · r{entry.latestRevision} · {entry.authorName[lang] || entry.authorId}
                   </p>
-                  <p className="mt-0.5 font-display text-h4 break-words text-ink">{entry.title[lang] || entry.title.zh}</p>
+                  <p className="mt-0.5 font-display text-h4 break-words text-ink">
+                    {entry.title[lang] || entry.title.zh}
+                  </p>
                   <p className="mt-1 text-small text-ink-2">
                     {entry.publishedRevision
-                      ? tr(lang, `修订已公开的 r${entry.publishedRevision}`, `Revises public r${entry.publishedRevision}`)
+                      ? tr(
+                          lang,
+                          `修订已公开的 r${entry.publishedRevision}`,
+                          `Revises public r${entry.publishedRevision}`,
+                        )
                       : tr(lang, "首次发布", "First publication")}
                     {" · "}
-                    {tr(lang, "提交于", "Submitted")} <time dateTime={entry.editedAt}>{formatWhen(entry.editedAt, lang)}</time>
+                    {tr(lang, "提交于", "Submitted")}{" "}
+                    <time dateTime={entry.editedAt}>{formatWhen(entry.editedAt, lang)}</time>
                   </p>
                 </div>
                 <Link href={`/admin/review/${entry.id}`} className="pw-link min-h-11 py-3 text-small text-indigo">

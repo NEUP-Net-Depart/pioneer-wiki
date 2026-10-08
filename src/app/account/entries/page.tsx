@@ -81,7 +81,14 @@ export default async function MyEntries({ searchParams }: PageProps<"/account/en
               </NoEntries>
             }
           />
-          <Pager lang={lang} path="/account/entries" params={{ q, status }} offset={offset} limit={LIMIT} total={page.total} />
+          <Pager
+            lang={lang}
+            path="/account/entries"
+            params={{ q, status }}
+            offset={offset}
+            limit={LIMIT}
+            total={page.total}
+          />
         </>
       ) : (
         <ReadFailure lang={lang} />

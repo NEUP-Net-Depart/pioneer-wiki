@@ -158,11 +158,19 @@ export function createMockAccountRepository(
     if (kind === "author") {
       if (context.authors.some((a) => a.handle === handle || a.id === `a-${handle}`))
         throw new ServiceError("conflict", "author_handle_taken");
-      context.authors.push({ id: `a-${handle}`, handle, name: choice.name, affiliation: choice.affiliation, role: "contributor", sigil: `author:${handle}` });
+      context.authors.push({
+        id: `a-${handle}`,
+        handle,
+        name: choice.name,
+        affiliation: choice.affiliation,
+        role: "contributor",
+        sigil: `author:${handle}`,
+      });
       return `a-${handle}`;
     }
     const list = members();
-    if (list.some((m) => m.handle === handle || m.id === `m-${handle}`)) throw new ServiceError("conflict", "member_handle_taken");
+    if (list.some((m) => m.handle === handle || m.id === `m-${handle}`))
+      throw new ServiceError("conflict", "member_handle_taken");
     list.push({
       id: `m-${handle}`,
       handle,
@@ -170,7 +178,13 @@ export function createMockAccountRepository(
       role: choice.role ?? { zh: "成员", en: "Member" },
       bio: choice.bio ?? { zh: "", en: "" },
       about: "",
-      plate: { number: Math.max(0, ...list.map((m) => m.plate.number)) + 1, emblem: "ex-quill", ink: "prussian", border: "vine", motto: "" },
+      plate: {
+        number: Math.max(0, ...list.map((m) => m.plate.number)) + 1,
+        emblem: "ex-quill",
+        ink: "prussian",
+        border: "vine",
+        motto: "",
+      },
       joined: new Date().toISOString().slice(0, 10),
       authorId,
       links: [],
@@ -248,7 +262,9 @@ export function createMockAccountRepository(
         .filter(
           (a) =>
             !text ||
-            [a.email, a.handle, a.name.zh, a.name.en, a.authorName?.zh, a.memberHandle].some((v) => v?.toLowerCase().includes(text)),
+            [a.email, a.handle, a.name.zh, a.name.en, a.authorName?.zh, a.memberHandle].some((v) =>
+              v?.toLowerCase().includes(text),
+            ),
         )
         .filter((a) => !query.status?.length || query.status.includes(a.status))
         .filter((a) => !query.role?.length || query.role.includes(a.role))
@@ -289,7 +305,13 @@ export function createMockAccountRepository(
       if (role === "admin" && !record.authorId) {
         const authorId = `a-${record.handle}`;
         if (!context.authors.some((a) => a.id === authorId))
-          context.authors.push({ id: authorId, handle: record.handle, name: record.name, role: "editor", sigil: record.sigil });
+          context.authors.push({
+            id: authorId,
+            handle: record.handle,
+            name: record.name,
+            role: "editor",
+            sigil: record.sigil,
+          });
         record.authorId = authorId;
         record.authorName = record.name;
       }
@@ -338,7 +360,8 @@ export function createMockAccountRepository(
         closedAt: new Date().toISOString(),
         closureRequestedAt: record.closureRequestedAt ?? new Date().toISOString(),
       });
-      for (let i = applications.length - 1; i >= 0; i--) if (applications[i].accountId === id) applications.splice(i, 1);
+      for (let i = applications.length - 1; i >= 0; i--)
+        if (applications[i].accountId === id) applications.splice(i, 1);
       context.audit("close_account", "profile", id, null, { status: "closed", note: note ?? null });
     },
     async listApplications(query = {}) {

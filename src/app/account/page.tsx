@@ -31,7 +31,9 @@ export default async function AccountPage() {
           <div>
             <dt className="pw-label">{zh ? "角色" : "Role"}</dt>
             <dd className="mt-1 flex flex-wrap gap-2 text-small">
-              <StateTag tone={account.role === "admin" ? "pending" : "neutral"}>{account.role === "admin" ? (zh ? "管理员" : "Administrator") : zh ? "读者" : "Reader"}</StateTag>
+              <StateTag tone={account.role === "admin" ? "pending" : "neutral"}>
+                {account.role === "admin" ? (zh ? "管理员" : "Administrator") : zh ? "读者" : "Reader"}
+              </StateTag>
               {account.authorId ? <StateTag tone="ok">{zh ? "Wiki 作者" : "Wiki author"}</StateTag> : null}
               {status === "suspended" ? <StateTag tone="danger">{zh ? "已停用" : "Suspended"}</StateTag> : null}
             </dd>
@@ -47,13 +49,17 @@ export default async function AccountPage() {
         ) : null}
         {status === "suspended" ? (
           <p role="note" className="text-small text-brick-ink">
-            {zh ? "账号已停用：可以阅读，但不能写作、发帖或上传。如有疑问请联系管理员。" : "Suspended: you can read, but not write, post or upload. Contact an administrator if this is unexpected."}
+            {zh
+              ? "账号已停用：可以阅读，但不能写作、发帖或上传。如有疑问请联系管理员。"
+              : "Suspended: you can read, but not write, post or upload. Contact an administrator if this is unexpected."}
           </p>
         ) : null}
         <p className="text-meta text-ink-3">
           {zh ? "账号代号 @" : "Account handle @"}
           {account.handle}
-          {zh ? " 只用于站内识别，不是公开地址；公开成员主页有自己的地址。" : " identifies you inside the site and is never a public address; a member page has its own."}
+          {zh
+            ? " 只用于站内识别，不是公开地址；公开成员主页有自己的地址。"
+            : " identifies you inside the site and is never a public address; a member page has its own."}
         </p>
       </SectionCard>
       <SectionCard title={zh ? "显示名" : "Display name"}>

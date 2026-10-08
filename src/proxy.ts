@@ -41,6 +41,9 @@ function crossSiteWrite(request: NextRequest): boolean {
  * status at 200.
  */
 export async function proxy(request: NextRequest) {
+  // Liveness is independent of Auth and catalogue availability.
+  if (request.nextUrl.pathname === "/api/health" || request.nextUrl.pathname === "/api/health/ready")
+    return NextResponse.next();
   if (crossSiteWrite(request))
     return NextResponse.json(
       { error: { code: "forbidden", reason: "cross_site_request", message: "Cross-site request refused." } },

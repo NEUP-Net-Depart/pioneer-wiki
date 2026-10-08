@@ -7,13 +7,27 @@ import { DeskFilters } from "@/components/admin/DeskFilters";
 export const metadata: Metadata = { title: "审计 Audit" };
 
 const LIMIT = 50;
-const TYPES = ["entry", "profile", "application", "author", "member", "link", "chronicle", "thread", "post", "asset", "family", "category"];
+const TYPES = [
+  "entry",
+  "profile",
+  "application",
+  "author",
+  "member",
+  "link",
+  "chronicle",
+  "thread",
+  "post",
+  "asset",
+  "family",
+  "category",
+];
 
 /** The values that changed between two recorded states, as readable lines. */
 function changes(before: unknown, after: unknown): Array<[string, string, string]> {
   const a = before && typeof before === "object" ? (before as Record<string, unknown>) : {};
   const b = after && typeof after === "object" ? (after as Record<string, unknown>) : {};
-  const show = (value: unknown) => (value === undefined || value === null ? "—" : typeof value === "string" ? value : JSON.stringify(value));
+  const show = (value: unknown) =>
+    value === undefined || value === null ? "—" : typeof value === "string" ? value : JSON.stringify(value);
   return [...new Set([...Object.keys(a), ...Object.keys(b)])]
     .filter((key) => JSON.stringify(a[key]) !== JSON.stringify(b[key]))
     .slice(0, 24)
@@ -69,7 +83,9 @@ export default async function AdminAudit({ searchParams }: PageProps<"/admin/aud
                   </time>
                   <div className="min-w-0">
                     <p className="text-small text-ink">
-                      <span className="font-medium">{event.actorName?.[lang] ?? event.actorHandle ?? tr(lang, "系统", "system")}</span>{" "}
+                      <span className="font-medium">
+                        {event.actorName?.[lang] ?? event.actorHandle ?? tr(lang, "系统", "system")}
+                      </span>{" "}
                       <span className="font-mono text-ink-2">{event.action}</span>{" "}
                       <span className="font-mono text-meta break-all text-ink-3">
                         {event.objectType}:{event.objectId}
@@ -77,7 +93,9 @@ export default async function AdminAudit({ searchParams }: PageProps<"/admin/aud
                     </p>
                     {diff.length ? (
                       <details className="mt-1 text-meta">
-                        <summary className="pw-link min-h-8 cursor-pointer text-ink-2">{tr(lang, `${diff.length} 处改动`, `${diff.length} changes`)}</summary>
+                        <summary className="pw-link min-h-8 cursor-pointer text-ink-2">
+                          {tr(lang, `${diff.length} 处改动`, `${diff.length} changes`)}
+                        </summary>
                         <dl className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_1fr_1fr]">
                           {diff.map(([key, was, now]) => (
                             <div key={key} className="contents">
@@ -94,7 +112,14 @@ export default async function AdminAudit({ searchParams }: PageProps<"/admin/aud
               );
             })}
           </Ledger>
-          <Pager lang={lang} path="/admin/audit" params={{ type, q }} offset={offset} limit={LIMIT} total={page.total} />
+          <Pager
+            lang={lang}
+            path="/admin/audit"
+            params={{ type, q }}
+            offset={offset}
+            limit={LIMIT}
+            total={page.total}
+          />
         </>
       )}
     </>

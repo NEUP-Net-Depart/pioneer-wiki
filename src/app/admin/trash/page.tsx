@@ -9,7 +9,17 @@ import { ThreadModeration } from "@/components/admin/ForumModeration";
 
 export const metadata: Metadata = { title: "回收站 Archive bin" };
 
-function Section({ id, title, count, children }: { id: string; title: string; count: number; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  count,
+  children,
+}: {
+  id: string;
+  title: string;
+  count: number;
+  children: React.ReactNode;
+}) {
   return count ? (
     <section aria-labelledby={id} className="flex flex-col gap-3">
       <h2 id={id} className="pw-double-rule font-display text-h3">
@@ -34,7 +44,10 @@ export default async function AdminTrash() {
     chronicles.listForAdmin({ view: "archived", limit: 100 }).catch(() => ({ rows: [], total: 0 })),
     community.listThreads({ view: "hidden", limit: 100 }).catch(() => []),
   ]);
-  const memberOptions = (await community.listMembers({ view: "all" }).catch(() => [])).map((m) => ({ id: m.id, label: m.name[lang] }));
+  const memberOptions = (await community.listMembers({ view: "all" }).catch(() => [])).map((m) => ({
+    id: m.id,
+    label: m.name[lang],
+  }));
   const empty = !archivedEntries.total && !members.length && !links.length && !records.total && !threads.length;
   return (
     <>

@@ -9,7 +9,8 @@ export function ThreadModeration({ thread }: { thread: ForumThread }) {
   const { lang } = useI18n();
   const zh = lang === "zh";
   const { notice, succeed } = useAction();
-  const call = (action: string, reason?: string) => api(`/api/admin/forum/threads/${thread.id}`, "POST", { action, reason });
+  const call = (action: string, reason?: string) =>
+    api(`/api/admin/forum/threads/${thread.id}`, "POST", { action, reason });
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -28,7 +29,11 @@ export function ThreadModeration({ thread }: { thread: ForumThread }) {
           <ConfirmAction
             trigger={zh ? "锁定" : "Lock"}
             title={zh ? `锁定主题 #${thread.number}？` : `Lock thread #${thread.number}?`}
-            description={zh ? "主题与回复保持可见，但不再接受新回复（包括直接调用数据库）。" : "The thread and its replies stay visible but take no new replies (direct database calls included)."}
+            description={
+              zh
+                ? "主题与回复保持可见，但不再接受新回复（包括直接调用数据库）。"
+                : "The thread and its replies stay visible but take no new replies (direct database calls included)."
+            }
             reason={{ label: zh ? "锁定说明（公开显示）" : "Note (shown publicly)" }}
             confirmLabel={zh ? "锁定主题" : "Lock thread"}
             onConfirm={async (reason) => {
@@ -41,7 +46,11 @@ export function ThreadModeration({ thread }: { thread: ForumThread }) {
           <ConfirmAction
             trigger={zh ? "恢复显示" : "Restore"}
             title={zh ? `恢复主题 #${thread.number}？` : `Restore thread #${thread.number}?`}
-            description={zh ? "主题和其中未被单独隐藏的回复重新公开。" : "The thread and its replies (except individually hidden ones) become public again."}
+            description={
+              zh
+                ? "主题和其中未被单独隐藏的回复重新公开。"
+                : "The thread and its replies (except individually hidden ones) become public again."
+            }
             confirmLabel={zh ? "恢复主题" : "Restore thread"}
             onConfirm={async () => {
               await call("restore");
@@ -53,7 +62,11 @@ export function ThreadModeration({ thread }: { thread: ForumThread }) {
             tone="danger"
             trigger={zh ? "隐藏" : "Hide"}
             title={zh ? `隐藏主题 #${thread.number}？` : `Hide thread #${thread.number}?`}
-            description={zh ? "主题与全部回复从公开讨论区和成员页中隐藏，内容保留，可在回收站恢复。" : "The thread and all replies leave the forum and member pages; the content is kept and can be restored from the archive bin."}
+            description={
+              zh
+                ? "主题与全部回复从公开讨论区和成员页中隐藏，内容保留，可在回收站恢复。"
+                : "The thread and all replies leave the forum and member pages; the content is kept and can be restored from the archive bin."
+            }
             reason={{ label: zh ? "隐藏原因（记入审计）" : "Reason (audit log)", required: true }}
             confirmLabel={zh ? "隐藏主题" : "Hide thread"}
             onConfirm={async (reason) => {
@@ -92,7 +105,11 @@ export function PostModeration({ post, opening }: { post: ForumPost; opening: bo
           tone="danger"
           trigger={zh ? "隐藏" : "Hide"}
           title={zh ? "隐藏这条回复？" : "Hide this reply?"}
-          description={zh ? "回复从公开页面隐藏，内容保留，管理员可恢复。" : "The reply is hidden from public pages; the content is kept and administrators can restore it."}
+          description={
+            zh
+              ? "回复从公开页面隐藏，内容保留，管理员可恢复。"
+              : "The reply is hidden from public pages; the content is kept and administrators can restore it."
+          }
           reason={{ label: zh ? "隐藏原因（记入审计）" : "Reason (audit log)", required: true }}
           confirmLabel={zh ? "隐藏回复" : "Hide reply"}
           onConfirm={async (reason) => {

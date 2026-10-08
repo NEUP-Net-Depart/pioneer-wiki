@@ -23,8 +23,12 @@ export default async function AccountLayout({ children }: LayoutProps<"/account"
       <header className="flex flex-wrap items-center gap-5">
         <AuthorSigil seed={account.sigil} className="size-14" />
         <div className="min-w-0">
-          <p className="font-mono text-meta tracking-[0.14em] text-brick-ink uppercase">{zh ? "我的账号" : "My account"}</p>
-          <h1 className="font-display text-[clamp(2rem,5vw,3.25rem)] leading-tight break-words">{account.name[lang]}</h1>
+          <p className="font-mono text-meta tracking-[0.14em] text-brick-ink uppercase">
+            {zh ? "我的账号" : "My account"}
+          </p>
+          <h1 className="font-display text-[clamp(2rem,5vw,3.25rem)] leading-tight break-words">
+            {account.name[lang]}
+          </h1>
         </div>
       </header>
       <AccountNav />

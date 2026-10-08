@@ -37,7 +37,15 @@ export function DeskHead({
 }
 
 /** A ruled list of records. Each row lays its cells out as columns from `md` up. */
-export function Ledger({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+export function Ledger({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <ul aria-label={label} className={cn("pw-sheet divide-y divide-rule", className)}>
       {children}

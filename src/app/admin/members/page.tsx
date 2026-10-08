@@ -60,7 +60,11 @@ export default async function AdminMembers({ searchParams }: PageProps<"/admin/m
           {rows.map((member) => {
             const account = owner.get(member.id);
             return (
-              <LedgerRow key={member.id} muted={Boolean(member.archivedAt)} className="md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(14rem,1.2fr)] md:items-start">
+              <LedgerRow
+                key={member.id}
+                muted={Boolean(member.archivedAt)}
+                className="md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(14rem,1.2fr)] md:items-start"
+              >
                 <div className="min-w-0">
                   <p className="font-mono text-meta text-ink-3">No. {String(member.plate.number).padStart(3, "0")}</p>
                   <p className="font-display text-h4 break-words text-ink">{member.name[lang]}</p>
@@ -68,7 +72,11 @@ export default async function AdminMembers({ searchParams }: PageProps<"/admin/m
                     /members/{member.handle}
                   </Link>
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {member.archivedAt ? <StateTag tone="quiet">{tr(lang, "已归档", "Archived")}</StateTag> : <StateTag tone="ok">{tr(lang, "公开", "Public")}</StateTag>}
+                    {member.archivedAt ? (
+                      <StateTag tone="quiet">{tr(lang, "已归档", "Archived")}</StateTag>
+                    ) : (
+                      <StateTag tone="ok">{tr(lang, "公开", "Public")}</StateTag>
+                    )}
                     {member.sample ? <StateTag tone="warn">{tr(lang, "示例", "Sample")}</StateTag> : null}
                   </div>
                 </div>

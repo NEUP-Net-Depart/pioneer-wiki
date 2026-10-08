@@ -16,6 +16,7 @@ interface Upsert {
   table: string;
   rows: Record<string, unknown>[];
   onConflict?: string;
+  ignoreDuplicates?: boolean;
 }
 
 const upserts: Upsert[] = [];
@@ -24,8 +25,12 @@ const deletes: Array<{ table: string; column: string; value: unknown }> = [];
 vi.mock("@supabase/supabase-js", () => ({
   createClient: () => ({
     from: (table: string) => ({
-      upsert: async (rows: Record<string, unknown>[], options?: { onConflict?: string }) => {
-        upserts.push({ table, rows, onConflict: options?.onConflict });
+      select: () => ({ order: () => ({ range: async () => ({ data: [], error: null }) }) }),
+      upsert: async (
+        rows: Record<string, unknown>[],
+        options?: { onConflict?: string; ignoreDuplicates?: boolean },
+      ) => {
+        upserts.push({ table, rows, ...options });
         return { error: null };
       },
       delete: () => ({
@@ -144,17 +149,7 @@ describe("seed ↔ migration contract", () => {
   it("captures every upsert the seed performs", () => {
     const tables = new Set(upserts.map((upsert) => upsert.table));
     expect(tables.size, "seed wrote fewer tables than expected").toBeGreaterThanOrEqual(15);
-    for (const table of [
-      "authors",
-      "sources",
-      "tags",
-      "assets",
-      "entries",
-      "entry_revisions",
-      "members",
-      "forum_posts",
-      "chronicles",
-    ]) {
+    for (const table of ["authors", "sources", "tags", "assets", "entries", "entry_revisions", "members"]) {
       expect([...tables], `seed never wrote ${table}`).toContain(table);
     }
     expect(
@@ -163,12 +158,24 @@ describe("seed ↔ migration contract", () => {
     ).toBe(true);
   });
 
-  it("replaces each entry's sources instead of merging them with an earlier seed", () => {
-    const seeded = upserts
-      .filter((upsert) => upsert.table === "entries")
-      .flatMap((upsert) => upsert.rows.map((row) => row.id));
-    const cleared = deletes.filter((d) => d.table === "entry_sources" && d.column === "entry_id").map((d) => d.value);
-    expect(cleared.sort()).toEqual([...seeded].sort());
+  it("never overwrites existing rows or deletes live associations", () => {
+    expect(upserts.every((operation) => operation.ignoreDuplicates === true)).toBe(true);
+    expect(deletes).toEqual([]);
+  });
+
+  it("excludes example community content by default and imports complete entry snapshots", () => {
+    expect(upserts.flatMap((operation) => operation.rows).some((row) => row.sample === true)).toBe(false);
+    expect(upserts.some((operation) => operation.table === "forum_posts" || operation.table === "forum_threads")).toBe(
+      false,
+    );
+    for (const row of upserts
+      .filter((operation) => operation.table === "entry_revisions")
+      .flatMap((operation) => operation.rows)) {
+      expect(row.title_zh).toBeTruthy();
+      expect(row.title_en).toBeTruthy();
+      expect(row.metadata).toHaveProperty("sourceIds");
+      expect(row.metadata).toHaveProperty("relationDrafts");
+    }
   });
 
   it("only writes columns the migrations declare", () => {

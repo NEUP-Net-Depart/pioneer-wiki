@@ -4,7 +4,18 @@ import { getServices } from "@/lib/services";
 import { getLang } from "@/lib/i18n/server";
 import type { AccountQuery } from "@/lib/services/contracts";
 import type { AccountStatus } from "@/lib/model/types";
-import { CellLabel, DeskHead, EmptyDrawer, formatWhen, Ledger, LedgerRow, Pager, ReadFailure, StateTag, tr } from "@/components/admin/desk";
+import {
+  CellLabel,
+  DeskHead,
+  EmptyDrawer,
+  formatWhen,
+  Ledger,
+  LedgerRow,
+  Pager,
+  ReadFailure,
+  StateTag,
+  tr,
+} from "@/components/admin/desk";
 import { DeskFilters } from "@/components/admin/DeskFilters";
 import { AccountActions } from "@/components/admin/AccountActions";
 
@@ -21,7 +32,9 @@ export default async function AdminAccounts({ searchParams }: PageProps<"/admin/
   const q = one(params.q);
   const status = one(params.status);
   const role = one(params.role);
-  const flag = (FLAGS as readonly string[]).includes(one(params.flag)) ? (one(params.flag) as AccountQuery["flag"]) : undefined;
+  const flag = (FLAGS as readonly string[]).includes(one(params.flag))
+    ? (one(params.flag) as AccountQuery["flag"])
+    : undefined;
   const offset = Math.max(0, Number(one(params.offset)) || 0);
   const { accounts, auth, references, community } = getServices();
   const [me, page, authors, members, everyone] = await Promise.all([
@@ -42,7 +55,11 @@ export default async function AdminAccounts({ searchParams }: PageProps<"/admin/
   ]);
   const takenAuthors = new Set(everyone?.rows.map((a) => a.authorId).filter(Boolean));
   const takenMembers = new Set(everyone?.rows.map((a) => a.memberId).filter(Boolean));
-  const authorOptions = authors.map((a) => ({ id: a.id, label: `${a.name[lang]} · ${a.handle}`, taken: takenAuthors.has(a.id) }));
+  const authorOptions = authors.map((a) => ({
+    id: a.id,
+    label: `${a.name[lang]} · ${a.handle}`,
+    taken: takenAuthors.has(a.id),
+  }));
   const memberOptions = members.map((m) => ({
     id: m.id,
     label: `${m.name[lang]} · /members/${m.handle}${m.archivedAt ? (lang === "zh" ? "（已归档）" : " (archived)") : ""}`,
@@ -115,11 +132,23 @@ export default async function AdminAccounts({ searchParams }: PageProps<"/admin/
                   <p className="font-display text-h4 break-words text-ink">{account.name[lang] || account.handle}</p>
                   <p className="font-mono text-meta break-all text-ink-3">{account.email}</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {account.role === "admin" ? <StateTag tone="pending">{tr(lang, "管理员", "Admin")}</StateTag> : <StateTag>{tr(lang, "读者", "Reader")}</StateTag>}
-                    {account.status === "suspended" ? <StateTag tone="danger">{tr(lang, "已停用", "Suspended")}</StateTag> : null}
-                    {account.status === "closed" ? <StateTag tone="quiet">{tr(lang, "已注销", "Closed")}</StateTag> : null}
-                    {!account.emailVerified ? <StateTag tone="warn">{tr(lang, "邮箱未验证", "Unverified")}</StateTag> : null}
-                    {account.closureRequestedAt && account.status !== "closed" ? <StateTag tone="danger">{tr(lang, "申请注销", "Closure requested")}</StateTag> : null}
+                    {account.role === "admin" ? (
+                      <StateTag tone="pending">{tr(lang, "管理员", "Admin")}</StateTag>
+                    ) : (
+                      <StateTag>{tr(lang, "读者", "Reader")}</StateTag>
+                    )}
+                    {account.status === "suspended" ? (
+                      <StateTag tone="danger">{tr(lang, "已停用", "Suspended")}</StateTag>
+                    ) : null}
+                    {account.status === "closed" ? (
+                      <StateTag tone="quiet">{tr(lang, "已注销", "Closed")}</StateTag>
+                    ) : null}
+                    {!account.emailVerified ? (
+                      <StateTag tone="warn">{tr(lang, "邮箱未验证", "Unverified")}</StateTag>
+                    ) : null}
+                    {account.closureRequestedAt && account.status !== "closed" ? (
+                      <StateTag tone="danger">{tr(lang, "申请注销", "Closure requested")}</StateTag>
+                    ) : null}
                     {account.pendingApplicationId ? (
                       <Link href="/admin/applications" className="no-underline">
                         <StateTag tone="warn">{tr(lang, "待审申请", "Applied")}</StateTag>
@@ -131,7 +160,11 @@ export default async function AdminAccounts({ searchParams }: PageProps<"/admin/
                 <div className="text-small text-ink-2">
                   <p>
                     <CellLabel>{tr(lang, "作者", "Author")}</CellLabel>
-                    {account.authorName ? account.authorName[lang] : <span className="text-ink-3">{tr(lang, "未绑定作者", "No author")}</span>}
+                    {account.authorName ? (
+                      account.authorName[lang]
+                    ) : (
+                      <span className="text-ink-3">{tr(lang, "未绑定作者", "No author")}</span>
+                    )}
                   </p>
                   <p className="mt-1">
                     <CellLabel>{tr(lang, "主页", "Page")}</CellLabel>
@@ -142,18 +175,32 @@ export default async function AdminAccounts({ searchParams }: PageProps<"/admin/
                     ) : (
                       <span className="text-ink-3">{tr(lang, "未绑定主页", "No page")}</span>
                     )}
-                    {account.memberArchived ? <span className="ml-1 text-meta text-ink-3">{tr(lang, "（已归档）", "(archived)")}</span> : null}
+                    {account.memberArchived ? (
+                      <span className="ml-1 text-meta text-ink-3">{tr(lang, "（已归档）", "(archived)")}</span>
+                    ) : null}
                   </p>
                   <p className="mt-1 text-meta text-ink-3">
-                    {tr(lang, "注册", "Joined")} {formatWhen(account.createdAt, lang)} · {tr(lang, "最近登录", "Last sign-in")}{" "}
-                    {formatWhen(account.lastSignInAt, lang)}
+                    {tr(lang, "注册", "Joined")} {formatWhen(account.createdAt, lang)} ·{" "}
+                    {tr(lang, "最近登录", "Last sign-in")} {formatWhen(account.lastSignInAt, lang)}
                   </p>
                 </div>
-                <AccountActions account={account} self={account.id === me?.id} authors={authorOptions} members={memberOptions} />
+                <AccountActions
+                  account={account}
+                  self={account.id === me?.id}
+                  authors={authorOptions}
+                  members={memberOptions}
+                />
               </LedgerRow>
             ))}
           </Ledger>
-          <Pager lang={lang} path="/admin/accounts" params={{ q, status, role, flag }} offset={offset} limit={LIMIT} total={page.total} />
+          <Pager
+            lang={lang}
+            path="/admin/accounts"
+            params={{ q, status, role, flag }}
+            offset={offset}
+            limit={LIMIT}
+            total={page.total}
+          />
         </>
       )}
     </>

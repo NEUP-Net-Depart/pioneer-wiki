@@ -45,8 +45,11 @@ export async function api<T = unknown>(url: string, method = "POST", body?: unkn
 export function failureText(error: unknown, lang: "zh" | "en"): string {
   if (error instanceof ApiError) {
     if (error.status === 0)
-      return lang === "zh" ? "网络连接失败，内容没有保存。请检查网络后重试。" : "The network failed and nothing was saved. Check the connection and retry.";
-    const base = error.message || (lang === "zh" ? `请求失败（${error.status}）。` : `The request failed (${error.status}).`);
+      return lang === "zh"
+        ? "网络连接失败，内容没有保存。请检查网络后重试。"
+        : "The network failed and nothing was saved. Check the connection and retry.";
+    const base =
+      error.message || (lang === "zh" ? `请求失败（${error.status}）。` : `The request failed (${error.status}).`);
     return error.detail ? `${base} ${error.detail}` : base;
   }
   return lang === "zh" ? "发生了意外错误，请重试。" : "Something went wrong. Try again.";
@@ -224,7 +227,11 @@ export function ConfirmAction({
           ) : null}
           <div className="pw-ink-over flex flex-wrap items-center justify-end gap-x-6 gap-y-3">
             <Dialog.Close asChild>
-              <button type="button" disabled={busy} className="pw-link min-h-11 text-small text-ink-2 disabled:opacity-45">
+              <button
+                type="button"
+                disabled={busy}
+                className="pw-link min-h-11 text-small text-ink-2 disabled:opacity-45"
+              >
                 {lang === "zh" ? "取消" : "Cancel"}
               </button>
             </Dialog.Close>

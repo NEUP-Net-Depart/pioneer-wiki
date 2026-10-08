@@ -113,7 +113,11 @@ export function AccountActions({
               </p>
               <label className="flex flex-col gap-1">
                 <span className="pw-label">{zh ? "Wiki 作者" : "Wiki author"}</span>
-                <select value={authorId} onChange={(event) => setAuthorId(event.target.value)} className="pw-field text-small">
+                <select
+                  value={authorId}
+                  onChange={(event) => setAuthorId(event.target.value)}
+                  className="pw-field text-small"
+                >
                   <option value="">{zh ? "（不绑定）" : "(none)"}</option>
                   {authors.map((option) => (
                     <option key={option.id} value={option.id} disabled={option.taken && option.id !== account.authorId}>
@@ -125,7 +129,11 @@ export function AccountActions({
               </label>
               <label className="flex flex-col gap-1">
                 <span className="pw-label">{zh ? "成员主页" : "Member page"}</span>
-                <select value={memberId} onChange={(event) => setMemberId(event.target.value)} className="pw-field text-small">
+                <select
+                  value={memberId}
+                  onChange={(event) => setMemberId(event.target.value)}
+                  className="pw-field text-small"
+                >
                   <option value="">{zh ? "（不绑定）" : "(none)"}</option>
                   {members.map((option) => (
                     <option key={option.id} value={option.id} disabled={option.taken && option.id !== account.memberId}>
@@ -152,9 +160,21 @@ export function AccountActions({
             title={zh ? "注销这个账号？" : "Close this account?"}
             description={
               <ul className="list-disc space-y-1 pl-5">
-                <li>{zh ? "删除登录邮箱、密码和登录身份，撤销所有会话；无法撤销。" : "Removes the sign-in email, password and identities and ends every session; this cannot be undone."}</li>
-                <li>{zh ? "显示名、私人草稿与资格申请被清除；论坛署名改为“已注销账号”。" : "Clears display name, private drafts and applications; forum posts are signed “closed account”."}</li>
-                <li>{zh ? "公开成员主页被归档；作者记录与已发布文章的历史署名保留。" : "Archives the public page; the author record and published history keep their credit."}</li>
+                <li>
+                  {zh
+                    ? "删除登录邮箱、密码和登录身份，撤销所有会话；无法撤销。"
+                    : "Removes the sign-in email, password and identities and ends every session; this cannot be undone."}
+                </li>
+                <li>
+                  {zh
+                    ? "显示名、私人草稿与资格申请被清除；论坛署名改为“已注销账号”。"
+                    : "Clears display name, private drafts and applications; forum posts are signed “closed account”."}
+                </li>
+                <li>
+                  {zh
+                    ? "公开成员主页被归档；作者记录与已发布文章的历史署名保留。"
+                    : "Archives the public page; the author record and published history keep their credit."}
+                </li>
                 <li>{zh ? "审计记录保留账号编号。" : "Audit entries keep the account id."}</li>
               </ul>
             }

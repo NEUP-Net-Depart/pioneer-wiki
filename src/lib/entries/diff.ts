@@ -27,7 +27,12 @@ export interface Lookups {
   categories: Category[];
 }
 
-const ROLES = { host: ["宿主", "Host"], symbiont: ["共生者", "Symbiont"], decomposer: ["分解者", "Decomposer"], observer: ["观察者", "Observer"] } as const;
+const ROLES = {
+  host: ["宿主", "Host"],
+  symbiont: ["共生者", "Symbiont"],
+  decomposer: ["分解者", "Decomposer"],
+  observer: ["观察者", "Observer"],
+} as const;
 const SCALES = { macro: ["宏观", "Macro"], micro: ["微观", "Micro"] } as const;
 const KINDS = {
   symbiosis: ["共生", "symbiosis"],
@@ -70,11 +75,17 @@ export function fieldChanges(
       titleEn: [lang === "zh" ? "英文标题" : "English title", s.title.en],
       summaryZh: [lang === "zh" ? "中文摘要" : "Chinese summary", s.summary.zh],
       summaryEn: [lang === "zh" ? "英文摘要" : "English summary", s.summary.en],
-      genus: [lang === "zh" ? "门类" : "Genus", genus ? `${genus.name[lang]} · ${genus.scientificName}` : (m.categoryId ?? "")],
+      genus: [
+        lang === "zh" ? "门类" : "Genus",
+        genus ? `${genus.name[lang]} · ${genus.scientificName}` : (m.categoryId ?? ""),
+      ],
       auxiliary: [lang === "zh" ? "交叉门类" : "Cross-genus", aux.join("、")],
       species: [lang === "zh" ? "物种" : "Species", m.species ?? ""],
       level: [lang === "zh" ? "层级" : "Level", m.level ? (LEVELS[m.level]?.[lang] ?? m.level) : ""],
-      contentRole: [lang === "zh" ? "用途" : "Purpose", m.contentRole ? (CONTENT_ROLES[m.contentRole]?.[lang] ?? m.contentRole) : ""],
+      contentRole: [
+        lang === "zh" ? "用途" : "Purpose",
+        m.contentRole ? (CONTENT_ROLES[m.contentRole]?.[lang] ?? m.contentRole) : "",
+      ],
       scale: [lang === "zh" ? "尺度" : "Scale", SCALES[m.scale]?.[i] ?? m.scale],
       role: [lang === "zh" ? "生态角色" : "Role", ROLES[m.role]?.[i] ?? m.role],
       analogue: [
@@ -82,7 +93,10 @@ export function fieldChanges(
         m.analogue ? `${m.analogue.name[lang]}${m.analogue.note?.[lang] ? ` — ${m.analogue.note[lang]}` : ""}` : "",
       ],
       hero: [lang === "zh" ? "封面图" : "Cover image", m.heroAssetId ?? ""],
-      contributors: [lang === "zh" ? "贡献者" : "Contributors", names(lookups.authors, m.contributorIds, (a) => a.name[lang]).join("、")],
+      contributors: [
+        lang === "zh" ? "贡献者" : "Contributors",
+        names(lookups.authors, m.contributorIds, (a) => a.name[lang]).join("、"),
+      ],
       sources: [lang === "zh" ? "来源" : "Sources", names(lookups.sources, m.sourceIds, (x) => x.title).join("\n")],
       tags: [lang === "zh" ? "标签" : "Tags", names(lookups.tags, m.tagIds, (t) => t.label[lang]).join("、")],
       relations: [
@@ -90,7 +104,10 @@ export function fieldChanges(
         m.relationDrafts.map((r) => `${KINDS[r.kind]?.[i] ?? r.kind} → ${r.to} (${r.strength})`).join("\n"),
       ],
       pendingTags: [lang === "zh" ? "新标签（发布时创建）" : "New tags (created on publish)", m.pendingTags.join("、")],
-      pendingSources: [lang === "zh" ? "新来源（发布时创建）" : "New sources (created on publish)", m.pendingSources.join("\n")],
+      pendingSources: [
+        lang === "zh" ? "新来源（发布时创建）" : "New sources (created on publish)",
+        m.pendingSources.join("\n"),
+      ],
     };
   };
   const was = describe(before);

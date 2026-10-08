@@ -1,5 +1,14 @@
 import "server-only";
-import type { Asset, Author, EntryMetadata, EntrySummary, Revision, RevisionSnapshot, Source, Tag } from "@/lib/model/types";
+import type {
+  Asset,
+  Author,
+  EntryMetadata,
+  EntrySummary,
+  Revision,
+  RevisionSnapshot,
+  Source,
+  Tag,
+} from "@/lib/model/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ServiceError } from "./contracts";
 import { fromDatabaseError } from "./errors";
@@ -168,10 +177,13 @@ export function metadataOf(value: unknown, fallback?: Partial<EntryMetadata>): E
     pendingSources: jsonList<string>(m.pendingSources),
     pendingTags: jsonList<string>(m.pendingTags),
     categoryId: optionalText(taxonomy.categoryId ?? m.categoryId) ?? fallback?.categoryId,
-    auxiliaryCategoryIds: jsonList<string>(taxonomy.auxiliaryCategoryIds ?? m.auxiliaryCategoryIds ?? fallback?.auxiliaryCategoryIds),
+    auxiliaryCategoryIds: jsonList<string>(
+      taxonomy.auxiliaryCategoryIds ?? m.auxiliaryCategoryIds ?? fallback?.auxiliaryCategoryIds,
+    ),
     species: optionalText(taxonomy.species ?? m.species) ?? fallback?.species,
     level: (optionalText(taxonomy.level ?? m.level) ?? fallback?.level) as EntryMetadata["level"],
-    contentRole: (optionalText(taxonomy.contentRole ?? m.contentRole) ?? fallback?.contentRole) as EntryMetadata["contentRole"],
+    contentRole: (optionalText(taxonomy.contentRole ?? m.contentRole) ??
+      fallback?.contentRole) as EntryMetadata["contentRole"],
   };
 }
 

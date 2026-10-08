@@ -22,7 +22,9 @@ describe("request plumbing", () => {
     expect(siteUrl(new Request("http://attacker.example/x"))).toBe("https://wiki.example.org");
     vi.stubEnv("PIONEER_SITE_URL", "");
     vi.stubEnv("NODE_ENV", "production");
-    expect(() => siteUrl(new Request("http://attacker.example/x"))).toThrowError(expect.objectContaining({ reason: "site_url_missing" }));
+    expect(() => siteUrl(new Request("http://attacker.example/x"))).toThrowError(
+      expect.objectContaining({ reason: "site_url_missing" }),
+    );
   });
 
   it("trusts a proxy-set client address only when told a proxy is in front", () => {
@@ -39,11 +41,19 @@ describe("request plumbing", () => {
   });
 
   it("maps database refusals to codes and reasons, keeping only safe detail", () => {
-    expect(fromDatabaseError({ code: "40001", message: "revision_conflict" })).toMatchObject({ code: "conflict", reason: "revision_conflict" });
-    expect(fromDatabaseError({ code: "42501", message: "permission denied for table entries" })).toMatchObject({ code: "forbidden", reason: "forbidden" });
+    expect(fromDatabaseError({ code: "40001", message: "revision_conflict" })).toMatchObject({
+      code: "conflict",
+      reason: "revision_conflict",
+    });
+    expect(fromDatabaseError({ code: "42501", message: "permission denied for table entries" })).toMatchObject({
+      code: "forbidden",
+      reason: "forbidden",
+    });
     expect(fromDatabaseError({ code: "PW429", message: "rate_limited" })).toMatchObject({ code: "rate_limited" });
-    expect(fromDatabaseError({ code: "40001", message: "assets_not_approved", details: "asset-1" })).toMatchObject({ detail: "asset-1" });
-    expect(fromDatabaseError({ code: "XX000", message: "internal: relation \"secret\" at 10.0.0.1" })).toMatchObject({
+    expect(fromDatabaseError({ code: "40001", message: "assets_not_approved", details: "asset-1" })).toMatchObject({
+      detail: "asset-1",
+    });
+    expect(fromDatabaseError({ code: "XX000", message: 'internal: relation "secret" at 10.0.0.1' })).toMatchObject({
       code: "unavailable",
       reason: "unavailable",
     });
@@ -72,15 +82,24 @@ describe("request plumbing", () => {
   it("refuses cross-site API writes before any cookie is used", async () => {
     vi.stubEnv("PIONEER_DATA_SOURCE", "mock");
     const cross = await proxy(
-      new NextRequest("https://wiki.example.org/api/drafts", { method: "POST", headers: { origin: "https://evil.example", host: "wiki.example.org" } }),
+      new NextRequest("https://wiki.example.org/api/drafts", {
+        method: "POST",
+        headers: { origin: "https://evil.example", host: "wiki.example.org" },
+      }),
     );
     expect(cross.status).toBe(403);
     const fetchSite = await proxy(
-      new NextRequest("https://wiki.example.org/api/drafts", { method: "POST", headers: { "sec-fetch-site": "cross-site" } }),
+      new NextRequest("https://wiki.example.org/api/drafts", {
+        method: "POST",
+        headers: { "sec-fetch-site": "cross-site" },
+      }),
     );
     expect(fetchSite.status).toBe(403);
     const same = await proxy(
-      new NextRequest("https://wiki.example.org/api/drafts", { method: "POST", headers: { origin: "https://wiki.example.org", host: "wiki.example.org" } }),
+      new NextRequest("https://wiki.example.org/api/drafts", {
+        method: "POST",
+        headers: { origin: "https://wiki.example.org", host: "wiki.example.org" },
+      }),
     );
     expect(same.status).toBe(200);
   });

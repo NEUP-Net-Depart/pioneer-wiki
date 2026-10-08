@@ -58,7 +58,10 @@ export default async function EditEntryPage({ params, searchParams }: PageProps<
     <div className="flex flex-col gap-(--space-block)">
       <RunningHead
         left={
-          <Link href={entry.publishedRevision ? `/entries/${entry.slug}` : "/account/entries"} className="no-underline hover:text-ink">
+          <Link
+            href={entry.publishedRevision ? `/entries/${entry.slug}` : "/account/entries"}
+            className="no-underline hover:text-ink"
+          >
             ← {t("editor.headingEdit")} · {pick(entry.title, lang)}
           </Link>
         }

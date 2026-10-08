@@ -16,7 +16,12 @@ export default async function AdminAssets({ searchParams }: PageProps<"/admin/as
   const lang = await getLang();
   const params = await searchParams;
   const raw = typeof params.status === "string" ? params.status : "";
-  const status = raw === "all" ? [] : STATUSES.includes(raw as AssetReviewStatus) ? [raw as AssetReviewStatus] : (["pending"] as AssetReviewStatus[]);
+  const status =
+    raw === "all"
+      ? []
+      : STATUSES.includes(raw as AssetReviewStatus)
+        ? [raw as AssetReviewStatus]
+        : (["pending"] as AssetReviewStatus[]);
   const q = typeof params.q === "string" ? params.q : "";
   const offset = Math.max(0, Number(typeof params.offset === "string" ? params.offset : 0) || 0);
   const page = await getServices()
@@ -60,7 +65,14 @@ export default async function AdminAssets({ searchParams }: PageProps<"/admin/as
               <AssetCard key={asset.id} asset={asset} />
             ))}
           </div>
-          <Pager lang={lang} path="/admin/assets" params={{ q, status: raw || undefined }} offset={offset} limit={LIMIT} total={page.total} />
+          <Pager
+            lang={lang}
+            path="/admin/assets"
+            params={{ q, status: raw || undefined }}
+            offset={offset}
+            limit={LIMIT}
+            total={page.total}
+          />
         </>
       )}
       <OrphanFiles />

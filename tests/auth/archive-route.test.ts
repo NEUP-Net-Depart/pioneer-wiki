@@ -25,9 +25,15 @@ const admin: Account = {
   authorId: "a-admin",
 };
 const archive = (body?: unknown) =>
-  POST(new Request("http://example.test/api/admin/entries/e/archive", { method: "POST", body: body ? JSON.stringify(body) : undefined }), {
-    params: Promise.resolve({ id: "e" }),
-  });
+  POST(
+    new Request("http://example.test/api/admin/entries/e/archive", {
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+    {
+      params: Promise.resolve({ id: "e" }),
+    },
+  );
 
 describe("administrator archive route", () => {
   beforeEach(() => {

@@ -18,7 +18,9 @@ export default async function AdminEntries({ searchParams }: PageProps<"/admin/e
   const params = await searchParams;
   const q = one(params.q);
   const status = one(params.status);
-  const view = (["active", "archived", "all"].includes(one(params.view)) ? one(params.view) : "active") as EditorialQuery["view"];
+  const view = (
+    ["active", "archived", "all"].includes(one(params.view)) ? one(params.view) : "active"
+  ) as EditorialQuery["view"];
   const offset = Math.max(0, Number(one(params.offset)) || 0);
   const page = await getServices()
     .entries.listEditorial({

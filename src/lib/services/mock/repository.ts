@@ -274,9 +274,10 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
     const tagIds = [...metadata.tagIds];
     for (const label of metadata.pendingTags) {
       const names = splitLabel(label);
-      let tag = context.tags.find(
-        (t) =>
-          [t.label.zh, t.label.en].some((value) => [names.zh, names.en].map((n) => n.toLowerCase()).includes(value.toLowerCase())),
+      let tag = context.tags.find((t) =>
+        [t.label.zh, t.label.en].some((value) =>
+          [names.zh, names.en].map((n) => n.toLowerCase()).includes(value.toLowerCase()),
+        ),
       );
       if (!tag) {
         tag = { id: `tag-${context.tags.length + 1}`, label: names };
@@ -287,7 +288,14 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
     const sourceIds = [...metadata.sourceIds];
     for (const line of metadata.pendingSources) {
       const url = line.match(/https?:\/\/[^\s<>"]+/)?.[0];
-      const title = (line.replace(url ?? "", "").trim().replace(/^[\s.,;]+|[\s.,;]+$/g, "") || url || line).slice(0, 500);
+      const title = (
+        line
+          .replace(url ?? "", "")
+          .trim()
+          .replace(/^[\s.,;]+|[\s.,;]+$/g, "") ||
+        url ||
+        line
+      ).slice(0, 500);
       let source = context.sources.find((s) => (url && s.url === url) || s.title.toLowerCase() === title.toLowerCase());
       if (!source) {
         source = { id: `src-${context.sources.length + 1}`, kind: url ? "web" : "book", title, creators: "", url };
@@ -321,15 +329,15 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
     };
     for (let i = relations.length - 1; i >= 0; i--) if (relations[i].from === entry.id) relations.splice(i, 1);
     for (const draft of snap.metadata.relationDrafts)
-      if (byId(draft.to))
-        relations.push({ id: `rel-${entry.id}-${draft.to}-${draft.kind}`, from: entry.id, ...draft });
+      if (byId(draft.to)) relations.push({ id: `rel-${entry.id}-${draft.to}-${draft.kind}`, from: entry.id, ...draft });
   };
 
   const assertAssetsPublic = (heroAssetId: string | undefined, body: string) => {
     const blocked = [...bodyAssetIds(body), ...(heroAssetId ? [heroAssetId] : [])].filter(
       (id) => !context.assets.some((a) => a.id === id && a.reviewStatus === "approved"),
     );
-    if (blocked.length) throw new ServiceError("conflict", "assets_not_approved", "assets_not_approved", blocked.join(", "));
+    if (blocked.length)
+      throw new ServiceError("conflict", "assets_not_approved", "assets_not_approved", blocked.join(", "));
   };
 
   const append = (entry: MockEntry, revision: Omit<MockRevision, "number">, body: string): MockRevision => {
@@ -354,14 +362,18 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
         .filter((e) => !q.scale || q.scale.includes(e.scale))
         .filter((e) => q.featured === undefined || Boolean(e.featured) === q.featured)
         .sort((a, b) =>
-          (q.sort === "created" ? b.createdAt : b.updatedAt).localeCompare(q.sort === "created" ? a.createdAt : a.updatedAt),
+          (q.sort === "created" ? b.createdAt : b.updatedAt).localeCompare(
+            q.sort === "created" ? a.createdAt : a.updatedAt,
+          ),
         )
         .slice(0, q.limit ?? Number.MAX_SAFE_INTEGER)
         .map((e) => structuredClone(e));
     },
     async getEntry(slug) {
       const entry = store.find((x) => isPublic(x) && (x.slug === slug || x.formerSlugs.includes(slug)));
-      return entry ? ({ ...structuredClone(entry.public!), body: bodyOf(entry, entry.public!.revision) } as Entry) : null;
+      return entry
+        ? ({ ...structuredClone(entry.public!), body: bodyOf(entry, entry.public!.revision) } as Entry)
+        : null;
     },
     async getEntryById(id) {
       const entry = byId(id);
@@ -412,9 +424,7 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
         .filter((e) => view === "all" || (view === "archived") === Boolean(e.archivedAt))
         .map(editorialOf)
         .filter(
-          (e) =>
-            !text ||
-            [e.id, e.slug, e.title.zh, e.title.en].some((value) => value.toLowerCase().includes(text)),
+          (e) => !text || [e.id, e.slug, e.title.zh, e.title.en].some((value) => value.toLowerCase().includes(text)),
         )
         .filter(
           (e) =>
@@ -498,7 +508,16 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
         store.push(entry);
         const revision = append(
           entry,
-          { authorId, createdAt: now, note: input.note || "Save draft", state: "draft", title, summary, metadata, taxonomy: filing },
+          {
+            authorId,
+            createdAt: now,
+            note: input.note || "Save draft",
+            state: "draft",
+            title,
+            summary,
+            metadata,
+            taxonomy: filing,
+          },
           input.body,
         );
         context.audit("save_revision", "entry", id, null, { revision: revision.number });
@@ -514,7 +533,16 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
       withdrewReview = entry.status === "in_review";
       const revision = append(
         entry,
-        { authorId, createdAt: now, note: input.note || "Save draft", state: "draft", title, summary, metadata, taxonomy: filing },
+        {
+          authorId,
+          createdAt: now,
+          note: input.note || "Save draft",
+          state: "draft",
+          title,
+          summary,
+          metadata,
+          taxonomy: filing,
+        },
         input.body,
       );
       entry.status = "draft";
@@ -571,7 +599,8 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
       const taxonomyCheck = filingOf(source.taxonomy);
       let metadata: EntryMetadata = { ...snap.metadata };
       if (state === "published") metadata = materialize(metadata);
-      if (!bilingualComplete(snap.title, snap.summary, snap.body)) throw new ServiceError("invalid", "bilingual_incomplete");
+      if (!bilingualComplete(snap.title, snap.summary, snap.body))
+        throw new ServiceError("invalid", "bilingual_incomplete");
       if (state === "published") assertAssetsPublic(metadata.heroAssetId, snap.body);
       const revision = append(
         entry,
@@ -638,12 +667,21 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
       if (JSON.stringify(input.payload).length > 2_000_000) throw new ServiceError("invalid", "invalid_draft_payload");
       const existing = [...working.values()].find(
         (draft) =>
-          draft.ownerId === account.id && (input.id ? draft.id === input.id : (draft.entryId ?? null) === (input.entryId ?? null) && Boolean(input.entryId)),
+          draft.ownerId === account.id &&
+          (input.id
+            ? draft.id === input.id
+            : (draft.entryId ?? null) === (input.entryId ?? null) && Boolean(input.entryId)),
       );
       const savedAt = new Date().toISOString();
       if (existing) {
         if (input.knownVersion !== undefined && existing.version > input.knownVersion)
-          return { conflict: true, id: existing.id, version: existing.version, savedAt: existing.savedAt, payload: existing.payload };
+          return {
+            conflict: true,
+            id: existing.id,
+            version: existing.version,
+            savedAt: existing.savedAt,
+            payload: existing.payload,
+          };
         Object.assign(existing, {
           payload: structuredClone(input.payload),
           baseRevision: input.baseRevision,
@@ -678,7 +716,10 @@ export function publishedSearchSource(repository: EntryRepository) {
   return async () => {
     const list = await repository.listEntries();
     return Promise.all(
-      list.map(async (entry) => ({ entry, body: (await repository.getRevisionBody(`${entry.id}@r${entry.revision}`)) ?? "" })),
+      list.map(async (entry) => ({
+        entry,
+        body: (await repository.getRevisionBody(`${entry.id}@r${entry.revision}`)) ?? "",
+      })),
     );
   };
 }

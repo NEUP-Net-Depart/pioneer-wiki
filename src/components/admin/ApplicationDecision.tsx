@@ -43,7 +43,17 @@ function Choice({
         {(allowNone ? (["none", "existing", "create"] as Mode[]) : (["existing", "create"] as Mode[])).map((value) => (
           <label key={value} className="flex min-h-8 items-center gap-2">
             <input type="radio" checked={mode === value} onChange={() => onMode(value)} />
-            {value === "none" ? (zh ? "不需要" : "Not needed") : value === "existing" ? (zh ? "选择已有" : "Use existing") : zh ? "新建" : "Create new"}
+            {value === "none"
+              ? zh
+                ? "不需要"
+                : "Not needed"
+              : value === "existing"
+                ? zh
+                  ? "选择已有"
+                  : "Use existing"
+                : zh
+                  ? "新建"
+                  : "Create new"}
           </label>
         ))}
       </div>
@@ -61,15 +71,27 @@ function Choice({
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="flex flex-col gap-1">
             <span className="pw-label">{zh ? "代号" : "Handle"}</span>
-            <input value={handle} onChange={(event) => onHandle(event.target.value.toLowerCase())} className="pw-field font-mono text-small" />
+            <input
+              value={handle}
+              onChange={(event) => onHandle(event.target.value.toLowerCase())}
+              className="pw-field font-mono text-small"
+            />
           </label>
           <label className="flex flex-col gap-1">
             <span className="pw-label">{zh ? "中文名" : "Chinese name"}</span>
-            <input value={name.zh} onChange={(event) => onName({ ...name, zh: event.target.value })} className="pw-field text-small" />
+            <input
+              value={name.zh}
+              onChange={(event) => onName({ ...name, zh: event.target.value })}
+              className="pw-field text-small"
+            />
           </label>
           <label className="flex flex-col gap-1">
             <span className="pw-label">{zh ? "英文名" : "English name"}</span>
-            <input value={name.en} onChange={(event) => onName({ ...name, en: event.target.value })} className="pw-field text-small" />
+            <input
+              value={name.en}
+              onChange={(event) => onName({ ...name, en: event.target.value })}
+              className="pw-field text-small"
+            />
           </label>
         </div>
       ) : null}
@@ -98,8 +120,12 @@ export function ApplicationDecision({
   const wantsMember = application.kind !== "author";
   const handle = application.proposedHandle ?? application.account?.handle ?? "";
   const name = application.account?.name ?? { zh: "", en: "" };
-  const [authorMode, setAuthorMode] = useState<Mode>(application.account?.authorId ? "none" : wantsAuthor ? "create" : "none");
-  const [memberMode, setMemberMode] = useState<Mode>(application.account?.memberId ? "none" : wantsMember ? "create" : "none");
+  const [authorMode, setAuthorMode] = useState<Mode>(
+    application.account?.authorId ? "none" : wantsAuthor ? "create" : "none",
+  );
+  const [memberMode, setMemberMode] = useState<Mode>(
+    application.account?.memberId ? "none" : wantsMember ? "create" : "none",
+  );
   const [authorExisting, setAuthorExisting] = useState("");
   const [memberExisting, setMemberExisting] = useState("");
   const [authorHandle, setAuthorHandle] = useState(handle);
@@ -167,7 +193,11 @@ export function ApplicationDecision({
           tone="danger"
           trigger={zh ? "拒绝" : "Reject"}
           title={zh ? "拒绝这份申请？" : "Reject this application?"}
-          description={zh ? `${who} 会在账号页看到拒绝原因，可以修改后重新申请。` : `${who} sees your reason on their account page and may apply again.`}
+          description={
+            zh
+              ? `${who} 会在账号页看到拒绝原因，可以修改后重新申请。`
+              : `${who} sees your reason on their account page and may apply again.`
+          }
           reason={{ label: zh ? "拒绝原因（申请人可见）" : "Reason (shown to the applicant)", required: true }}
           confirmLabel={zh ? "拒绝申请" : "Reject application"}
           onConfirm={async (reason) => {

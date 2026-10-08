@@ -11,4 +11,7 @@ export function taxonomyError(error: unknown) {
 }
 
 export const unknownKind = () =>
-  NextResponse.json({ error: { code: "invalid", reason: "invalid_kind", message: "Unknown taxon kind." } }, { status: 422 });
+  NextResponse.json(
+    { error: { code: "invalid", reason: "invalid_kind", message: "Unknown taxon kind." } },
+    { status: 422 },
+  );

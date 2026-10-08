@@ -3,7 +3,17 @@ import Link from "next/link";
 import { getServices } from "@/lib/services";
 import { getLang } from "@/lib/i18n/server";
 import { categoryOf } from "@/components/forum/categories";
-import { DeskHead, EmptyDrawer, formatWhen, Ledger, LedgerRow, Pager, ReadFailure, StateTag, tr } from "@/components/admin/desk";
+import {
+  DeskHead,
+  EmptyDrawer,
+  formatWhen,
+  Ledger,
+  LedgerRow,
+  Pager,
+  ReadFailure,
+  StateTag,
+  tr,
+} from "@/components/admin/desk";
 import { DeskFilters } from "@/components/admin/DeskFilters";
 import { ThreadModeration } from "@/components/admin/ForumModeration";
 
@@ -55,19 +65,31 @@ export default async function AdminForum({ searchParams }: PageProps<"/admin/for
         <>
           <Ledger label={tr(lang, "主题列表", "Threads")}>
             {threads.slice(0, LIMIT).map((thread) => (
-              <LedgerRow key={thread.id} muted={Boolean(thread.hiddenAt)} className="md:grid-cols-[minmax(0,1fr)_minmax(12rem,auto)] md:items-start">
+              <LedgerRow
+                key={thread.id}
+                muted={Boolean(thread.hiddenAt)}
+                className="md:grid-cols-[minmax(0,1fr)_minmax(12rem,auto)] md:items-start"
+              >
                 <div className="min-w-0">
                   <p className="font-mono text-meta text-ink-3">
-                    #{thread.number} · {categoryOf(thread.category).label[lang]} · {thread.authorName} · {formatWhen(thread.lastActivityAt, lang)}
+                    #{thread.number} · {categoryOf(thread.category).label[lang]} · {thread.authorName} ·{" "}
+                    {formatWhen(thread.lastActivityAt, lang)}
                   </p>
-                  <Link href={`/forum/${thread.id}`} className="pw-link mt-0.5 block font-display text-h4 break-words text-ink">
+                  <Link
+                    href={`/forum/${thread.id}`}
+                    className="pw-link mt-0.5 block font-display text-h4 break-words text-ink"
+                  >
                     {thread.title}
                   </Link>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     <StateTag>{tr(lang, `${thread.postCount} 条`, `${thread.postCount} posts`)}</StateTag>
                     {thread.hiddenAt ? <StateTag tone="quiet">{tr(lang, "已隐藏", "Hidden")}</StateTag> : null}
                     {thread.lockedAt ? <StateTag tone="warn">{tr(lang, "已锁定", "Locked")}</StateTag> : null}
-                    {thread.hiddenPosts ? <StateTag tone="quiet">{tr(lang, `${thread.hiddenPosts} 条回复已隐藏`, `${thread.hiddenPosts} hidden replies`)}</StateTag> : null}
+                    {thread.hiddenPosts ? (
+                      <StateTag tone="quiet">
+                        {tr(lang, `${thread.hiddenPosts} 条回复已隐藏`, `${thread.hiddenPosts} hidden replies`)}
+                      </StateTag>
+                    ) : null}
                   </div>
                   {thread.moderationNote ? <p className="mt-1 text-meta text-ink-3">{thread.moderationNote}</p> : null}
                 </div>
@@ -75,7 +97,14 @@ export default async function AdminForum({ searchParams }: PageProps<"/admin/for
               </LedgerRow>
             ))}
           </Ledger>
-          <Pager lang={lang} path="/admin/forum" params={{ view: view === "all" ? undefined : view }} offset={offset} limit={LIMIT} total={offset + Math.min(threads.length, LIMIT) + (more ? 1 : 0)} />
+          <Pager
+            lang={lang}
+            path="/admin/forum"
+            params={{ view: view === "all" ? undefined : view }}
+            offset={offset}
+            limit={LIMIT}
+            total={offset + Math.min(threads.length, LIMIT) + (more ? 1 : 0)}
+          />
         </>
       )}
     </>

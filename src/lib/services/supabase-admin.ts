@@ -1,11 +1,5 @@
 import "server-only";
-import type {
-  AccountRecord,
-  AssetRecord,
-  AuditEvent,
-  IdentityApplication,
-  Localized,
-} from "@/lib/model/types";
+import type { AccountRecord, AssetRecord, AuditEvent, IdentityApplication, Localized } from "@/lib/model/types";
 import type {
   AccountRepository,
   AdminTodo,
@@ -340,9 +334,7 @@ export function createOperationsAdapter(): OperationsAdapter {
       try {
         const payload = await rpc<Row>("pw_ready");
         const schema = optionalText(payload.schema);
-        return schema === EXPECTED_SCHEMA
-          ? { ok: true, schema }
-          : { ok: false, schema, reason: "schema_mismatch" };
+        return schema === EXPECTED_SCHEMA ? { ok: true, schema } : { ok: false, schema, reason: "schema_mismatch" };
       } catch {
         return { ok: false, reason: "database_unreachable" };
       }

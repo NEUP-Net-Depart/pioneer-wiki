@@ -67,7 +67,8 @@ export async function throttle(request: Request, bucket: ThrottleBucket): Promis
 
 export function validEmail(value: unknown): string {
   const email = typeof value === "string" ? value.trim().toLowerCase() : "";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new ServiceError("invalid", "invalid_email");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)
+    throw new ServiceError("invalid", "invalid_email");
   return email;
 }
 

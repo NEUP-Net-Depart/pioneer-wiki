@@ -10,7 +10,12 @@ const metadataOf = async (services: ReturnType<typeof createMockServices>, id: s
 async function save(
   services: ReturnType<typeof createMockServices>,
   entryId: string,
-  change: { title?: { zh: string; en: string }; summary?: { zh: string; en: string }; body?: string; metadata?: Partial<EntryMetadata> },
+  change: {
+    title?: { zh: string; en: string };
+    summary?: { zh: string; en: string };
+    body?: string;
+    metadata?: Partial<EntryMetadata>;
+  },
 ) {
   const packet = (await services.entries.getEditorial(entryId))!;
   return services.entries.saveDraft({
@@ -55,7 +60,11 @@ describe("mock wiki services", () => {
     // Editors see the draft.
     expect((await services.entries.getEditorial("PW-0001"))!.latest.title.en).toBe("Gossip, revised");
 
-    const submitted = await services.entries.transition({ entryId: "PW-0001", action: "submit", actorId: "a-qingkong" });
+    const submitted = await services.entries.transition({
+      entryId: "PW-0001",
+      action: "submit",
+      actorId: "a-qingkong",
+    });
     expect((await services.entries.getEntry("gossip-protocol"))!.title.en).toBe(before.title.en);
     await services.entries.transition({
       entryId: "PW-0001",
@@ -75,11 +84,20 @@ describe("mock wiki services", () => {
   it("never publishes a revision changed after it was reviewed", async () => {
     const services = createMockServices();
     await save(services, "PW-0003", { body: body("一", "one") });
-    const submitted = await services.entries.transition({ entryId: "PW-0003", action: "submit", actorId: "a-qingkong" });
+    const submitted = await services.entries.transition({
+      entryId: "PW-0003",
+      action: "submit",
+      actorId: "a-qingkong",
+    });
     const resaved = await save(services, "PW-0003", { body: body("二", "two") });
     expect(resaved.withdrewReview).toBe(true);
     await expect(
-      services.entries.transition({ entryId: "PW-0003", action: "publish", actorId: "a-qingkong", expectedRevision: submitted.number }),
+      services.entries.transition({
+        entryId: "PW-0003",
+        action: "publish",
+        actorId: "a-qingkong",
+        expectedRevision: submitted.number,
+      }),
     ).rejects.toMatchObject({ code: "conflict", reason: "revision_conflict" });
     await expect(
       services.entries.transition({ entryId: "PW-0003", action: "publish", actorId: "a-qingkong" }),
@@ -89,9 +107,18 @@ describe("mock wiki services", () => {
   it("returns a submission with a reason the author sees, and clears it on resubmission", async () => {
     const services = createMockServices();
     await save(services, "PW-0004", { body: body("改", "changed") });
-    const submitted = await services.entries.transition({ entryId: "PW-0004", action: "submit", actorId: "a-qingkong" });
+    const submitted = await services.entries.transition({
+      entryId: "PW-0004",
+      action: "submit",
+      actorId: "a-qingkong",
+    });
     await expect(
-      services.entries.transition({ entryId: "PW-0004", action: "return", actorId: "a-qingkong", expectedRevision: submitted.number }),
+      services.entries.transition({
+        entryId: "PW-0004",
+        action: "return",
+        actorId: "a-qingkong",
+        expectedRevision: submitted.number,
+      }),
     ).rejects.toMatchObject({ reason: "reason_required" });
     await services.entries.transition({
       entryId: "PW-0004",
@@ -101,7 +128,10 @@ describe("mock wiki services", () => {
       note: "Cite a source",
     });
     const returned = await services.entries.listEditorial({ scope: "all", status: ["returned"] });
-    expect(returned.rows.find((e) => e.id === "PW-0004")).toMatchObject({ status: "draft", returnNote: "Cite a source" });
+    expect(returned.rows.find((e) => e.id === "PW-0004")).toMatchObject({
+      status: "draft",
+      returnNote: "Cite a source",
+    });
     await services.entries.transition({ entryId: "PW-0004", action: "submit", actorId: "a-qingkong" });
     expect((await services.entries.getEditorial("PW-0004"))!.entry.returnNote).toBeUndefined();
   });
@@ -111,14 +141,33 @@ describe("mock wiki services", () => {
     const original = (await services.entries.getEntry("gossip-protocol"))!;
     await save(services, "PW-0001", { title: { zh: "改名", en: "Renamed" } });
     const draftId = `PW-0001@r${(await services.entries.getEditorial("PW-0001"))!.entry.latestRevision}`;
-    const submitted = await services.entries.transition({ entryId: "PW-0001", action: "submit", actorId: "a-qingkong" });
+    const submitted = await services.entries.transition({
+      entryId: "PW-0001",
+      action: "submit",
+      actorId: "a-qingkong",
+    });
     await expect(
-      services.entries.transition({ entryId: "PW-0001", action: "rollback", actorId: "a-qingkong", targetRevisionId: `PW-0001@r${original.revision}` }),
+      services.entries.transition({
+        entryId: "PW-0001",
+        action: "rollback",
+        actorId: "a-qingkong",
+        targetRevisionId: `PW-0001@r${original.revision}`,
+      }),
     ).rejects.toMatchObject({ reason: "review_pending" });
-    await services.entries.transition({ entryId: "PW-0001", action: "publish", actorId: "a-qingkong", expectedRevision: submitted.number });
+    await services.entries.transition({
+      entryId: "PW-0001",
+      action: "publish",
+      actorId: "a-qingkong",
+      expectedRevision: submitted.number,
+    });
     expect((await services.entries.getEntry("gossip-protocol"))!.title.en).toBe("Renamed");
     await expect(
-      services.entries.transition({ entryId: "PW-0001", action: "rollback", actorId: "a-qingkong", targetRevisionId: draftId }),
+      services.entries.transition({
+        entryId: "PW-0001",
+        action: "rollback",
+        actorId: "a-qingkong",
+        targetRevisionId: draftId,
+      }),
     ).rejects.toMatchObject({ reason: "rollback_target_unpublished" });
     const rolled = await services.entries.transition({
       entryId: "PW-0001",
@@ -139,7 +188,9 @@ describe("mock wiki services", () => {
     expect((await services.entries.listEntries()).some((e) => e.id === "PW-0001")).toBe(false);
     expect((await services.search.search({ text: "PW-0001" })).total).toBe(0);
     await expect(save(services, "PW-0001", {})).rejects.toMatchObject({ reason: "entry_archived" });
-    expect((await services.entries.listEditorial({ scope: "all", view: "archived" })).rows.map((e) => e.id)).toContain("PW-0001");
+    expect((await services.entries.listEditorial({ scope: "all", view: "archived" })).rows.map((e) => e.id)).toContain(
+      "PW-0001",
+    );
     await services.entries.setArchived("PW-0001", false);
     expect((await services.entries.getEntry("gossip-protocol"))?.id).toBe("PW-0001");
   });
@@ -167,9 +218,22 @@ describe("mock wiki services", () => {
       domain: "systems",
     });
     expect(twin.slug).toBe("test-entry-2");
-    const submitted = await services.entries.transition({ entryId: rev.entryId, action: "submit", actorId: "a-qingkong" });
-    await services.entries.transition({ entryId: rev.entryId, action: "publish", actorId: "a-qingkong", expectedRevision: submitted.number });
-    expect(await services.entries.getEntry("test-entry")).toMatchObject({ id: rev.entryId, status: "published", bodyLanguages: ["zh", "en"] });
+    const submitted = await services.entries.transition({
+      entryId: rev.entryId,
+      action: "submit",
+      actorId: "a-qingkong",
+    });
+    await services.entries.transition({
+      entryId: rev.entryId,
+      action: "publish",
+      actorId: "a-qingkong",
+      expectedRevision: submitted.number,
+    });
+    expect(await services.entries.getEntry("test-entry")).toMatchObject({
+      id: rev.entryId,
+      status: "published",
+      bodyLanguages: ["zh", "en"],
+    });
   });
 
   it("records the whole draft contract in the revision and only publishes it as a whole", async () => {
@@ -195,10 +259,24 @@ describe("mock wiki services", () => {
     });
     const snapshot = (await services.entries.getRevision(rev.id))!;
     expect(snapshot).toMatchObject({ recorded: true, title: { en: "Metadata entry" } });
-    expect(snapshot.metadata).toMatchObject({ scale: "macro", role: "host", sourceIds: ["s-ostep18"], heroAssetId: "plate-os-kernel" });
+    expect(snapshot.metadata).toMatchObject({
+      scale: "macro",
+      role: "host",
+      sourceIds: ["s-ostep18"],
+      heroAssetId: "plate-os-kernel",
+    });
     expect(snapshot.metadata.pendingTags).toEqual(["流式 / Streaming"]);
-    const submitted = await services.entries.transition({ entryId: rev.entryId, action: "submit", actorId: "a-qingkong" });
-    await services.entries.transition({ entryId: rev.entryId, action: "publish", actorId: "a-qingkong", expectedRevision: submitted.number });
+    const submitted = await services.entries.transition({
+      entryId: rev.entryId,
+      action: "submit",
+      actorId: "a-qingkong",
+    });
+    await services.entries.transition({
+      entryId: rev.entryId,
+      action: "publish",
+      actorId: "a-qingkong",
+      expectedRevision: submitted.number,
+    });
     const entry = (await services.entries.getEntryById(rev.entryId))!;
     expect(entry).toMatchObject({ scale: "macro", role: "host", heroAssetId: "plate-os-kernel" });
     const tags = await services.references.listTags();
@@ -219,10 +297,14 @@ describe("mock wiki services", () => {
       authorId: "a-qingkong",
       domain: "systems",
     });
-    await expect(services.entries.transition({ entryId: mono.entryId, action: "submit", actorId: "a-qingkong" })).rejects.toMatchObject({
+    await expect(
+      services.entries.transition({ entryId: mono.entryId, action: "submit", actorId: "a-qingkong" }),
+    ).rejects.toMatchObject({
       reason: "bilingual_incomplete",
     });
-    await expect(save(services, "PW-0001", { metadata: { tagIds: ["no-such-tag"] } })).rejects.toMatchObject({ reason: "unknown_tag" });
+    await expect(save(services, "PW-0001", { metadata: { tagIds: ["no-such-tag"] } })).rejects.toMatchObject({
+      reason: "unknown_tag",
+    });
     await expect(
       save(services, "PW-0001", { metadata: { relationDrafts: [{ to: "PW-0001", kind: "contrast", strength: 1 }] } }),
     ).rejects.toMatchObject({ reason: "relation_to_self" });
@@ -257,12 +339,26 @@ describe("mock wiki services", () => {
     );
     expect(await services.references.getAsset(image.id)).toBeNull();
     await save(services, "PW-0001", { body: body("图", `![x](asset:${image.id})`) });
-    const submitted = await services.entries.transition({ entryId: "PW-0001", action: "submit", actorId: "a-qingkong" });
+    const submitted = await services.entries.transition({
+      entryId: "PW-0001",
+      action: "submit",
+      actorId: "a-qingkong",
+    });
     await expect(
-      services.entries.transition({ entryId: "PW-0001", action: "publish", actorId: "a-qingkong", expectedRevision: submitted.number }),
+      services.entries.transition({
+        entryId: "PW-0001",
+        action: "publish",
+        actorId: "a-qingkong",
+        expectedRevision: submitted.number,
+      }),
     ).rejects.toMatchObject({ reason: "assets_not_approved" });
     await services.references.reviewAsset(image.id, "approved");
-    await services.entries.transition({ entryId: "PW-0001", action: "publish", actorId: "a-qingkong", expectedRevision: submitted.number });
+    await services.entries.transition({
+      entryId: "PW-0001",
+      action: "publish",
+      actorId: "a-qingkong",
+      expectedRevision: submitted.number,
+    });
     await expect(services.references.reviewAsset(image.id, "rejected", "late")).rejects.toMatchObject({
       reason: "asset_in_published_entry",
     });
@@ -271,9 +367,17 @@ describe("mock wiki services", () => {
   it("keeps a newer autosave from being overwritten by an older editor", async () => {
     const services = createMockServices();
     const first = await services.entries.saveWorkingDraft({ entryId: "PW-0001", payload: { body: "a" } });
-    const second = await services.entries.saveWorkingDraft({ entryId: "PW-0001", payload: { body: "b" }, knownVersion: first.version });
+    const second = await services.entries.saveWorkingDraft({
+      entryId: "PW-0001",
+      payload: { body: "b" },
+      knownVersion: first.version,
+    });
     expect(second).toMatchObject({ conflict: false, version: 2 });
-    const stale = await services.entries.saveWorkingDraft({ entryId: "PW-0001", payload: { body: "old tab" }, knownVersion: first.version });
+    const stale = await services.entries.saveWorkingDraft({
+      entryId: "PW-0001",
+      payload: { body: "old tab" },
+      knownVersion: first.version,
+    });
     expect(stale).toMatchObject({ conflict: true, version: 2, payload: { body: "b" } });
     expect((await services.entries.getWorkingDraft({ entryId: "PW-0001" }))?.payload).toEqual({ body: "b" });
   });

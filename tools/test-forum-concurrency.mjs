@@ -6,7 +6,8 @@ const container = process.argv[2];
 if (!container || !/^supabase_db_[a-z0-9-]+$/.test(container)) {
   throw new Error("Pass the explicit local Supabase database container name.");
 }
-const userId = randomUUID();
+const userIds = Array.from({ length: 8 }, () => randomUUID());
+const userId = userIds[0];
 const marker = `concurrency-${userId}`;
 
 function sql(statement) {
@@ -37,17 +38,19 @@ function sql(statement) {
     child.stdin.end(statement);
   });
 }
-const session = `begin; set local role authenticated; do $$begin perform set_config('request.jwt.claim.sub', '${userId}', true); end$$;`;
+const sessionFor = (id) =>
+  `begin; set local role authenticated; do $$begin perform set_config('request.jwt.claim.sub', '${id}', true); end$$;`;
+const session = sessionFor(userId);
 
 try {
   await sql(
-    `insert into auth.users(id, email, email_confirmed_at) values ('${userId}', '${marker}@example.test', now());`,
+    `insert into auth.users(id, email, email_confirmed_at) values ${userIds.map((id, i) => `('${id}', '${marker}-${i}@example.test', now())`).join(",")};`,
   );
   const threads = await Promise.all(
-    Array.from({ length: 8 }, () =>
-      sql(`${session} select public.pw_create_forum_thread('${marker}', 'Opening post', 'help'); commit;`).then(
-        JSON.parse,
-      ),
+    Array.from({ length: 8 }, (_, i) =>
+      sql(
+        `${sessionFor(userIds[i])} select public.pw_create_forum_thread('${marker}', 'Opening post', 'help'); commit;`,
+      ).then(JSON.parse),
     ),
   );
   assert.equal(new Set(threads.map((thread) => thread.id)).size, 8);
@@ -64,9 +67,21 @@ try {
   );
   assert.equal(new Set(replies.map((post) => post.id)).size, 12);
   assert.equal(await sql(`select count(*) from public.forum_posts where thread_id = '${threads[0].id}';`), "13");
-  console.log("PASS: 8 concurrent threads with opening posts; 12 concurrent replies; unique IDs and numbers.");
+  const quotaWrites = await Promise.allSettled(
+    Array.from({ length: 8 }, () =>
+      sql(`${session} select public.pw_create_forum_thread('${marker}', 'Quota opening', 'help'); commit;`),
+    ),
+  );
+  assert.equal(quotaWrites.filter((result) => result.status === "fulfilled").length, 4);
+  assert.equal(quotaWrites.filter((result) => result.status === "rejected").length, 4);
+  for (const result of quotaWrites) {
+    if (result.status === "rejected") assert.match(result.reason.message, /rate_limited/);
+  }
+  console.log(
+    "PASS: 8 accounts create unique threads; 12 concurrent replies; one account cannot exceed its 5-thread quota.",
+  );
 } finally {
   await sql(
-    `delete from public.forum_threads where title = '${marker}'; delete from auth.users where id = '${userId}';`,
+    `delete from public.forum_threads where title = '${marker}'; delete from auth.users where id in (${userIds.map((id) => `'${id}'`).join(",")});`,
   );
 }

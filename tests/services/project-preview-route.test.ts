@@ -19,7 +19,11 @@ const context = { params: Promise.resolve({ handle: "qingkong" }) };
 describe("owner-only project preview import", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mocks.editableMember.mockResolvedValue({ account: { id: "a" }, member: { id: "m", handle: "qingkong" }, admin: false });
+    mocks.editableMember.mockResolvedValue({
+      account: { id: "a" },
+      member: { id: "m", handle: "qingkong" },
+      admin: false,
+    });
   });
   it("denies visitors and other accounts before any outbound request", async () => {
     mocks.editableMember.mockRejectedValue(new ServiceError("unauthenticated", "unauthenticated"));

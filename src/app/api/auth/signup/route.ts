@@ -13,7 +13,8 @@ export async function POST(request: Request) {
     const supabase = await authClient();
     const input = await readJson(request);
     const invalid = authInputError(input, "signup");
-    if (invalid) return NextResponse.json({ error: { ...invalid, code: "invalid", reason: "invalid_payload" } }, { status: 422 });
+    if (invalid)
+      return NextResponse.json({ error: { ...invalid, code: "invalid", reason: "invalid_payload" } }, { status: 422 });
     const email = validEmail(input.email);
     const password = validPassword(input.password, input.confirmPassword);
     await throttle(request, "signup");

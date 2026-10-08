@@ -28,6 +28,11 @@ services:
       PIONEER_DATA_SOURCE: ${PIONEER_DATA_SOURCE:-supabase}
       NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      PIONEER_SITE_URL: ${PIONEER_SITE_URL:-}
+      PIONEER_TRUST_PROXY: ${PIONEER_TRUST_PROXY:-1}
+      PIONEER_THROTTLE_SECRET: ${PIONEER_THROTTLE_SECRET:-}
     volumes:
       # Unused once Supabase is configured (uploads go to Storage); it holds
       # member page images while the app runs on mock fixtures.

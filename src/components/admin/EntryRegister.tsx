@@ -25,7 +25,10 @@ export function EntryRegister({
   if (!page.rows.length) return <>{empty}</>;
   return (
     <Ledger label={tr(lang, "条目登记簿", "Entry register")}>
-      <li aria-hidden="true" className="hidden grid-cols-[minmax(0,2.4fr)_8rem_9rem_9rem_minmax(10rem,1.2fr)] gap-x-6 px-6 py-2 md:grid">
+      <li
+        aria-hidden="true"
+        className="hidden grid-cols-[minmax(0,2.4fr)_8rem_9rem_9rem_minmax(10rem,1.2fr)] gap-x-6 px-6 py-2 md:grid"
+      >
         {[
           tr(lang, "条目", "Entry"),
           tr(lang, "状态", "State"),
@@ -76,7 +79,11 @@ export function EntryRegister({
                   <span className="font-mono">r{entry.publishedRevision}</span>
                   {entry.latestRevision > entry.publishedRevision ? (
                     <span className="ml-1 text-meta text-gold-ink">
-                      {tr(lang, `· 有 ${entry.latestRevision - entry.publishedRevision} 个后续修订`, `· ${entry.latestRevision - entry.publishedRevision} newer`)}
+                      {tr(
+                        lang,
+                        `· 有 ${entry.latestRevision - entry.publishedRevision} 个后续修订`,
+                        `· ${entry.latestRevision - entry.publishedRevision} newer`,
+                      )}
                     </span>
                   ) : null}
                 </>
@@ -122,7 +129,13 @@ export function EntryRegister({
 
 export function NoEntries({ lang, filtered, children }: { lang: Lang; filtered: boolean; children?: React.ReactNode }) {
   return (
-    <EmptyDrawer title={filtered ? tr(lang, "没有符合筛选条件的条目。", "No entries match these filters.") : tr(lang, "这里还没有条目。", "There are no entries here yet.")}>
+    <EmptyDrawer
+      title={
+        filtered
+          ? tr(lang, "没有符合筛选条件的条目。", "No entries match these filters.")
+          : tr(lang, "这里还没有条目。", "There are no entries here yet.")
+      }
+    >
       {children}
     </EmptyDrawer>
   );

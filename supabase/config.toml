@@ -2,3 +2,31 @@ project_id = "pioneer-wiki"
 
 [db]
 major_version = 15
+
+[auth]
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://127.0.0.1:3000/auth/confirm", "http://127.0.0.1:3000/auth/callback"]
+enable_signup = true
+minimum_password_length = 8
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+secure_password_change = true
+
+[auth.email.template.confirmation]
+subject = "确认你的先锋维基账号 · Confirm your Pioneer Wiki account"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "重设先锋维基密码 · Reset your Pioneer Wiki password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "确认邮箱变更 · Confirm your new email"
+content_path = "./supabase/templates/email-change.html"
+
+[auth.email.template.invite]
+subject = "先锋维基邀请 · Pioneer Wiki invitation"
+content_path = "./supabase/templates/invite.html"

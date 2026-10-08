@@ -80,13 +80,11 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
       }
     }
     if (patch.name !== undefined) {
-      if (!patch.name.zh.trim() || !patch.name.en.trim())
-        throw new ServiceError("invalid", "invalid_name");
+      if (!patch.name.zh.trim() || !patch.name.en.trim()) throw new ServiceError("invalid", "invalid_name");
       next.name = { zh: patch.name.zh.trim(), en: patch.name.en.trim() };
     }
     if (patch.scientificName !== undefined) {
-      if (!LATIN.test(patch.scientificName.trim()))
-        throw new ServiceError("invalid", "invalid_scientific_name");
+      if (!LATIN.test(patch.scientificName.trim())) throw new ServiceError("invalid", "invalid_scientific_name");
       next.scientificName = patch.scientificName.trim();
     }
     if (patch.taxonNameZh !== undefined) next.taxonNameZh = patch.taxonNameZh?.trim() || undefined;
@@ -94,8 +92,7 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
     if (patch.essay !== undefined) next.essay = patch.essay;
     if (patch.emblemAssetId !== undefined) next.emblemAssetId = patch.emblemAssetId ?? undefined;
     if (patch.links !== undefined) {
-      if (!patch.links.every(validLink))
-        throw new ServiceError("invalid", "invalid_links");
+      if (!patch.links.every(validLink)) throw new ServiceError("invalid", "invalid_links");
       next.links = patch.links.map((l) => ({ label: l.label, url: l.url.trim() }));
     }
     if (patch.leadId !== undefined) {
@@ -187,11 +184,9 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
       const now = new Date().toISOString();
       if (!input.id) {
         const { slug, name, scientificName } = input.patch;
-        if (!slug || !name || !scientificName)
-          throw new ServiceError("invalid", "taxon_incomplete");
+        if (!slug || !name || !scientificName) throw new ServiceError("invalid", "taxon_incomplete");
         if (find(input.kind, slug)) throw new ServiceError("conflict", "slug_taken");
-        if (input.kind === "category" && !input.patch.familyId)
-          throw new ServiceError("invalid", "family_required");
+        if (input.kind === "category" && !input.patch.familyId) throw new ServiceError("invalid", "family_required");
         const blank: Family = {
           id: slug,
           slug,

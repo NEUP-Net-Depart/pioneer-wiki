@@ -102,7 +102,9 @@ export function validateMetadata(input: Partial<EntryMetadata> | undefined, refs
 /** "中文 / English" or "中文 | English" gives both labels; one name serves both languages. */
 export function splitLabel(label: string): Localized {
   const parts = label.split(/\s*[/|｜]\s*/).map((part) => part.trim());
-  return parts.length > 1 && parts[0] && parts[1] ? { zh: parts[0], en: parts[1] } : { zh: label.trim(), en: label.trim() };
+  return parts.length > 1 && parts[0] && parts[1]
+    ? { zh: parts[0], en: parts[1] }
+    : { zh: label.trim(), en: label.trim() };
 }
 
 /** A URL segment from a title that no other entry uses now or used before. */

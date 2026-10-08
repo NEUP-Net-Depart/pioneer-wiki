@@ -517,14 +517,14 @@ function createCommunityRepository(): CommunityRepository {
     async listLinks(query) {
       const c = await client();
       const rows = (await result(
-        await byView(c.from("friend_links").select("*"), "archived_at", query?.view)
-          .order("since")
-          .order("id"),
+        await byView(c.from("friend_links").select("*"), "archived_at", query?.view).order("since").order("id"),
       )) as Row[];
       return rows.map(mapLink);
     },
     async saveLink(id, patch, baseVersion) {
-      return mapLink(await rpc<Row>("pw_admin_save_link", { p_id: id, p_patch: patch, p_base_version: baseVersion ?? null }));
+      return mapLink(
+        await rpc<Row>("pw_admin_save_link", { p_id: id, p_patch: patch, p_base_version: baseVersion ?? null }),
+      );
     },
     async setLinkArchived(id, archived, reason) {
       return mapLink(
@@ -548,7 +548,11 @@ function createCommunityRepository(): CommunityRepository {
       const row = await memberRow(handle, true);
       if (!row) return null;
       return mapMember(
-        await rpc<Row>("pw_save_member", { p_member_id: text(row.id), p_patch: args, p_base_version: baseVersion ?? null }),
+        await rpc<Row>("pw_save_member", {
+          p_member_id: text(row.id),
+          p_patch: args,
+          p_base_version: baseVersion ?? null,
+        }),
       );
     },
     async setMemberCover(handle, cover) {
@@ -567,7 +571,11 @@ function createCommunityRepository(): CommunityRepository {
       if (stored.error) throw new ServiceError("unavailable", "upload_failed");
       let member: Member;
       try {
-        await rpc("pw_register_cover_media", { p_object_path: image.name, p_width: image.width, p_height: image.height });
+        await rpc("pw_register_cover_media", {
+          p_object_path: image.name,
+          p_width: image.width,
+          p_height: image.height,
+        });
         const src = c.storage.from(COVER_BUCKET).getPublicUrl(image.name).data.publicUrl;
         member = mapMember(
           await rpc<Row>("pw_set_member_cover", {
@@ -618,17 +626,15 @@ function createCommunityRepository(): CommunityRepository {
           .order("number", { ascending: false })
           .limit(50),
       )) as Row[];
-      return rows.map(
-        (row): ContentVersion => ({
-          kind,
-          objectId,
-          number: number(row.number),
-          note: text(row.note),
-          actorId: optionalText(row.actor_id),
-          createdAt: text(row.created_at),
-          data: (row.data ?? {}) as Record<string, unknown>,
-        }),
-      );
+      return rows.map((row): ContentVersion => ({
+        kind,
+        objectId,
+        number: number(row.number),
+        note: text(row.note),
+        actorId: optionalText(row.actor_id),
+        createdAt: text(row.created_at),
+        data: (row.data ?? {}) as Record<string, unknown>,
+      }));
     },
     async restoreVersion(kind, objectId, versionNumber) {
       await rpc("pw_restore_content_version", { p_kind: kind, p_id: objectId, p_number: versionNumber });
@@ -696,10 +702,14 @@ function createCommunityRepository(): CommunityRepository {
       return row ? mapPost(row) : null;
     },
     async moderateThread(id, action, reason) {
-      return mapThread(await rpc<Row>("pw_admin_moderate_thread", { p_id: id, p_action: action, p_reason: reason ?? null }));
+      return mapThread(
+        await rpc<Row>("pw_admin_moderate_thread", { p_id: id, p_action: action, p_reason: reason ?? null }),
+      );
     },
     async moderatePost(id, action, reason) {
-      return mapPost(await rpc<Row>("pw_admin_moderate_post", { p_id: id, p_action: action, p_reason: reason ?? null }));
+      return mapPost(
+        await rpc<Row>("pw_admin_moderate_post", { p_id: id, p_action: action, p_reason: reason ?? null }),
+      );
     },
   };
 }

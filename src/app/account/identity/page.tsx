@@ -36,7 +36,9 @@ export default async function IdentityPage() {
                 <>
                   <span className="font-display text-h4 text-ink">{author.name[lang]}</span>
                   <br />
-                  {zh ? "可以新建条目、修改自己的条目并提交审核。" : "You can create entries, edit your own and submit them for review."}{" "}
+                  {zh
+                    ? "可以新建条目、修改自己的条目并提交审核。"
+                    : "You can create entries, edit your own and submit them for review."}{" "}
                   <Link href="/account/entries" className="pw-link text-ink">
                     {zh ? "我的文章" : "My entries"} →
                   </Link>
@@ -89,12 +91,13 @@ export default async function IdentityPage() {
           {pending ? (
             <div className="flex flex-col gap-2 text-small text-ink-2">
               <p>
-                <StateTag tone="warn">{zh ? "等待处理" : "Waiting"}</StateTag>{" "}
-                {zh ? "你在 " : "You applied on "}
+                <StateTag tone="warn">{zh ? "等待处理" : "Waiting"}</StateTag> {zh ? "你在 " : "You applied on "}
                 {formatWhen(pending.createdAt, lang)}
                 {zh ? " 提交的申请正在等待管理员处理。" : "; an administrator will decide."}
               </p>
-              <blockquote className="border-l-2 border-rule-strong pl-3 whitespace-pre-wrap">{pending.statement}</blockquote>
+              <blockquote className="border-l-2 border-rule-strong pl-3 whitespace-pre-wrap">
+                {pending.statement}
+              </blockquote>
               <WithdrawApplication application={pending} />
             </div>
           ) : active ? (
@@ -114,10 +117,30 @@ export default async function IdentityPage() {
               .map((application) => (
                 <li key={application.id} className="flex flex-col gap-1 py-3 text-small">
                   <span className="flex flex-wrap items-center gap-2">
-                    <StateTag tone={application.status === "approved" ? "ok" : application.status === "rejected" ? "danger" : "quiet"}>
-                      {application.status === "approved" ? (zh ? "已批准" : "Approved") : application.status === "rejected" ? (zh ? "未通过" : "Not approved") : zh ? "已撤回" : "Withdrawn"}
+                    <StateTag
+                      tone={
+                        application.status === "approved"
+                          ? "ok"
+                          : application.status === "rejected"
+                            ? "danger"
+                            : "quiet"
+                      }
+                    >
+                      {application.status === "approved"
+                        ? zh
+                          ? "已批准"
+                          : "Approved"
+                        : application.status === "rejected"
+                          ? zh
+                            ? "未通过"
+                            : "Not approved"
+                          : zh
+                            ? "已撤回"
+                            : "Withdrawn"}
                     </StateTag>
-                    <span className="font-mono text-meta text-ink-3">{formatWhen(application.decidedAt ?? application.createdAt, lang)}</span>
+                    <span className="font-mono text-meta text-ink-3">
+                      {formatWhen(application.decidedAt ?? application.createdAt, lang)}
+                    </span>
                   </span>
                   {application.decisionReason ? (
                     <span className="text-ink-2">

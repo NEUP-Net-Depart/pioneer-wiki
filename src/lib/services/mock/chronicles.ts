@@ -17,11 +17,14 @@ const HTTP_URL = /^https?:\/\/[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:\d{1,5})?(\/\S*)?$
 
 function checkPatch(patch: ChroniclePatch) {
   const pair = (value: { zh: string; en: string } | undefined, max: number) =>
-    !value || (value.zh.trim().length >= 1 && value.en.trim().length >= 1 && value.zh.length <= max && value.en.length <= max);
+    !value ||
+    (value.zh.trim().length >= 1 && value.en.trim().length >= 1 && value.zh.length <= max && value.en.length <= max);
   if (!pair(patch.title, 120)) throw new ServiceError("invalid", "invalid_chronicle_title");
   if (!pair(patch.summary, 400)) throw new ServiceError("invalid", "invalid_chronicle_summary");
-  if (patch.date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(patch.date)) throw new ServiceError("invalid", "invalid_chronicle_date");
-  if (patch.kind !== undefined && !CHRONICLE_KIND_IDS.includes(patch.kind)) throw new ServiceError("invalid", "invalid_chronicle_kind");
+  if (patch.date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(patch.date))
+    throw new ServiceError("invalid", "invalid_chronicle_date");
+  if (patch.kind !== undefined && !CHRONICLE_KIND_IDS.includes(patch.kind))
+    throw new ServiceError("invalid", "invalid_chronicle_kind");
   if (patch.body && patch.body.length > 40000) throw new ServiceError("invalid", "invalid_chronicle_body");
   if (patch.resources?.some((r) => !HTTP_URL.test(r.url) || !r.label.zh.trim() || !r.label.en.trim()))
     throw new ServiceError("invalid", "invalid_chronicle_resources");
@@ -94,7 +97,8 @@ export function createMockChronicleRepository(
         throw new ServiceError("invalid", "unknown_chronicle_host");
       let record: ChronicleDetail;
       if (!id) {
-        if (!patch.title || !patch.summary || !patch.date || !patch.kind) throw new ServiceError("invalid", "chronicle_incomplete");
+        if (!patch.title || !patch.summary || !patch.date || !patch.kind)
+          throw new ServiceError("invalid", "chronicle_incomplete");
         const number = Math.max(0, ...records.map((r) => r.number)) + 1;
         record = {
           id: `ch-${String(number).padStart(4, "0")}`,
@@ -115,7 +119,8 @@ export function createMockChronicleRepository(
       } else {
         const at = records.findIndex((r) => r.id === id);
         if (at < 0) throw new ServiceError("invalid", "chronicle_not_found");
-        if (baseVersion !== undefined && baseVersion !== records[at].version) throw new ServiceError("conflict", "version_conflict");
+        if (baseVersion !== undefined && baseVersion !== records[at].version)
+          throw new ServiceError("conflict", "version_conflict");
         record = {
           ...records[at],
           ...patch,

@@ -28,11 +28,15 @@ export default async function NewDiscussionPage() {
         right={zh ? "发起讨论" : "New discussion"}
       />
       <header>
-        <h1 className="font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-tight">{zh ? "发起讨论" : "Start a discussion"}</h1>
+        <h1 className="font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-tight">
+          {zh ? "发起讨论" : "Start a discussion"}
+        </h1>
         <p className="mt-2 text-small text-ink-2">
           {zh ? "署名：" : "Signed as "}
           <span className="text-ink">{member ? member.name[lang] : account!.name[lang]}</span>
-          {zh ? "（由账号决定，绑定成员主页后使用主页名称）。" : " (from your account; a bound member page signs with its name)."}
+          {zh
+            ? "（由账号决定，绑定成员主页后使用主页名称）。"
+            : " (from your account; a bound member page signs with its name)."}
         </p>
       </header>
       <NewThreadForm accountId={account!.id} />

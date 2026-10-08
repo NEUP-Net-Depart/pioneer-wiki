@@ -80,9 +80,14 @@ function editorialOf(row: Row, latest?: Row, author?: Row | null): EditorialEntr
   return {
     id: text(row.id),
     slug: text(row.slug),
-    title: latest && latest.title_zh != null ? localized(latest, "title_zh", "title_en") : localized(row, "title_zh", "title_en"),
+    title:
+      latest && latest.title_zh != null
+        ? localized(latest, "title_zh", "title_en")
+        : localized(row, "title_zh", "title_en"),
     summary:
-      latest && latest.summary_zh != null ? localized(latest, "summary_zh", "summary_en") : localized(row, "summary_zh", "summary_en"),
+      latest && latest.summary_zh != null
+        ? localized(latest, "summary_zh", "summary_en")
+        : localized(row, "summary_zh", "summary_en"),
     status: row.status as EditorialEntry["status"],
     latestRevision: number(row.latest_revision_number),
     publishedRevision: optionalNumber(row.published_revision_number),
@@ -191,7 +196,9 @@ export function createEntryRepository(): EntryRepository {
       const c = await client();
       let request = c
         .from("entry_revisions")
-        .select("id, entry_id, number, parent_id, author_id, created_at, note, state, metadata, added_lines, removed_lines")
+        .select(
+          "id, entry_id, number, parent_id, author_id, created_at, note, state, metadata, added_lines, removed_lines",
+        )
         .eq("entry_id", entryId);
       if ((options?.scope ?? "public") === "public") request = request.eq("state", "published");
       return ((await result(await request.order("number", { ascending: false }))) as Row[]).map(mapRevision);
@@ -218,16 +225,14 @@ export function createEntryRepository(): EntryRepository {
       let request = c.from("relations").select("*");
       if (entryId) request = request.or(`from_entry_id.eq.${entryId},to_entry_id.eq.${entryId}`);
       const rows = (await result(await request.order("id"))) as Row[];
-      return rows.map(
-        (row): Relation => ({
-          id: text(row.id),
-          from: text(row.from_entry_id),
-          to: text(row.to_entry_id),
-          kind: row.kind as Relation["kind"],
-          note: localized(row, "note_zh", "note_en"),
-          strength: number(row.strength) as Relation["strength"],
-        }),
-      );
+      return rows.map((row): Relation => ({
+        id: text(row.id),
+        from: text(row.from_entry_id),
+        to: text(row.to_entry_id),
+        kind: row.kind as Relation["kind"],
+        note: localized(row, "note_zh", "note_en"),
+        strength: number(row.strength) as Relation["strength"],
+      }));
     },
 
     async listEditorial(query) {
@@ -241,25 +246,23 @@ export function createEntryRepository(): EntryRepository {
       });
       return {
         total: number(payload.total),
-        rows: jsonList<Row>(payload.rows).map(
-          (row): EditorialEntry => ({
-            id: text(row.id),
-            slug: text(row.slug),
-            title: row.title as EditorialEntry["title"],
-            summary: row.summary as EditorialEntry["summary"],
-            status: row.status as EditorialEntry["status"],
-            latestRevision: number(row.latestRevision),
-            publishedRevision: optionalNumber(row.publishedRevision),
-            authorId: text(row.authorId),
-            authorName: row.authorName as EditorialEntry["authorName"],
-            categoryId: optionalText(row.categoryId),
-            editedAt: text(row.editedAt),
-            publishedAt: optionalText(row.publishedAt),
-            archivedAt: optionalText(row.archivedAt),
-            returnNote: optionalText(row.returnNote),
-            returnedAt: optionalText(row.returnedAt),
-          }),
-        ),
+        rows: jsonList<Row>(payload.rows).map((row): EditorialEntry => ({
+          id: text(row.id),
+          slug: text(row.slug),
+          title: row.title as EditorialEntry["title"],
+          summary: row.summary as EditorialEntry["summary"],
+          status: row.status as EditorialEntry["status"],
+          latestRevision: number(row.latestRevision),
+          publishedRevision: optionalNumber(row.publishedRevision),
+          authorId: text(row.authorId),
+          authorName: row.authorName as EditorialEntry["authorName"],
+          categoryId: optionalText(row.categoryId),
+          editedAt: text(row.editedAt),
+          publishedAt: optionalText(row.publishedAt),
+          archivedAt: optionalText(row.archivedAt),
+          returnNote: optionalText(row.returnNote),
+          returnedAt: optionalText(row.returnedAt),
+        })),
       };
     },
 
@@ -280,7 +283,12 @@ export function createEntryRepository(): EntryRepository {
         c.from("authors").select("name_zh, name_en").eq("id", text(row.author_id)).maybeSingle(),
       ]);
       if (!latest) return null;
-      const latestRow: Row = { title_zh: latest.title.zh, title_en: latest.title.en, summary_zh: latest.summary.zh, summary_en: latest.summary.en };
+      const latestRow: Row = {
+        title_zh: latest.title.zh,
+        title_en: latest.title.en,
+        summary_zh: latest.summary.zh,
+        summary_en: latest.summary.en,
+      };
       return {
         entry: editorialOf(row, latestRow, (await result(author)) as Row | null),
         latest: latest as RevisionSnapshot,
@@ -302,7 +310,11 @@ export function createEntryRepository(): EntryRepository {
         p_metadata: input.metadata ?? null,
         p_category_id: input.categoryId ?? null,
       });
-      return { ...mapRevision(row), withdrewReview: Boolean(row.withdrewReview), slug: optionalText(row.slug) } as SavedRevision;
+      return {
+        ...mapRevision(row),
+        withdrewReview: Boolean(row.withdrewReview),
+        slug: optionalText(row.slug),
+      } as SavedRevision;
     },
 
     async transition(input: ReviewTransitionInput) {

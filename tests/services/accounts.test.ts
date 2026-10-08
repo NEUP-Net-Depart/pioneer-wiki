@@ -35,18 +35,26 @@ describe("accounts and identities (fixtures backend)", () => {
 
   it("refuses to make an unverified account an administrator and gives a new one an author record", async () => {
     const { repo, accounts } = register();
-    await expect(repo.setRole("acct-sample-unverified", "admin")).rejects.toMatchObject({ reason: "account_not_active" });
+    await expect(repo.setRole("acct-sample-unverified", "admin")).rejects.toMatchObject({
+      reason: "account_not_active",
+    });
     await repo.setRole("acct-sample-reader", "admin");
     expect(accounts.find((a) => a.id === "acct-sample-reader")?.authorId).toBe("a-sample-reader");
   });
 
   it("suspends with a reason, takes writing away at once, and reactivates", async () => {
     const { repo, accounts, as, context } = register();
-    await expect(repo.setStatus("acct-sample-reader", "suspended")).rejects.toMatchObject({ reason: "reason_required" });
-    await expect(repo.setStatus("a-qingkong", "suspended", "self")).rejects.toMatchObject({ reason: "cannot_change_own_status" });
+    await expect(repo.setStatus("acct-sample-reader", "suspended")).rejects.toMatchObject({
+      reason: "reason_required",
+    });
+    await expect(repo.setStatus("a-qingkong", "suspended", "self")).rejects.toMatchObject({
+      reason: "cannot_change_own_status",
+    });
     await repo.setStatus("acct-sample-reader", "suspended", "Spam");
     as("acct-sample-reader");
-    expect(() => context.requireActive()).toThrowError(expect.objectContaining({ reason: "verified_account_required" }));
+    expect(() => context.requireActive()).toThrowError(
+      expect.objectContaining({ reason: "verified_account_required" }),
+    );
     as("a-qingkong");
     await repo.setStatus("acct-sample-reader", "active");
     expect(accounts.find((a) => a.id === "acct-sample-reader")?.status).toBe("active");
@@ -55,8 +63,12 @@ describe("accounts and identities (fixtures backend)", () => {
   it("decides an application once, creating and binding author and page together", async () => {
     const { repo, accounts, people } = register();
     const [pending] = (await repo.listApplications()).rows;
-    await expect(repo.decideApplication(pending.id, "rejected", {})).rejects.toMatchObject({ reason: "reason_required" });
-    await expect(repo.decideApplication(pending.id, "approved", {})).rejects.toMatchObject({ reason: "nothing_to_bind" });
+    await expect(repo.decideApplication(pending.id, "rejected", {})).rejects.toMatchObject({
+      reason: "reason_required",
+    });
+    await expect(repo.decideApplication(pending.id, "approved", {})).rejects.toMatchObject({
+      reason: "nothing_to_bind",
+    });
     await repo.decideApplication(pending.id, "approved", {
       author: { mode: "create", handle: "reader-x", name: { zh: "读者", en: "Reader X" } },
       member: { mode: "create", handle: "reader-x", name: { zh: "读者", en: "Reader X" } },
@@ -64,16 +76,22 @@ describe("accounts and identities (fixtures backend)", () => {
     const reader = accounts.find((a) => a.id === "acct-sample-reader")!;
     expect(reader).toMatchObject({ authorId: "a-reader-x", memberId: "m-reader-x" });
     expect(people.find((m) => m.id === "m-reader-x")?.authorId).toBe("a-reader-x");
-    await expect(repo.decideApplication(pending.id, "approved", { author: { mode: "existing", id: "a-qingkong" } })).rejects.toMatchObject({
+    await expect(
+      repo.decideApplication(pending.id, "approved", { author: { mode: "existing", id: "a-qingkong" } }),
+    ).rejects.toMatchObject({
       reason: "application_decided",
     });
   });
 
   it("refuses a binding that would take another account's page, and changes nothing", async () => {
     const { repo, accounts } = register();
-    await expect(repo.setIdentity("acct-sample-reader", { memberId: "m-qingkong" })).rejects.toMatchObject({ reason: "member_already_bound" });
+    await expect(repo.setIdentity("acct-sample-reader", { memberId: "m-qingkong" })).rejects.toMatchObject({
+      reason: "member_already_bound",
+    });
     expect(accounts.find((a) => a.id === "acct-sample-reader")?.memberId).toBeUndefined();
-    await expect(repo.setIdentity("a-qingkong", { authorId: null })).rejects.toMatchObject({ reason: "admin_needs_author" });
+    await expect(repo.setIdentity("a-qingkong", { authorId: null })).rejects.toMatchObject({
+      reason: "admin_needs_author",
+    });
   });
 
   it("lets a reader ask for closure, and an administrator close the account without losing history", async () => {
@@ -89,14 +107,20 @@ describe("accounts and identities (fixtures backend)", () => {
     const closed = accounts.find((a) => a.id === "acct-sample-reader")!;
     expect(closed).toMatchObject({ status: "closed", role: "reader", name: { en: "Closed account" } });
     expect(closed.email).toMatch(/@closed\.invalid$/);
-    expect((await repo.listApplications({ status: [] })).rows.some((a) => a.accountId === "acct-sample-reader")).toBe(false);
+    expect((await repo.listApplications({ status: [] })).rows.some((a) => a.accountId === "acct-sample-reader")).toBe(
+      false,
+    );
   });
 
   it("keeps one pending application per account", async () => {
     const { repo, as } = register();
     as("acct-sample-unverified");
-    await expect(repo.submitApplication({ kind: "author", statement: "hi" })).rejects.toMatchObject({ reason: "verified_account_required" });
+    await expect(repo.submitApplication({ kind: "author", statement: "hi" })).rejects.toMatchObject({
+      reason: "verified_account_required",
+    });
     as("acct-sample-reader");
-    await expect(repo.submitApplication({ kind: "author", statement: "again" })).rejects.toMatchObject({ reason: "application_pending" });
+    await expect(repo.submitApplication({ kind: "author", statement: "again" })).rejects.toMatchObject({
+      reason: "application_pending",
+    });
   });
 });

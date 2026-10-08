@@ -47,7 +47,9 @@ export default async function NewEntryPage({ searchParams }: PageProps<"/editor/
     <div className="flex flex-col gap-(--space-block)">
       <RunningHead left={`${t("site.name")} · ${t("editor.headingNew")}`} right="PW-····" />
       <header className="max-w-3xl">
-        <p className="font-mono text-meta tracking-[0.14em] text-brick-ink uppercase">{lang === "zh" ? "新建条目" : "New entry"}</p>
+        <p className="font-mono text-meta tracking-[0.14em] text-brick-ink uppercase">
+          {lang === "zh" ? "新建条目" : "New entry"}
+        </p>
         <h1 className="mt-2 font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-tight">{t("editor.headingNew")}</h1>
         <p className="mt-3 max-w-prose text-small leading-relaxed text-ink-2">
           {lang === "zh"

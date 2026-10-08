@@ -50,7 +50,9 @@ export default async function ThreadPage({ params }: PageProps<"/forum/[id]">) {
   const cat = categoryOf(thread.category);
   const memberIds = [...new Set(posts.map((p) => p.memberId).filter((m): m is string => Boolean(m)))];
   const members = new Map(
-    (await Promise.all(memberIds.map((m) => community.getMember(m).catch(() => null)))).flatMap((m) => (m ? [[m.id, m] as const] : [])),
+    (await Promise.all(memberIds.map((m) => community.getMember(m).catch(() => null)))).flatMap((m) =>
+      m ? [[m.id, m] as const] : [],
+    ),
   );
   const opening = posts[0];
   const visible = posts.filter((p) => !p.hiddenAt);
@@ -85,7 +87,11 @@ export default async function ThreadPage({ params }: PageProps<"/forum/[id]">) {
               {zh ? "讨论中" : "Open"}
             </span>
           )}
-          {thread.hiddenAt ? <span className="rounded-full border border-brick/50 px-3 py-1 text-meta text-brick-ink">{zh ? "已隐藏" : "Hidden"}</span> : null}
+          {thread.hiddenAt ? (
+            <span className="rounded-full border border-brick/50 px-3 py-1 text-meta text-brick-ink">
+              {zh ? "已隐藏" : "Hidden"}
+            </span>
+          ) : null}
           <span>
             <span className="text-ink">{thread.authorName}</span> {zh ? "发起于" : "started this on"}{" "}
             <time dateTime={thread.createdAt}>{formatDate(thread.createdAt, lang)}</time> ·{" "}
@@ -102,7 +108,10 @@ export default async function ThreadPage({ params }: PageProps<"/forum/[id]">) {
             if (p.hiddenAt)
               return (
                 <li key={p.id} id={p.id} className="relative grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3">
-                  <span aria-hidden="true" className="relative z-10 mt-2 size-9 rounded-full border border-dashed border-rule-strong bg-paper" />
+                  <span
+                    aria-hidden="true"
+                    className="relative z-10 mt-2 size-9 rounded-full border border-dashed border-rule-strong bg-paper"
+                  />
                   <div className="rounded-sm border border-dashed border-rule-strong px-4 py-3 text-small text-ink-3">
                     <p>
                       {zh ? "这条回复已被管理员隐藏" : "An administrator hid this reply"}
@@ -119,12 +128,18 @@ export default async function ThreadPage({ params }: PageProps<"/forum/[id]">) {
                 </li>
               );
             return (
-              <li key={p.id} id={p.id} className="relative grid scroll-mt-[calc(var(--shell-header)+1rem)] grid-cols-[2.25rem_minmax(0,1fr)] gap-3">
+              <li
+                key={p.id}
+                id={p.id}
+                className="relative grid scroll-mt-[calc(var(--shell-header)+1rem)] grid-cols-[2.25rem_minmax(0,1fr)] gap-3"
+              >
                 <span className="relative z-10 mt-1.5">
                   <Avatar member={member} name={p.authorName} lang={lang} />
                 </span>
                 <div className={`pw-sheet min-w-0 overflow-hidden ${isOpening ? "border-part/40" : ""}`}>
-                  <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-rule px-4 py-2 text-small ${isOpening ? "bg-part-wash" : "bg-paper-deep/40"}`}>
+                  <div
+                    className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-rule px-4 py-2 text-small ${isOpening ? "bg-part-wash" : "bg-paper-deep/40"}`}
+                  >
                     {member ? (
                       <Link href={`/members/${member.handle}`} className="pw-link font-medium text-ink">
                         {p.authorName}
@@ -138,7 +153,9 @@ export default async function ThreadPage({ params }: PageProps<"/forum/[id]">) {
                     </a>
                     <span className="ml-auto flex items-center gap-3">
                       {p.authorName === thread.authorName && !isOpening ? (
-                        <span className="rounded-xs border border-rule-strong px-1.5 text-meta text-ink-3">{zh ? "发起人" : "Author"}</span>
+                        <span className="rounded-xs border border-rule-strong px-1.5 text-meta text-ink-3">
+                          {zh ? "发起人" : "Author"}
+                        </span>
                       ) : null}
                       {admin ? <PostModeration post={p} opening={isOpening} /> : null}
                     </span>
@@ -152,7 +169,10 @@ export default async function ThreadPage({ params }: PageProps<"/forum/[id]">) {
           })}
         </ol>
 
-        <aside aria-label={zh ? "讨论信息" : "About this discussion"} className="flex flex-col gap-6 text-small lg:sticky lg:top-[calc(var(--shell-header)+1.5rem)] lg:self-start">
+        <aside
+          aria-label={zh ? "讨论信息" : "About this discussion"}
+          className="flex flex-col gap-6 text-small lg:sticky lg:top-[calc(var(--shell-header)+1.5rem)] lg:self-start"
+        >
           <div>
             <p className="pw-label">{zh ? "分类" : "Category"}</p>
             <Link href={`/forum?category=${cat.id}`} className="mt-2 flex items-center gap-2 no-underline">
@@ -161,7 +181,9 @@ export default async function ThreadPage({ params }: PageProps<"/forum/[id]">) {
             </Link>
           </div>
           <div>
-            <p className="pw-label">{zh ? `参与者 · ${participants.length}` : `Participants · ${participants.length}`}</p>
+            <p className="pw-label">
+              {zh ? `参与者 · ${participants.length}` : `Participants · ${participants.length}`}
+            </p>
             <ul className="mt-2 flex flex-wrap gap-2">
               {participants.map((p) => (
                 <li key={p.id} title={p.authorName}>
@@ -211,7 +233,11 @@ export default async function ThreadPage({ params }: PageProps<"/forum/[id]">) {
                 : "Verify your email to reply."}
           </p>
         ) : (
-          <ReplyForm threadId={thread.id} accountId={account.id} signature={mine ? mine.name[lang] : account.name[lang]} />
+          <ReplyForm
+            threadId={thread.id}
+            accountId={account.id}
+            signature={mine ? mine.name[lang] : account.name[lang]}
+          />
         )}
       </section>
     </article>

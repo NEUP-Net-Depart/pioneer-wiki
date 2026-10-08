@@ -3,7 +3,16 @@ import { getServices } from "@/lib/services";
 import { getLang } from "@/lib/i18n/server";
 import type { ArchiveView } from "@/lib/services/contracts";
 import { chartingOrder } from "@/lib/links/chart";
-import { DeskHead, EmptyDrawer, formatWhen, Ledger, LedgerRow, ReadFailure, StateTag, tr } from "@/components/admin/desk";
+import {
+  DeskHead,
+  EmptyDrawer,
+  formatWhen,
+  Ledger,
+  LedgerRow,
+  ReadFailure,
+  StateTag,
+  tr,
+} from "@/components/admin/desk";
 import { DeskFilters } from "@/components/admin/DeskFilters";
 import { LinkForm, LinkRowActions } from "@/components/admin/CommunityActions";
 
@@ -53,17 +62,30 @@ export default async function AdminLinks({ searchParams }: PageProps<"/admin/lin
       ) : (
         <Ledger label={tr(lang, "友链目录", "Link directory")}>
           {ordered.map((link, index) => (
-            <LedgerRow key={link.id} muted={Boolean(link.archivedAt)} className="md:grid-cols-[3rem_minmax(0,1.6fr)_minmax(0,1fr)_minmax(12rem,1fr)] md:items-start">
+            <LedgerRow
+              key={link.id}
+              muted={Boolean(link.archivedAt)}
+              className="md:grid-cols-[3rem_minmax(0,1.6fr)_minmax(0,1fr)_minmax(12rem,1fr)] md:items-start"
+            >
               <span className="font-letterpress text-h4 text-ink-3">{link.archivedAt ? "—" : index + 1}</span>
               <div className="min-w-0">
                 <p className="font-display text-h4 break-words text-ink">{link.name[lang]}</p>
-                <a href={link.url} rel="noopener noreferrer" target="_blank" className="pw-link font-mono text-meta break-all text-ink-2">
+                <a
+                  href={link.url}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  className="pw-link font-mono text-meta break-all text-ink-2"
+                >
                   {link.url}
                 </a>
                 <p className="mt-1 text-small break-words text-ink-2">{link.description[lang]}</p>
               </div>
               <div className="flex flex-wrap items-start gap-1.5 text-small text-ink-2">
-                {link.archivedAt ? <StateTag tone="quiet">{tr(lang, "已归档", "Archived")}</StateTag> : <StateTag tone="ok">{tr(lang, "公开", "Public")}</StateTag>}
+                {link.archivedAt ? (
+                  <StateTag tone="quiet">{tr(lang, "已归档", "Archived")}</StateTag>
+                ) : (
+                  <StateTag tone="ok">{tr(lang, "公开", "Public")}</StateTag>
+                )}
                 {link.sample ? <StateTag tone="warn">{tr(lang, "示例", "Sample")}</StateTag> : null}
                 <span className="w-full text-meta text-ink-3">
                   {tr(lang, "加入", "Joined")} {formatWhen(link.since, lang).split(" ").slice(0, 3).join(" ")}

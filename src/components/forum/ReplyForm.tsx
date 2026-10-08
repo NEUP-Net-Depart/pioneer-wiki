@@ -7,7 +7,15 @@ import { api, failureText } from "@/components/admin/actions";
 import { Composer } from "@/components/writing/Composer";
 
 /** The reply box at the foot of a discussion; the new reply appears in place, without a reload. */
-export function ReplyForm({ threadId, accountId, signature }: { threadId: string; accountId: string; signature: string }) {
+export function ReplyForm({
+  threadId,
+  accountId,
+  signature,
+}: {
+  threadId: string;
+  accountId: string;
+  signature: string;
+}) {
   const router = useRouter();
   const { lang } = useI18n();
   const zh = lang === "zh";
@@ -66,7 +74,10 @@ export function ReplyForm({ threadId, accountId, signature }: { threadId: string
           {zh ? "署名：" : "Signed: "}
           {signature}
         </span>
-        <p role={error ? "alert" : "status"} className={error ? "text-small text-brick-ink" : "text-small text-moss-ink"}>
+        <p
+          role={error ? "alert" : "status"}
+          className={error ? "text-small text-brick-ink" : "text-small text-moss-ink"}
+        >
           {error ?? (done ? (zh ? "回复已发布。" : "Reply posted.") : "")}
         </p>
       </div>

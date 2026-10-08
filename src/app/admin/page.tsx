@@ -5,17 +5,35 @@ import { getLang } from "@/lib/i18n/server";
 import { toRoman } from "@/lib/roman";
 import type { AdminTodo } from "@/lib/services/contracts";
 import { DeskHead, tr } from "@/components/admin/desk";
-import { ADMIN_GROUPS } from "@/components/admin/AdminNav";
+import { ADMIN_GROUPS } from "@/lib/admin/navigation";
 
 export const metadata: Metadata = { title: "总览 Overview" };
 
 const NOTES: Record<string, { zh: string; en: string }> = {
-  "/admin/review": { zh: "逐行比对正文与元数据，发布、退回或回滚。", en: "Compare body and metadata, then publish, return or roll back." },
-  "/admin/entries": { zh: "全部文章：草稿、待审、已发布与归档。", en: "Every entry: drafts, submissions, published and archived." },
-  "/admin/assets": { zh: "批准或拒绝上传的插图，核对替代文本与许可。", en: "Approve or reject uploaded figures; check alt text and licence." },
-  "/admin/taxonomy": { zh: "科与属的编目，保存即公开，每次修改留版。", en: "Families and genera; saved at once, every change versioned." },
-  "/admin/applications": { zh: "读者申请作者资格或成员主页。", en: "Readers asking for author status or a member page." },
-  "/admin/accounts": { zh: "角色、停用、身份绑定与注销处理。", en: "Roles, suspension, identity bindings and closures." },
+  "/admin/review": {
+    zh: "逐行比对正文与元数据，发布、退回或回滚。",
+    en: "Compare body and metadata, then publish, return or roll back.",
+  },
+  "/admin/entries": {
+    zh: "全部文章：草稿、待审、已发布与归档。",
+    en: "Every entry: drafts, submissions, published and archived.",
+  },
+  "/admin/assets": {
+    zh: "批准或拒绝上传的插图，核对替代文本与许可。",
+    en: "Approve or reject uploaded figures; check alt text and licence.",
+  },
+  "/admin/taxonomy": {
+    zh: "科与属的编目，保存即公开，每次修改留版。",
+    en: "Families and genera; saved at once, every change versioned.",
+  },
+  "/admin/applications": {
+    zh: "读者申请作者资格或成员主页。",
+    en: "Readers asking for author status or a member page.",
+  },
+  "/admin/accounts": {
+    zh: "角色、停用、身份绑定与注销处理。",
+    en: "Roles, suspension, identity bindings and closures.",
+  },
   "/admin/members": { zh: "建立、编辑、归档成员主页。", en: "Create, edit and archive member pages." },
   "/admin/links": { zh: "维护友链目录与地图上的领地。", en: "Keep the friend-link gazetteer and its chart." },
   "/admin/chronicles": { zh: "纪行编年册的新增、修改与归档。", en: "Add, edit and archive the annals." },
@@ -64,14 +82,20 @@ export default async function AdminOverview() {
         </h2>
         {todo === null ? (
           <p role="alert" className="text-small text-brick-ink">
-            {tr(lang, "待办计数暂时无法读取；各项工作仍可从下方进入。", "The counts could not be read; every room below still opens.")}
+            {tr(
+              lang,
+              "待办计数暂时无法读取；各项工作仍可从下方进入。",
+              "The counts could not be read; every room below still opens.",
+            )}
           </p>
         ) : open.length ? (
           <ul className="flex flex-col">
             {open.map((item) => (
               <li key={item.href} className="pw-ink-under">
                 <Link href={item.href} className="group flex min-h-12 items-baseline gap-4 py-2 no-underline">
-                  <span className="w-12 shrink-0 text-right font-display text-h3 text-brick-ink tabular-nums">{item.count}</span>
+                  <span className="w-12 shrink-0 text-right font-display text-h3 text-brick-ink tabular-nums">
+                    {item.count}
+                  </span>
                   <span className="text-body text-ink group-hover:underline">{item.label}</span>
                   <span aria-hidden="true" className="ml-auto text-ink-3">
                     →
@@ -81,7 +105,9 @@ export default async function AdminOverview() {
             ))}
           </ul>
         ) : (
-          <p className="text-small text-ink-2">{tr(lang, "暂时没有等待处理的工作。", "Nothing is waiting right now.")}</p>
+          <p className="text-small text-ink-2">
+            {tr(lang, "暂时没有等待处理的工作。", "Nothing is waiting right now.")}
+          </p>
         )}
       </section>
       <section aria-labelledby="contents" className="flex flex-col gap-6">
@@ -97,7 +123,10 @@ export default async function AdminOverview() {
                   const numeral = firstOf[groupIndex] + itemIndex + 1;
                   return (
                     <li key={item.href} className="pw-ink-under">
-                      <Link href={item.href} className="group grid min-h-14 grid-cols-[2.5rem_1fr] gap-x-3 py-2.5 no-underline">
+                      <Link
+                        href={item.href}
+                        className="group grid min-h-14 grid-cols-[2.5rem_1fr] gap-x-3 py-2.5 no-underline"
+                      >
                         <span className="font-letterpress text-small text-ink-3">{toRoman(numeral)}</span>
                         <span>
                           <span className="font-display text-h4 text-ink group-hover:underline">

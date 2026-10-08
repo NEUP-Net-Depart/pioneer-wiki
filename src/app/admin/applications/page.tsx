@@ -2,7 +2,17 @@ import type { Metadata } from "next";
 import { getServices } from "@/lib/services";
 import { getLang } from "@/lib/i18n/server";
 import type { ApplicationStatus } from "@/lib/model/types";
-import { DeskHead, EmptyDrawer, formatWhen, Ledger, LedgerRow, Pager, ReadFailure, StateTag, tr } from "@/components/admin/desk";
+import {
+  DeskHead,
+  EmptyDrawer,
+  formatWhen,
+  Ledger,
+  LedgerRow,
+  Pager,
+  ReadFailure,
+  StateTag,
+  tr,
+} from "@/components/admin/desk";
 import { DeskFilters } from "@/components/admin/DeskFilters";
 import { ApplicationDecision } from "@/components/admin/ApplicationDecision";
 
@@ -15,7 +25,9 @@ const STATUSES: ApplicationStatus[] = ["pending", "approved", "rejected", "withd
 export default async function AdminApplications({ searchParams }: PageProps<"/admin/applications">) {
   const lang = await getLang();
   const params = await searchParams;
-  const status = STATUSES.includes(params.status as ApplicationStatus) ? (params.status as ApplicationStatus) : "pending";
+  const status = STATUSES.includes(params.status as ApplicationStatus)
+    ? (params.status as ApplicationStatus)
+    : "pending";
   const offset = Math.max(0, Number(typeof params.offset === "string" ? params.offset : 0) || 0);
   const { accounts, references, community } = getServices();
   const [page, authors, members] = await Promise.all([
@@ -24,7 +36,11 @@ export default async function AdminApplications({ searchParams }: PageProps<"/ad
     community.listMembers({ view: "all" }),
   ]);
   const kindLabel = (kind: string) =>
-    kind === "both" ? tr(lang, "作者与成员主页", "Author and page") : kind === "author" ? tr(lang, "作者资格", "Author status") : tr(lang, "成员主页", "Member page");
+    kind === "both"
+      ? tr(lang, "作者与成员主页", "Author and page")
+      : kind === "author"
+        ? tr(lang, "作者资格", "Author status")
+        : tr(lang, "成员主页", "Member page");
   return (
     <>
       <DeskHead
@@ -54,15 +70,28 @@ export default async function AdminApplications({ searchParams }: PageProps<"/ad
       {!page ? (
         <ReadFailure lang={lang} />
       ) : page.rows.length === 0 ? (
-        <EmptyDrawer title={status === "pending" ? tr(lang, "没有待处理的申请。", "No applications are waiting.") : tr(lang, "没有符合条件的申请。", "No applications match.")} />
+        <EmptyDrawer
+          title={
+            status === "pending"
+              ? tr(lang, "没有待处理的申请。", "No applications are waiting.")
+              : tr(lang, "没有符合条件的申请。", "No applications match.")
+          }
+        />
       ) : (
         <>
           <Ledger label={tr(lang, "申请登记簿", "Applications")}>
             {page.rows.map((application) => (
-              <LedgerRow key={application.id} className="md:grid-cols-[minmax(0,1fr)_minmax(14rem,auto)] md:items-start">
+              <LedgerRow
+                key={application.id}
+                className="md:grid-cols-[minmax(0,1fr)_minmax(14rem,auto)] md:items-start"
+              >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <StateTag tone={application.status === "pending" ? "warn" : application.status === "approved" ? "ok" : "quiet"}>
+                    <StateTag
+                      tone={
+                        application.status === "pending" ? "warn" : application.status === "approved" ? "ok" : "quiet"
+                      }
+                    >
                       {kindLabel(application.kind)}
                     </StateTag>
                     <span className="font-mono text-meta text-ink-3">{formatWhen(application.createdAt, lang)}</span>
@@ -70,7 +99,9 @@ export default async function AdminApplications({ searchParams }: PageProps<"/ad
                   <p className="mt-2 font-display text-h4 text-ink">
                     {application.account ? application.account.name[lang] : tr(lang, "已注销的账号", "Closed account")}
                   </p>
-                  {application.account ? <p className="font-mono text-meta break-all text-ink-3">{application.account.email}</p> : null}
+                  {application.account ? (
+                    <p className="font-mono text-meta break-all text-ink-3">{application.account.email}</p>
+                  ) : null}
                   <blockquote className="mt-3 border-l-2 border-rule-strong pl-3 text-small whitespace-pre-wrap text-ink-2">
                     {application.statement}
                   </blockquote>
@@ -97,7 +128,14 @@ export default async function AdminApplications({ searchParams }: PageProps<"/ad
               </LedgerRow>
             ))}
           </Ledger>
-          <Pager lang={lang} path="/admin/applications" params={{ status: status === "pending" ? undefined : status }} offset={offset} limit={LIMIT} total={page.total} />
+          <Pager
+            lang={lang}
+            path="/admin/applications"
+            params={{ status: status === "pending" ? undefined : status }}
+            offset={offset}
+            limit={LIMIT}
+            total={page.total}
+          />
         </>
       )}
     </>

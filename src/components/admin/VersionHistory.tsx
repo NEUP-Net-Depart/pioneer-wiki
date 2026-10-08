@@ -51,7 +51,15 @@ function changed(a: Record<string, unknown>, b: Record<string, unknown> | undefi
  * The saved versions of a member page, link or chronicle: who saved which
  * fields when, and a way back. Restoring writes a new version; nothing is lost.
  */
-export function VersionHistory({ endpoint, restore, label }: { endpoint: string; restore: (n: number) => Promise<unknown>; label?: string }) {
+export function VersionHistory({
+  endpoint,
+  restore,
+  label,
+}: {
+  endpoint: string;
+  restore: (n: number) => Promise<unknown>;
+  label?: string;
+}) {
   const { lang } = useI18n();
   const zh = lang === "zh";
   const { succeed } = useAction();
@@ -86,7 +94,9 @@ export function VersionHistory({ endpoint, restore, label }: { endpoint: string;
         <Dialog.Content className="pw-sheet fixed top-1/2 left-1/2 z-(--z-overlay) flex max-h-[calc(100svh-2rem)] w-[min(40rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-y-auto p-6 shadow-lifted sm:p-8">
           <Dialog.Title className="pw-double-rule font-display text-h3">{zh ? "版本记录" : "Versions"}</Dialog.Title>
           <Dialog.Description className="text-small text-ink-2">
-            {zh ? "每次保存、归档或恢复都会留下一个版本。恢复旧版本会作为新版本保存，不会删除任何记录。" : "Every save, archive and restore leaves a version. Restoring an old one saves it as a new version; nothing is removed."}
+            {zh
+              ? "每次保存、归档或恢复都会留下一个版本。恢复旧版本会作为新版本保存，不会删除任何记录。"
+              : "Every save, archive and restore leaves a version. Restoring an old one saves it as a new version; nothing is removed."}
           </Dialog.Description>
           {error ? (
             <p role="alert" className="text-small text-brick-ink">
@@ -94,7 +104,9 @@ export function VersionHistory({ endpoint, restore, label }: { endpoint: string;
             </p>
           ) : null}
           {!versions && !error ? <p className="text-small text-ink-3">{zh ? "正在读取…" : "Loading…"}</p> : null}
-          {versions && !versions.length ? <p className="text-small text-ink-3">{zh ? "还没有版本记录。" : "No versions yet."}</p> : null}
+          {versions && !versions.length ? (
+            <p className="text-small text-ink-3">{zh ? "还没有版本记录。" : "No versions yet."}</p>
+          ) : null}
           {versions?.length ? (
             <ol className="flex flex-col divide-y divide-rule">
               {versions.map((version, index) => {
@@ -105,7 +117,9 @@ export function VersionHistory({ endpoint, restore, label }: { endpoint: string;
                       <p className="text-small text-ink">
                         <span className="font-mono">v{version.number}</span> · {version.note || "—"}
                       </p>
-                      <p className="text-meta text-ink-3">{new Date(version.createdAt).toLocaleString(zh ? "zh-CN" : "en-GB")}</p>
+                      <p className="text-meta text-ink-3">
+                        {new Date(version.createdAt).toLocaleString(zh ? "zh-CN" : "en-GB")}
+                      </p>
                       {fields.length ? (
                         <p className="mt-1 text-meta text-ink-2">
                           {zh ? "改动：" : "Changed: "}
@@ -124,31 +138,37 @@ export function VersionHistory({ endpoint, restore, label }: { endpoint: string;
                       </button>
                     ) : index > 0 ? (
                       <span className="flex flex-wrap items-center gap-3 text-small">
-                        <span className="text-ink-2">{zh ? `把 v${version.number} 设为最新？` : `Make v${version.number} current?`}</span>
-                        <button type="button" className="pw-link min-h-8 text-ink-3" onClick={() => setConfirming(null)}>
+                        <span className="text-ink-2">
+                          {zh ? `把 v${version.number} 设为最新？` : `Make v${version.number} current?`}
+                        </span>
+                        <button
+                          type="button"
+                          className="pw-link min-h-8 text-ink-3"
+                          onClick={() => setConfirming(null)}
+                        >
                           {zh ? "取消" : "Cancel"}
                         </button>
-                      <button
-                        type="button"
-                        disabled={busy !== null}
-                        className="pw-link min-h-8 text-small text-indigo disabled:opacity-45"
-                        onClick={async () => {
-                          setConfirming(null);
-                          setBusy(version.number);
-                          setError(null);
-                          try {
-                            await restore(version.number);
-                            succeed(zh ? `已恢复 v${version.number} 的内容。` : `v${version.number} restored.`);
-                            await load();
-                          } catch (cause) {
-                            setError(failureText(cause, lang));
-                          } finally {
-                            setBusy(null);
-                          }
-                        }}
-                      >
-                        {busy === version.number ? (zh ? "恢复中…" : "Restoring…") : zh ? "确认恢复" : "Confirm"}
-                      </button>
+                        <button
+                          type="button"
+                          disabled={busy !== null}
+                          className="pw-link min-h-8 text-small text-indigo disabled:opacity-45"
+                          onClick={async () => {
+                            setConfirming(null);
+                            setBusy(version.number);
+                            setError(null);
+                            try {
+                              await restore(version.number);
+                              succeed(zh ? `已恢复 v${version.number} 的内容。` : `v${version.number} restored.`);
+                              await load();
+                            } catch (cause) {
+                              setError(failureText(cause, lang));
+                            } finally {
+                              setBusy(null);
+                            }
+                          }}
+                        >
+                          {busy === version.number ? (zh ? "恢复中…" : "Restoring…") : zh ? "确认恢复" : "Confirm"}
+                        </button>
                       </span>
                     ) : (
                       <span className="text-meta text-ink-3">{zh ? "当前" : "Current"}</span>

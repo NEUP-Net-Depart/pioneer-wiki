@@ -69,7 +69,9 @@ export default async function ReviewSheetPage({ params }: PageProps<"/admin/revi
         <div>
           <p className="pw-label">{tr(lang, "公开版本", "Public revision")}</p>
           <p className="mt-1 text-small text-ink">
-            {published ? `r${published.number} · ${formatWhen(published.createdAt, lang)}` : tr(lang, "尚无，此次为首次发布", "None — first publication")}
+            {published
+              ? `r${published.number} · ${formatWhen(published.createdAt, lang)}`
+              : tr(lang, "尚无，此次为首次发布", "None — first publication")}
           </p>
         </div>
         <div>
@@ -89,7 +91,9 @@ export default async function ReviewSheetPage({ params }: PageProps<"/admin/revi
           <span className="ml-2 font-mono text-meta text-ink-3">{fields.length}</span>
         </h2>
         {fields.length === 0 ? (
-          <p className="text-small text-ink-2">{tr(lang, "标题、摘要与全部元数据没有变化。", "Titles, summaries and metadata are unchanged.")}</p>
+          <p className="text-small text-ink-2">
+            {tr(lang, "标题、摘要与全部元数据没有变化。", "Titles, summaries and metadata are unchanged.")}
+          </p>
         ) : (
           <dl className="pw-sheet divide-y divide-rule">
             {fields.map((change) => (
@@ -109,7 +113,11 @@ export default async function ReviewSheetPage({ params }: PageProps<"/admin/revi
         )}
         {!latest.recorded ? (
           <p className="text-meta text-gold-ink">
-            {tr(lang, "这个修订早于完整快照，未记录标题与摘要；发布时沿用当前公开的标题与摘要。", "This revision predates full snapshots and recorded no title or summary; publishing keeps the public ones.")}
+            {tr(
+              lang,
+              "这个修订早于完整快照，未记录标题与摘要；发布时沿用当前公开的标题与摘要。",
+              "This revision predates full snapshots and recorded no title or summary; publishing keeps the public ones.",
+            )}
           </p>
         ) : null}
       </section>
@@ -133,7 +141,10 @@ export default async function ReviewSheetPage({ params }: PageProps<"/admin/revi
                   <StateTag tone="danger">{tr(lang, "不存在", "Missing")}</StateTag>
                 )}
                 {record && record.reviewStatus !== "approved" ? (
-                  <Link href={`/admin/assets?q=${encodeURIComponent(assetId)}&status=all`} className="pw-link text-indigo">
+                  <Link
+                    href={`/admin/assets?q=${encodeURIComponent(assetId)}&status=all`}
+                    className="pw-link text-indigo"
+                  >
                     {tr(lang, "去审核图片", "Review the image")} →
                   </Link>
                 ) : null}
@@ -157,7 +168,12 @@ export default async function ReviewSheetPage({ params }: PageProps<"/admin/revi
         archived={Boolean(entry.archivedAt)}
         expectedRevision={latest.number}
         blockedImages={blocked.map((image) => image.id)}
-        rollbackTargets={rollbackTargets.map((r) => ({ id: r.id, number: r.number, note: r.note, createdAt: r.createdAt }))}
+        rollbackTargets={rollbackTargets.map((r) => ({
+          id: r.id,
+          number: r.number,
+          note: r.note,
+          createdAt: r.createdAt,
+        }))}
         publishedRevision={published?.number}
       />
     </>

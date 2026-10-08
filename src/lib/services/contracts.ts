@@ -61,13 +61,7 @@ import type { EncodedImage } from "@/lib/media/store";
  */
 
 export type ServiceErrorCode =
-  | "unavailable"
-  | "conflict"
-  | "forbidden"
-  | "invalid"
-  | "not_found"
-  | "rate_limited"
-  | "unauthenticated";
+  "unavailable" | "conflict" | "forbidden" | "invalid" | "not_found" | "rate_limited" | "unauthenticated";
 
 export class ServiceError extends Error {
   constructor(
@@ -211,7 +205,11 @@ export interface EntryRepository {
   saveDraft(input: DraftInput): Promise<SavedRevision>;
   transition(input: ReviewTransitionInput): Promise<Revision>;
   /** Administrators only. Archived entries leave every public read; their history stays. */
-  setArchived(entryId: EntryId, archived: boolean, reason?: string): Promise<{ id: EntryId; slug: EntrySlug; archivedAt?: string }>;
+  setArchived(
+    entryId: EntryId,
+    archived: boolean,
+    reason?: string,
+  ): Promise<{ id: EntryId; slug: EntrySlug; archivedAt?: string }>;
   /** Administrators only. The old slug keeps resolving. */
   renameSlug(entryId: EntryId, slug: EntrySlug): Promise<{ slug: EntrySlug; formerSlugs: EntrySlug[] }>;
   getWorkingDraft(query: { id?: string; entryId?: EntryId }): Promise<WorkingDraft | null>;
@@ -442,7 +440,11 @@ export interface AccountRepository {
   setRole(id: string, role: Account["role"], reason?: string): Promise<void>;
   setStatus(id: string, status: Exclude<AccountStatus, "closed">, reason?: string): Promise<void>;
   /** Absent keys keep a binding; null unbinds. */
-  setIdentity(id: string, patch: { authorId?: string | null; memberId?: string | null }, reason?: string): Promise<void>;
+  setIdentity(
+    id: string,
+    patch: { authorId?: string | null; memberId?: string | null },
+    reason?: string,
+  ): Promise<void>;
   closeAccount(id: string, note?: string): Promise<void>;
   listApplications(query?: {
     status?: ApplicationStatus[];
@@ -549,7 +551,10 @@ export interface CommunityRepository {
     view?: "public" | "hidden" | "locked" | "all";
   }): Promise<ForumThread[]>;
   /** The thread and its posts, oldest first; null when it does not exist (or is hidden, for readers). */
-  getThread(id: string, query?: { includeHidden?: boolean }): Promise<{ thread: ForumThread; posts: ForumPost[] } | null>;
+  getThread(
+    id: string,
+    query?: { includeHidden?: boolean },
+  ): Promise<{ thread: ForumThread; posts: ForumPost[] } | null>;
   /** Throws ServiceError("invalid") when title/body are empty or too long. */
   createThread(input: NewThreadInput): Promise<ForumThread>;
   /** Throws ServiceError("invalid") for an empty body; resolves null when the thread does not exist. */
@@ -628,7 +633,12 @@ export interface ChronicleRepository {
   /** The record with its optional account; null when it does not exist or is archived (unless includeArchived, administrators). */
   getChronicle(id: string, query?: { includeArchived?: boolean }): Promise<ChronicleDetail | null>;
   /** Administrators: every record, archived ones by view. */
-  listForAdmin(query?: { view?: ArchiveView; q?: string; limit?: number; offset?: number }): Promise<Page<ChronicleDetail>>;
+  listForAdmin(query?: {
+    view?: ArchiveView;
+    q?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<Page<ChronicleDetail>>;
   saveChronicle(id: string | null, patch: ChroniclePatch, baseVersion?: number): Promise<ChronicleDetail>;
   setChronicleArchived(id: string, archived: boolean, reason?: string): Promise<ChronicleDetail>;
 }

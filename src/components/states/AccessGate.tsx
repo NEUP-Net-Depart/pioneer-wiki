@@ -19,15 +19,24 @@ export function gateReason(account: Account | null, need: GateNeed): string | nu
 const COPY: Record<string, { zh: [string, string]; en: [string, string] }> = {
   signed_out: {
     zh: ["请先登录。", "登录后即可继续；没有账号可以先注册，验证邮箱后成为读者。"],
-    en: ["Sign in to continue.", "Sign in to carry on; without an account, register and verify your email to become a reader."],
+    en: [
+      "Sign in to continue.",
+      "Sign in to carry on; without an account, register and verify your email to become a reader.",
+    ],
   },
   unverified: {
     zh: ["请先验证邮箱。", "我们向注册邮箱发送了验证链接。验证后才能写作、交流或使用管理功能。"],
-    en: ["Verify your email first.", "A verification link was sent to your address. Writing, posting and administration need a verified email."],
+    en: [
+      "Verify your email first.",
+      "A verification link was sent to your address. Writing, posting and administration need a verified email.",
+    ],
   },
   suspended: {
     zh: ["账号已停用。", "停用期间可以阅读，但不能写作、发帖或管理。如有疑问请联系管理员。"],
-    en: ["This account is suspended.", "You can read, but not write, post or administer. Contact an administrator if this is unexpected."],
+    en: [
+      "This account is suspended.",
+      "You can read, but not write, post or administer. Contact an administrator if this is unexpected.",
+    ],
   },
   closed: {
     zh: ["账号已注销。", "这个账号已被注销，无法再使用。"],
@@ -35,11 +44,17 @@ const COPY: Record<string, { zh: [string, string]; en: [string, string] }> = {
   },
   not_author: {
     zh: ["编辑 Wiki 需要作者资格。", "作者资格由管理员批准。你可以在账号页提交申请，并在那里查看处理进度。"],
-    en: ["Editing the wiki needs author status.", "Administrators grant author status. Apply from your account page and follow its progress there."],
+    en: [
+      "Editing the wiki needs author status.",
+      "Administrators grant author status. Apply from your account page and follow its progress there.",
+    ],
   },
   not_owner: {
     zh: ["只有作者和管理员可以编辑这篇条目。", "你可以阅读它的公开版本；如需修改，请联系作者或管理员。"],
-    en: ["Only its author and administrators edit this entry.", "You can read the public version; ask the author or an administrator about changes."],
+    en: [
+      "Only its author and administrators edit this entry.",
+      "You can read the public version; ask the author or an administrator about changes.",
+    ],
   },
   not_page_owner: {
     zh: ["只有主页本人和管理员可以编辑。", "这个成员主页绑定在另一个账号上。"],
@@ -47,7 +62,10 @@ const COPY: Record<string, { zh: [string, string]; en: [string, string] }> = {
   },
   not_admin: {
     zh: ["此区域仅管理员可用。", "当前账号没有管理员权限。需要时请联系现有管理员。"],
-    en: ["Administrators only.", "This account has no administrator access. Ask an existing administrator if you need it."],
+    en: [
+      "Administrators only.",
+      "This account has no administrator access. Ask an existing administrator if you need it.",
+    ],
   },
 };
 

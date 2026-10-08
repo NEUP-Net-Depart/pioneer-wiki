@@ -9,7 +9,10 @@ import { vi } from "vitest";
 
 type Answer = { data: unknown; error: { message: string; code?: string } | null; count?: number };
 
-export function supabaseStub(tables: Record<string, Answer[] | Answer> = {}, rpcs: Record<string, Answer | ((args: unknown) => Answer)> = {}) {
+export function supabaseStub(
+  tables: Record<string, Answer[] | Answer> = {},
+  rpcs: Record<string, Answer | ((args: unknown) => Answer)> = {},
+) {
   const calls: Array<{ table: string; chain: Array<[string, ...unknown[]]> }> = [];
   const rpcCalls: Array<[string, unknown]> = [];
   const queue = (table: string): Answer => {
@@ -21,7 +24,29 @@ export function supabaseStub(tables: Record<string, Answer[] | Answer> = {}, rpc
     const chain: Array<[string, ...unknown[]]> = [];
     calls.push({ table, chain });
     const builder: Record<string, unknown> = {};
-    for (const method of ["select", "eq", "neq", "is", "not", "in", "or", "order", "limit", "range", "gte", "lte", "lt", "gt", "contains", "maybeSingle", "single", "update", "insert", "upsert", "delete"])
+    for (const method of [
+      "select",
+      "eq",
+      "neq",
+      "is",
+      "not",
+      "in",
+      "or",
+      "order",
+      "limit",
+      "range",
+      "gte",
+      "lte",
+      "lt",
+      "gt",
+      "contains",
+      "maybeSingle",
+      "single",
+      "update",
+      "insert",
+      "upsert",
+      "delete",
+    ])
       builder[method] = (...args: unknown[]) => {
         chain.push([method, ...args]);
         return builder;

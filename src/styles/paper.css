@@ -51,7 +51,7 @@
    * (styles/phylum.css) applies to the <img> inside.
    */
   .pw-print {
-    display: block;
+    display: inline-block;
     mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent), linear-gradient(to bottom, transparent, #000 5%, #000 95%, transparent);
     mask-composite: intersect;
   }

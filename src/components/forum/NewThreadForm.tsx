@@ -14,7 +14,10 @@ const NOTES: Record<ForumCategory, { zh: string; en: string }> = {
   general: { zh: "闲谈、想法和不属于其他分类的话题。", en: "Ideas, chat and anything that fits nowhere else." },
   help: { zh: "遇到问题？写清楚做了什么、看到了什么。", en: "Stuck? Say what you did and what you saw." },
   showcase: { zh: "分享你做的东西：项目、笔记、图。", en: "Show what you made: projects, notes, drawings." },
-  meta: { zh: "关于本站与本会：建议、勘误、友链交换。", en: "About the site and the society: suggestions, errata, link exchanges." },
+  meta: {
+    zh: "关于本站与本会：建议、勘误、友链交换。",
+    en: "About the site and the society: suggestions, errata, link exchanges.",
+  },
 };
 
 /** Start a discussion: choose its category, give it a title, write the opening post. */
@@ -33,7 +36,12 @@ export function NewThreadForm({ accountId }: { accountId: string }) {
   const send = async () => {
     if (busy) return;
     const next = {
-      title: title.trim() && title.length <= 120 ? undefined : zh ? "标题需要 1–120 个字符。" : "Titles need 1–120 characters.",
+      title:
+        title.trim() && title.length <= 120
+          ? undefined
+          : zh
+            ? "标题需要 1–120 个字符。"
+            : "Titles need 1–120 characters.",
       body: body.trim() ? undefined : zh ? "请写下首帖内容。" : "Write the opening post.",
     };
     setErrors(next);
@@ -77,7 +85,14 @@ export function NewThreadForm({ accountId }: { accountId: string }) {
                 category === c.id ? "border-part bg-part-wash" : "border-rule hover:border-rule-strong",
               )}
             >
-              <input type="radio" name="category" value={c.id} checked={category === c.id} onChange={() => setCategory(c.id)} className="mt-1.5" />
+              <input
+                type="radio"
+                name="category"
+                value={c.id}
+                checked={category === c.id}
+                onChange={() => setCategory(c.id)}
+                className="mt-1.5"
+              />
               <Vignette name={c.emblem} className="w-10 shrink-0" sizes="40px" />
               <span>
                 <span className="block font-display text-h4 text-ink">{c.label[lang]}</span>
@@ -116,7 +131,11 @@ export function NewThreadForm({ accountId }: { accountId: string }) {
           onChange={setBody}
           storageKey={storageKey}
           label={zh ? "首帖内容" : "Opening post"}
-          placeholder={zh ? "写下问题、发现或想法。讨论条目时请写编号，例如 PW-0001。" : "Your question, finding or idea. Cite entries by number, e.g. PW-0001."}
+          placeholder={
+            zh
+              ? "写下问题、发现或想法。讨论条目时请写编号，例如 PW-0001。"
+              : "Your question, finding or idea. Cite entries by number, e.g. PW-0001."
+          }
           invalid={Boolean(errors.body)}
           describedBy={errors.body ? "nt-body-error" : undefined}
           onSubmitShortcut={() => void send()}

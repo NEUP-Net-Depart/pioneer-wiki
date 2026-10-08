@@ -1,5 +1,10 @@
 import type { Asset, AssetRecord } from "@/lib/model/types";
-import { ServiceError, type AssetDetails, type EntryRepository, type ReferenceRepository } from "@/lib/services/contracts";
+import {
+  ServiceError,
+  type AssetDetails,
+  type EntryRepository,
+  type ReferenceRepository,
+} from "@/lib/services/contracts";
 import { readLocalImage, writeLocalImage } from "@/lib/media/store";
 import { bodyAssetIds } from "@/lib/entries/lifecycle";
 import { paginate, type MockAsset, type MockContext } from "./context";
@@ -31,7 +36,8 @@ function describe(asset: MockAsset, details: AssetDetails | undefined) {
     ["license", 80],
   ] as const)
     if ((details[key]?.length ?? 0) > max) throw new ServiceError("invalid", "invalid_asset_details");
-  if (details.sourceUrl && !/^https?:\/\//i.test(details.sourceUrl)) throw new ServiceError("invalid", "invalid_asset_details");
+  if (details.sourceUrl && !/^https?:\/\//i.test(details.sourceUrl))
+    throw new ServiceError("invalid", "invalid_asset_details");
   if (details.altZh !== undefined || details.altEn !== undefined)
     asset.alt = { zh: details.altZh?.trim() ?? asset.alt.zh, en: details.altEn?.trim() ?? asset.alt.en };
   if (details.captionZh !== undefined || details.captionEn !== undefined)
@@ -41,7 +47,10 @@ function describe(asset: MockAsset, details: AssetDetails | undefined) {
   if (details.sourceUrl !== undefined) asset.sourceUrl = details.sourceUrl.trim() || undefined;
 }
 
-export function createMockReferenceRepository(context: MockContext, entries: () => EntryRepository): ReferenceRepository {
+export function createMockReferenceRepository(
+  context: MockContext,
+  entries: () => EntryRepository,
+): ReferenceRepository {
   const usage = async (id: string) => {
     const published = await entries().listEntries();
     const rows: AssetRecord["usedBy"] = [];
@@ -78,9 +87,18 @@ export function createMockReferenceRepository(context: MockContext, entries: () 
       const rows = await Promise.all(
         context.assets
           .filter((a) => !statuses.length || statuses.includes(a.reviewStatus))
-          .filter((a) => !text || [a.id, a.alt.zh, a.alt.en, a.credit, a.license].some((v) => v.toLowerCase().includes(text)))
+          .filter(
+            (a) => !text || [a.id, a.alt.zh, a.alt.en, a.credit, a.license].some((v) => v.toLowerCase().includes(text)),
+          )
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-          .map(async (a) => ({ ...strip(a), reviewStatus: a.reviewStatus, reviewNote: a.reviewNote, ownerHandle: a.ownerHandle, createdAt: a.createdAt, usedBy: await usage(a.id) })),
+          .map(async (a) => ({
+            ...strip(a),
+            reviewStatus: a.reviewStatus,
+            reviewNote: a.reviewNote,
+            ownerHandle: a.ownerHandle,
+            createdAt: a.createdAt,
+            usedBy: await usage(a.id),
+          })),
       );
       return paginate(rows, query.limit ?? 24, query.offset);
     },
@@ -88,15 +106,25 @@ export function createMockReferenceRepository(context: MockContext, entries: () 
       context.requireActive(true);
       const asset = find(id);
       describe(asset, details);
-      if (decision === "approved" && (!asset.alt.zh.trim() || !asset.alt.en.trim() || !asset.credit.trim() || !asset.license.trim()))
+      if (
+        decision === "approved" &&
+        (!asset.alt.zh.trim() || !asset.alt.en.trim() || !asset.credit.trim() || !asset.license.trim())
+      )
         throw new ServiceError("invalid", "asset_details_required");
       if (decision === "rejected" && !note?.trim()) throw new ServiceError("invalid", "reason_required");
-      if (decision !== "approved" && (await usage(id)).length) throw new ServiceError("conflict", "asset_in_published_entry");
+      if (decision !== "approved" && (await usage(id)).length)
+        throw new ServiceError("conflict", "asset_in_published_entry");
       const before = asset.reviewStatus;
       asset.reviewStatus = decision;
       asset.reviewNote = note?.trim() || undefined;
       context.audit(`review_${decision}`, "asset", id, { status: before }, { status: decision });
-      return { ...strip(asset), reviewStatus: asset.reviewStatus, reviewNote: asset.reviewNote, createdAt: asset.createdAt, usedBy: await usage(id) };
+      return {
+        ...strip(asset),
+        reviewStatus: asset.reviewStatus,
+        reviewNote: asset.reviewNote,
+        createdAt: asset.createdAt,
+        usedBy: await usage(id),
+      };
     },
     async updateAssetDetails(id, details) {
       const account = context.requireActive();
@@ -118,7 +146,9 @@ export function createMockReferenceRepository(context: MockContext, entries: () 
     async uploadEntryAsset(image, details) {
       const account = context.requireActive();
       if (!account.authorId && account.role !== "admin") throw new ServiceError("forbidden", "author_required");
-      const recent = context.assets.filter((a) => a.ownerId === account.id && Date.now() - Date.parse(a.createdAt) < 3_600_000);
+      const recent = context.assets.filter(
+        (a) => a.ownerId === account.id && Date.now() - Date.parse(a.createdAt) < 3_600_000,
+      );
       if (recent.length >= 30) throw new ServiceError("rate_limited", "rate_limited");
       await writeLocalImage(image);
       const id = `asset-${crypto.randomUUID()}`;

@@ -12,7 +12,11 @@ export async function POST(request: Request) {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw new ServiceError("unauthenticated", "link_expired");
     const { error } = await supabase.auth.updateUser({ password });
-    if (error) throw new ServiceError("invalid", /should be different/i.test(error.message) ? "invalid_password" : "link_expired");
+    if (error)
+      throw new ServiceError(
+        "invalid",
+        /should be different/i.test(error.message) ? "invalid_password" : "link_expired",
+      );
     await supabase.auth.signOut({ scope: "local" });
     return NextResponse.json({ ok: true });
   });

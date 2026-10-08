@@ -152,7 +152,10 @@ function ToolButton({ label, children, onClick }: { label: string; children: Rea
 
 function SectionHead({ id, number, title, hint }: { id: string; number: string; title: string; hint?: string }) {
   return (
-    <div id={id} className="pw-double-rule flex scroll-mt-[calc(var(--shell-header)+1rem)] flex-wrap items-baseline gap-x-3 gap-y-1">
+    <div
+      id={id}
+      className="pw-double-rule flex scroll-mt-[calc(var(--shell-header)+1rem)] flex-wrap items-baseline gap-x-3 gap-y-1"
+    >
       <span className="font-letterpress text-h4 text-brick-ink">{number}</span>
       <h2 className="font-display text-h3 text-ink">{title}</h2>
       {hint ? <p className="w-full text-small text-ink-3 sm:ml-auto sm:w-auto">{hint}</p> : null}
@@ -169,7 +172,16 @@ export function MarkdownEditor({
   baseRevision,
   workflow,
   serverDraft,
-  options = { sources: [], tags: [], authors: [], entries: [], assets: [], families: [], categories: [], speciesPlates: {} },
+  options = {
+    sources: [],
+    tags: [],
+    authors: [],
+    entries: [],
+    assets: [],
+    families: [],
+    categories: [],
+    speciesPlates: {},
+  },
 }: MarkdownEditorProps) {
   const { t, lang } = useI18n();
   const zh = lang === "zh";
@@ -203,7 +215,9 @@ export function MarkdownEditor({
   const draftVersion = useRef<number | undefined>(serverDraft?.version);
   const inflight = useRef(false);
   const again = useRef(false);
-  const [tabId] = useState(() => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Math.random())));
+  const [tabId] = useState(() =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Math.random()),
+  );
   const channel = useRef<BroadcastChannel | null>(null);
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
   const archived = Boolean(workflow?.archived);
@@ -252,7 +266,10 @@ export function MarkdownEditor({
   useEffect(() => {
     const candidates: Candidate[] = [];
     try {
-      const cached = JSON.parse(localStorage.getItem(storageKey) ?? "null") as { savedAt?: string; payload?: unknown } | null;
+      const cached = JSON.parse(localStorage.getItem(storageKey) ?? "null") as {
+        savedAt?: string;
+        payload?: unknown;
+      } | null;
       const local = readPayload(cached?.payload);
       if (local && cached?.savedAt) candidates.push({ source: "local", savedAt: cached.savedAt, payload: local });
     } catch {
@@ -261,8 +278,12 @@ export function MarkdownEditor({
     const server = readPayload(serverDraft?.payload);
     if (server && serverDraft) candidates.push({ source: "server", savedAt: serverDraft.savedAt, payload: server });
     const differs = (c: Candidate) =>
-      JSON.stringify({ title: c.payload.title, summary: c.payload.summary, body: c.payload.body, metadata: c.payload.metadata }) !==
-      initialSerialized;
+      JSON.stringify({
+        title: c.payload.title,
+        summary: c.payload.summary,
+        body: c.payload.body,
+        metadata: c.payload.metadata,
+      }) !== initialSerialized;
     const newest = candidates.filter(differs).sort((a, b) => b.savedAt.localeCompare(a.savedAt))[0];
     if (newest && !archived) window.setTimeout(() => setRecovery(newest), 0);
     window.setTimeout(() => setReady(true), 0);
@@ -310,7 +331,8 @@ export function MarkdownEditor({
       }
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) setSync({ state: "local", reason: "expired" });
-      else if (error instanceof ApiError && error.status === 403) setSync({ state: "local", reason: "forbidden", detail: error.message });
+      else if (error instanceof ApiError && error.status === 403)
+        setSync({ state: "local", reason: "forbidden", detail: error.message });
       else if (error instanceof ApiError && error.status === 0) setSync({ state: "local", reason: "offline" });
       else setSync({ state: "local", reason: "error", detail: failureText(error, lang) });
     } finally {
@@ -341,7 +363,9 @@ export function MarkdownEditor({
   const unsynced = ready && serialized !== syncedText && serialized !== savedText;
   useLeaveGuard(
     unsynced,
-    zh ? "还有内容没有同步到服务器（已保存在本机）。确定离开吗？" : "Some changes are not synced yet (they are kept on this device). Leave anyway?",
+    zh
+      ? "还有内容没有同步到服务器（已保存在本机）。确定离开吗？"
+      : "Some changes are not synced yet (they are kept on this device). Leave anyway?",
   );
 
   // ── Validation for submission ──
@@ -349,18 +373,37 @@ export function MarkdownEditor({
     const list: Array<{ field: FieldKey; text: string }> = [];
     if (!titleZh.trim()) list.push({ field: "titleZh", text: zh ? "缺少中文标题" : "The Chinese title is missing" });
     if (!titleEn.trim()) list.push({ field: "titleEn", text: zh ? "缺少英文标题" : "The English title is missing" });
-    if (!summaryZh.trim()) list.push({ field: "summaryZh", text: zh ? "缺少中文摘要" : "The Chinese summary is missing" });
-    if (!summaryEn.trim()) list.push({ field: "summaryEn", text: zh ? "缺少英文摘要" : "The English summary is missing" });
-    if (!/(^|\n):::zh/.test(body)) list.push({ field: "body", text: zh ? "正文缺少 :::zh 中文块" : "The body has no :::zh block" });
-    if (!/(^|\n):::en/.test(body)) list.push({ field: "body", text: zh ? "正文缺少 :::en 英文块" : "The body has no :::en block" });
-    if (!metadata.categoryId) list.push({ field: "genus", text: zh ? "还没有选择门类" : "Choose the genus it is filed under" });
+    if (!summaryZh.trim())
+      list.push({ field: "summaryZh", text: zh ? "缺少中文摘要" : "The Chinese summary is missing" });
+    if (!summaryEn.trim())
+      list.push({ field: "summaryEn", text: zh ? "缺少英文摘要" : "The English summary is missing" });
+    if (!/(^|\n):::zh/.test(body))
+      list.push({ field: "body", text: zh ? "正文缺少 :::zh 中文块" : "The body has no :::zh block" });
+    if (!/(^|\n):::en/.test(body))
+      list.push({ field: "body", text: zh ? "正文缺少 :::en 英文块" : "The body has no :::en block" });
+    if (!metadata.categoryId)
+      list.push({ field: "genus", text: zh ? "还没有选择门类" : "Choose the genus it is filed under" });
     const genus = options.categories.find((c) => c.id === metadata.categoryId);
     if (genus && metadata.species && !metadata.species.startsWith(`${genus.scientificName} `))
-      list.push({ field: "genus", text: zh ? `物种学名须属于 ${genus.scientificName} 属` : `The species must belong to ${genus.scientificName}` });
+      list.push({
+        field: "genus",
+        text: zh ? `物种学名须属于 ${genus.scientificName} 属` : `The species must belong to ${genus.scientificName}`,
+      });
     if (metadata.relationDrafts.some((relation) => !relation.to))
       list.push({ field: "relations", text: zh ? "有关系没有选择目标条目" : "A relation has no target" });
     return list;
-  }, [body, metadata.categoryId, metadata.relationDrafts, metadata.species, options.categories, summaryEn, summaryZh, titleEn, titleZh, zh]);
+  }, [
+    body,
+    metadata.categoryId,
+    metadata.relationDrafts,
+    metadata.species,
+    options.categories,
+    summaryEn,
+    summaryZh,
+    titleEn,
+    titleZh,
+    zh,
+  ]);
   const invalid = (field: FieldKey) => showErrors && errors.some((e) => e.field === field);
   const goTo = (field: FieldKey) => {
     const target = field === "body" ? textareaRef.current : document.getElementById(FIELD_ID[field]);
@@ -445,7 +488,12 @@ export function MarkdownEditor({
     if (busy || archived) return;
     setShowErrors(true);
     if (errors.length) {
-      setFeedback({ kind: "error", text: zh ? `提交前还有 ${errors.length} 处需要补齐（见下方清单）。` : `${errors.length} things to fix before submitting (listed below).` });
+      setFeedback({
+        kind: "error",
+        text: zh
+          ? `提交前还有 ${errors.length} 处需要补齐（见下方清单）。`
+          : `${errors.length} things to fix before submitting (listed below).`,
+      });
       goTo(errors[0].field);
       return;
     }
@@ -462,7 +510,9 @@ export function MarkdownEditor({
       setRevision(submitted.number);
       setFeedback({
         kind: "ok",
-        text: zh ? `已提交审核（r${submitted.number}）。管理员发布前，公开页面保持不变。` : `Submitted for review (r${submitted.number}). Public pages stay as they are until an administrator publishes.`,
+        text: zh
+          ? `已提交审核（r${submitted.number}）。管理员发布前，公开页面保持不变。`
+          : `Submitted for review (r${submitted.number}). Public pages stay as they are until an administrator publishes.`,
       });
     } catch (error) {
       setFeedback({ kind: "error", text: failureText(error, lang) });
@@ -477,7 +527,10 @@ export function MarkdownEditor({
     try {
       await api(`/api/entries/${encodeURIComponent(entryId)}/transition`, "POST", { action: "withdraw" });
       setState("draft");
-      setFeedback({ kind: "ok", text: zh ? "已撤回审核提交，条目回到草稿。" : "Submission withdrawn; the entry is a draft again." });
+      setFeedback({
+        kind: "ok",
+        text: zh ? "已撤回审核提交，条目回到草稿。" : "Submission withdrawn; the entry is a draft again.",
+      });
     } catch (error) {
       setFeedback({ kind: "error", text: failureText(error, lang) });
     } finally {
@@ -520,7 +573,10 @@ export function MarkdownEditor({
       area.setSelectionRange(at + markdown.length, at + markdown.length);
     });
   };
-  const uploadAsset = async (file: File, details: { altZh: string; altEn: string; credit: string; license: string }): Promise<Asset | null> => {
+  const uploadAsset = async (
+    file: File,
+    details: { altZh: string; altEn: string; credit: string; license: string },
+  ): Promise<Asset | null> => {
     const form = new FormData();
     form.set("file", file);
     form.set("altZh", details.altZh);
@@ -533,7 +589,9 @@ export function MarkdownEditor({
       setUploadedAssets((current) => [...current, asset]);
       setFeedback({
         kind: "ok",
-        text: zh ? "插图已上传并插入正文。它在管理员批准之前只有你和管理员能看到；批准后条目才能发布。" : "Figure uploaded and placed. Until an administrator approves it, only you and administrators can see it, and the entry cannot be published.",
+        text: zh
+          ? "插图已上传并插入正文。它在管理员批准之前只有你和管理员能看到；批准后条目才能发布。"
+          : "Figure uploaded and placed. Until an administrator approves it, only you and administrators can see it, and the entry cannot be published.",
       });
       return asset;
     } catch (error) {
@@ -552,14 +610,27 @@ export function MarkdownEditor({
   };
   /** Figures the body may reference as asset:<id>, for the proof beside the notebook. */
   const figureMap = Object.fromEntries([...options.assets, ...uploadedAssets].map((a) => [a.id, a]));
-  const words = body.replace(/:::(zh|en)?/g, "").replace(/\s+/g, " ").trim();
+  const words = body
+    .replace(/:::(zh|en)?/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
   const toolbar = (
-    <div role="toolbar" aria-label={zh ? "Markdown 工具栏" : "Markdown toolbar"} className="flex flex-wrap items-center gap-1 border-b border-rule px-3 py-1.5">
-      <ToolButton label={zh ? "插入二级标题" : "Insert heading"} onClick={() => insert("## ", "", zh ? "章节标题" : "Section heading")}>
+    <div
+      role="toolbar"
+      aria-label={zh ? "Markdown 工具栏" : "Markdown toolbar"}
+      className="flex h-12 flex-wrap items-center gap-1 border-b border-rule px-3"
+    >
+      <ToolButton
+        label={zh ? "插入二级标题" : "Insert heading"}
+        onClick={() => insert("## ", "", zh ? "章节标题" : "Section heading")}
+      >
         <Heading2 className="size-4" />
       </ToolButton>
-      <ToolButton label={zh ? "插入链接" : "Insert link"} onClick={() => insert("[", "](https://)", zh ? "链接文字" : "link text")}>
+      <ToolButton
+        label={zh ? "插入链接" : "Insert link"}
+        onClick={() => insert("[", "](https://)", zh ? "链接文字" : "link text")}
+      >
         <Link2 className="size-4" />
       </ToolButton>
       <ToolButton label={zh ? "插入代码块" : "Insert code block"} onClick={() => insert("```\n", "\n```", "code")}>
@@ -571,7 +642,10 @@ export function MarkdownEditor({
       <ToolButton label={zh ? "插入引用" : "Insert quote"} onClick={() => insert("> ", "", zh ? "引用" : "quote")}>
         <Quote className="size-4" />
       </ToolButton>
-      <ToolButton label={zh ? "插入中英双语块" : "Insert a bilingual block"} onClick={() => insert(":::zh\n", "\n:::\n\n:::en\nEnglish text\n:::", zh ? "中文文本" : "Chinese text")}>
+      <ToolButton
+        label={zh ? "插入中英双语块" : "Insert a bilingual block"}
+        onClick={() => insert(":::zh\n", "\n:::\n\n:::en\nEnglish text\n:::", zh ? "中文文本" : "Chinese text")}
+      >
         <Languages className="size-4" />
       </ToolButton>
       <span className="ml-auto font-mono text-meta text-ink-3">
@@ -585,9 +659,17 @@ export function MarkdownEditor({
       case "saving":
         return { tone: "text-ink-3", text: zh ? "正在同步工作区…" : "Syncing the workspace…" };
       case "saved":
-        return { tone: "text-moss-ink", text: `${zh ? "工作区已同步" : "Workspace synced"} · ${new Date(sync.at).toLocaleTimeString(zh ? "zh-CN" : "en-GB", { hour: "2-digit", minute: "2-digit" })}` };
+        return {
+          tone: "text-moss-ink",
+          text: `${zh ? "工作区已同步" : "Workspace synced"} · ${new Date(sync.at).toLocaleTimeString(zh ? "zh-CN" : "en-GB", { hour: "2-digit", minute: "2-digit" })}`,
+        };
       case "quota":
-        return { tone: "text-brick-ink", text: zh ? "本机存储已满，无法保留恢复副本；请尽快保存修订。" : "This device's storage is full; no recovery copy is kept. Save a revision soon." };
+        return {
+          tone: "text-brick-ink",
+          text: zh
+            ? "本机存储已满，无法保留恢复副本；请尽快保存修订。"
+            : "This device's storage is full; no recovery copy is kept. Save a revision soon.",
+        };
       case "local":
         return {
           tone: "text-brick-ink",
@@ -609,10 +691,15 @@ export function MarkdownEditor({
 
   const banner = archived ? (
     <p role="note" className="pw-sheet border-rule-strong px-5 py-4 text-small text-ink-2">
-      {zh ? "这篇条目已归档，读者看不到它。管理员在回收站恢复后才能继续编辑。" : "This entry is archived and hidden from readers. An administrator must restore it before it can be edited."}
+      {zh
+        ? "这篇条目已归档，读者看不到它。管理员在回收站恢复后才能继续编辑。"
+        : "This entry is archived and hidden from readers. An administrator must restore it before it can be edited."}
     </p>
   ) : state === "in_review" ? (
-    <div role="note" className="pw-sheet flex flex-wrap items-center gap-x-6 gap-y-2 border-indigo/40 px-5 py-4 text-small text-ink-2">
+    <div
+      role="note"
+      className="pw-sheet flex flex-wrap items-center gap-x-6 gap-y-2 border-indigo/40 px-5 py-4 text-small text-ink-2"
+    >
       <p className="min-w-0 flex-1">
         <span className="font-medium text-indigo">{zh ? "正在审核：" : "In review: "}</span>
         {zh
@@ -624,15 +711,26 @@ export function MarkdownEditor({
           {zh ? "打开审核单" : "Open the review sheet"} →
         </Link>
       ) : null}
-      <button type="button" disabled={Boolean(busy)} onClick={() => void withdraw()} className="pw-link min-h-9 text-ink disabled:opacity-45">
+      <button
+        type="button"
+        disabled={Boolean(busy)}
+        onClick={() => void withdraw()}
+        className="pw-link min-h-9 text-ink disabled:opacity-45"
+      >
         {busy === "withdraw" ? (zh ? "撤回中…" : "Withdrawing…") : zh ? "撤回提交" : "Withdraw submission"}
       </button>
     </div>
   ) : returnNote ? (
     <div role="note" className="pw-sheet border-brick/40 px-5 py-4 text-small text-ink-2">
-      <p className="font-medium text-brick-ink">{zh ? "管理员退回了上一次提交：" : "An administrator returned the last submission:"}</p>
+      <p className="font-medium text-brick-ink">
+        {zh ? "管理员退回了上一次提交：" : "An administrator returned the last submission:"}
+      </p>
       <p className="mt-1 whitespace-pre-wrap">{returnNote}</p>
-      <p className="mt-2 text-meta text-ink-3">{zh ? "修改后重新提交即可，退回说明会在重新提交时清除。" : "Revise and submit again; the note clears on resubmission."}</p>
+      <p className="mt-2 text-meta text-ink-3">
+        {zh
+          ? "修改后重新提交即可，退回说明会在重新提交时清除。"
+          : "Revise and submit again; the note clears on resubmission."}
+      </p>
     </div>
   ) : workflow?.publishedRevision && (revision ?? 0) > workflow.publishedRevision ? (
     <p role="note" className="pw-sheet px-5 py-3 text-small text-ink-2">
@@ -645,7 +743,10 @@ export function MarkdownEditor({
   return (
     <div className="flex flex-col gap-(--space-block)">
       {/* Section index: the form is one page; these are its chapters. */}
-      <nav aria-label={zh ? "编辑器分节" : "Editor sections"} className="flex flex-wrap gap-x-6 gap-y-1 text-small text-ink-2">
+      <nav
+        aria-label={zh ? "编辑器分节" : "Editor sections"}
+        className="flex flex-wrap gap-x-6 gap-y-1 text-small text-ink-2"
+      >
         {[
           ["#ed-titles", zh ? "一 · 标题与摘要" : "I · Titles"],
           ["#ed-filing", zh ? "二 · 编目" : "II · Catalogue"],
@@ -667,7 +768,10 @@ export function MarkdownEditor({
         </p>
       ) : null}
       {recovery ? (
-        <div role="alert" className="pw-sheet flex flex-wrap items-center gap-x-6 gap-y-2 border-gold/60 px-5 py-4 text-small">
+        <div
+          role="alert"
+          className="pw-sheet flex flex-wrap items-center gap-x-6 gap-y-2 border-gold/60 px-5 py-4 text-small"
+        >
           <p className="min-w-0 flex-1 text-ink">
             {zh
               ? `发现${recovery.source === "local" ? "本机" : "其他设备或之前会话"}在 ${new Date(recovery.savedAt).toLocaleString("zh-CN")} 自动保存、但还没有保存为修订的内容。`
@@ -700,7 +804,10 @@ export function MarkdownEditor({
         </div>
       ) : null}
       {conflict ? (
-        <div role="alert" className="pw-sheet flex flex-wrap items-center gap-x-6 gap-y-2 border-brick/40 px-5 py-4 text-small">
+        <div
+          role="alert"
+          className="pw-sheet flex flex-wrap items-center gap-x-6 gap-y-2 border-brick/40 px-5 py-4 text-small"
+        >
           <p className="min-w-0 flex-1 text-ink">
             {zh
               ? `另一个标签页或设备在 ${new Date(conflict.savedAt).toLocaleTimeString("zh-CN")} 保存了更新的工作区内容。为避免覆盖，自动同步已暂停。`
@@ -734,7 +841,9 @@ export function MarkdownEditor({
       ) : null}
       {otherTab && !conflict ? (
         <p role="status" className="text-small text-gold-ink">
-          {zh ? "这篇条目也在另一个标签页中被编辑。请只在一个标签页中保存，以免互相覆盖。" : "This entry is also being edited in another tab. Save from one tab only."}
+          {zh
+            ? "这篇条目也在另一个标签页中被编辑。请只在一个标签页中保存，以免互相覆盖。"
+            : "This entry is also being edited in another tab. Save from one tab only."}
         </p>
       ) : null}
 
@@ -779,7 +888,9 @@ export function MarkdownEditor({
               />
               {!entryId ? (
                 <span className="text-meta text-ink-3">
-                  {zh ? "条目地址由英文标题生成，之后修改标题不会改变地址。" : "The address is made from the English title once; later title changes keep it."}
+                  {zh
+                    ? "条目地址由英文标题生成，之后修改标题不会改变地址。"
+                    : "The address is made from the English title once; later title changes keep it."}
                 </span>
               ) : null}
             </label>
@@ -815,8 +926,21 @@ export function MarkdownEditor({
 
         {/* ── II · Catalogue ── */}
         <section className="flex flex-col gap-5">
-          <SectionHead id="ed-filing" number="II" title={zh ? "编目" : "Catalogue"} hint={zh ? "门类、物种、层级与用途；发布后才改变公开位置。" : "Genus, species, level and purpose; the public place moves only on publication."} />
-          <div aria-invalid={invalid("genus") || undefined} tabIndex={-1} className={cn(invalid("genus") && "rounded-sm outline-2 outline-offset-4 outline-brick-ink")}>
+          <SectionHead
+            id="ed-filing"
+            number="II"
+            title={zh ? "编目" : "Catalogue"}
+            hint={
+              zh
+                ? "门类、物种、层级与用途；发布后才改变公开位置。"
+                : "Genus, species, level and purpose; the public place moves only on publication."
+            }
+          />
+          <div
+            aria-invalid={invalid("genus") || undefined}
+            tabIndex={-1}
+            className={cn(invalid("genus") && "rounded-sm outline-2 outline-offset-4 outline-brick-ink")}
+          >
             <FilingCard
               value={{
                 categoryId: metadata.categoryId,
@@ -835,7 +959,11 @@ export function MarkdownEditor({
 
         {/* ── III · Sources, relations, figures ── */}
         <section className="flex flex-col gap-5">
-          <SectionHead id="ed-metadata" number="III" title={zh ? "来源、关系与插图" : "Sources, relations and figures"} />
+          <SectionHead
+            id="ed-metadata"
+            number="III"
+            title={zh ? "来源、关系与插图" : "Sources, relations and figures"}
+          />
           <MetadataPanel
             metadata={metadata}
             onChange={setMetadata}
@@ -862,9 +990,17 @@ export function MarkdownEditor({
             id="ed-writing"
             number="IV"
             title={zh ? "正文" : "Body"}
-            hint={zh ? "Markdown；用 :::zh 与 :::en 分别写中英文段落。右侧校样即读者看到的排版。" : "Markdown; write :::zh and :::en blocks. The proof on the right is set as readers will see it."}
+            hint={
+              zh
+                ? "Markdown；用 :::zh 与 :::en 分别写中英文段落。右侧校样即读者看到的排版。"
+                : "Markdown; write :::zh and :::en blocks. The proof on the right is set as readers will see it."
+            }
           />
-          <div role="tablist" aria-label={`${t("editor.write")} / ${t("editor.preview")}`} className="flex gap-5 border-b border-rule lg:hidden">
+          <div
+            role="tablist"
+            aria-label={`${t("editor.write")} / ${t("editor.preview")}`}
+            className="flex gap-5 border-b border-rule lg:hidden"
+          >
             {(["write", "preview"] as const).map((value) => (
               <button
                 key={value}
@@ -872,16 +1008,27 @@ export function MarkdownEditor({
                 type="button"
                 aria-selected={pane === value}
                 onClick={() => setPane(value)}
-                className={cn("-mb-px min-h-11 border-b-2 py-2 text-small", pane === value ? "border-brick text-ink" : "border-transparent text-ink-3")}
+                className={cn(
+                  "-mb-px min-h-11 border-b-2 py-2 text-small",
+                  pane === value ? "border-brick text-ink" : "border-transparent text-ink-3",
+                )}
               >
                 {t(value === "write" ? "editor.write" : "editor.preview")}
               </button>
             ))}
           </div>
-          <div className="grid gap-(--space-block) lg:grid-cols-2">
-            <section aria-label={t("editor.write")} className={cn("min-w-0", pane !== "write" && "max-lg:hidden")}>
-              <div className={cn("pw-notebook overflow-hidden", invalid("body") && "outline-2 outline-offset-4 outline-brick-ink")}>
-                <div className="pw-notebook-sheet">
+          <div className="grid items-stretch gap-(--space-block) lg:grid-cols-2">
+            <section
+              aria-label={t("editor.write")}
+              className={cn("flex min-h-0 min-w-0 flex-col", pane !== "write" && "max-lg:hidden")}
+            >
+              <div
+                className={cn(
+                  "pw-notebook flex min-h-[calc(64vh+2.75rem)] min-w-0 flex-col overflow-hidden",
+                  invalid("body") && "outline-2 outline-offset-4 outline-brick-ink",
+                )}
+              >
+                <div className="pw-notebook-sheet flex min-h-0 flex-1 flex-col">
                   {toolbar}
                   <NotebookSheet
                     value={body}
@@ -891,18 +1038,28 @@ export function MarkdownEditor({
                     label={zh ? "田野笔记 · 撰写" : "Field notes · Writing"}
                     head={[
                       [zh ? "编号" : "No.", entryId ?? (zh ? "新条目" : "new")],
-                      [zh ? "属" : "Genus", options.categories.find((c) => c.id === metadata.categoryId)?.scientificName ?? "—"],
+                      [
+                        zh ? "属" : "Genus",
+                        options.categories.find((c) => c.id === metadata.categoryId)?.scientificName ?? "—",
+                      ],
                       [zh ? "年轮" : "Ring", revision ? `r${revision}` : "r1"],
                       [zh ? "日期" : "Date", today],
                     ]}
-                    hint={zh ? "Markdown · 双语块 :::zh / :::en · Ctrl/⌘-S 保存修订" : "Markdown · bilingual blocks :::zh / :::en · Ctrl/⌘-S saves a revision"}
+                    hint={
+                      zh
+                        ? "Markdown · 双语块 :::zh / :::en · Ctrl/⌘-S 保存修订"
+                        : "Markdown · bilingual blocks :::zh / :::en · Ctrl/⌘-S saves a revision"
+                    }
                     textareaRef={textareaRef}
-                    className="min-h-[64vh]"
+                    className="min-h-0 flex-1"
                   />
                 </div>
               </div>
             </section>
-            <section aria-label={t("editor.preview")} className={cn("relative min-w-0", pane !== "preview" && "max-lg:hidden")}>
+            <section
+              aria-label={t("editor.preview")}
+              className={cn("relative flex min-h-0 min-w-0 flex-col", pane !== "preview" && "max-lg:hidden")}
+            >
               <div className="mb-3 flex items-center gap-4 border-b border-rule text-small">
                 {(["zh", "en", "both"] as const).map((value) => (
                   <button
@@ -910,31 +1067,43 @@ export function MarkdownEditor({
                     type="button"
                     onClick={() => setPreviewMode(value)}
                     aria-pressed={previewMode === value}
-                    className={cn("-mb-px min-h-11 border-b-2 py-2", previewMode === value ? "border-brick text-ink" : "border-transparent text-ink-3")}
+                    className={cn(
+                      "-mb-px flex h-12 items-center border-b-2",
+                      previewMode === value ? "border-brick text-ink" : "border-transparent text-ink-3",
+                    )}
                   >
                     {value === "zh" ? "中文" : value === "en" ? "English" : zh ? "双语" : "Both"}
                   </button>
                 ))}
               </div>
-              <div className={cn("pw-proof min-h-[64vh] px-6 pt-14 pb-10 sm:px-10", previewMode === "both" && "grid gap-10 xl:grid-cols-2")}>
+              <div
+                className={cn(
+                  "pw-proof min-h-0 flex-1 px-6 pt-14 pb-10 sm:px-10",
+                  previewMode === "both" && "grid gap-10 xl:grid-cols-2",
+                )}
+              >
                 {previewMode !== "en" ? (
                   <article lang="zh-CN" className="min-w-0">
                     <p className="mb-6 font-mono text-meta text-ink-3">{zh ? "校样 · 中文" : "Proof · Chinese"}</p>
-                    <h2 className="mb-3 font-display text-h1 leading-tight font-[480] break-words">{titleZh || (zh ? "（中文标题）" : "(Chinese title)")}</h2>
+                    <h2 className="mb-3 font-display text-h1 leading-tight font-[480] break-words">
+                      {titleZh || (zh ? "（中文标题）" : "(Chinese title)")}
+                    </h2>
                     {summaryZh ? <p className="mb-8 text-lead leading-relaxed text-ink-2">{summaryZh}</p> : null}
                     <Markdown lang="zh" assets={figureMap}>
-                        {body}
-                      </Markdown>
+                      {body}
+                    </Markdown>
                   </article>
                 ) : null}
                 {previewMode !== "zh" ? (
                   <article lang="en" className="min-w-0">
                     <p className="mb-6 font-mono text-meta text-ink-3">Proof · English</p>
-                    <h2 className="mb-3 font-display text-h1 leading-tight font-[480] break-words">{titleEn || "(English title)"}</h2>
+                    <h2 className="mb-3 font-display text-h1 leading-tight font-[480] break-words">
+                      {titleEn || "(English title)"}
+                    </h2>
                     {summaryEn ? <p className="mb-8 text-lead leading-relaxed text-ink-2">{summaryEn}</p> : null}
                     <Markdown lang="en" assets={figureMap}>
-                        {body}
-                      </Markdown>
+                      {body}
+                    </Markdown>
                   </article>
                 ) : null}
               </div>
@@ -960,7 +1129,10 @@ export function MarkdownEditor({
         </section>
       ) : null}
 
-      <div aria-busy={Boolean(busy) || undefined} className="pw-ink-over sticky bottom-0 z-10 -mx-4 flex flex-col gap-2 bg-paper/95 px-4 pb-4 backdrop-blur-[2px] sm:-mx-6 sm:px-6">
+      <div
+        aria-busy={Boolean(busy) || undefined}
+        className="pw-ink-over sticky bottom-0 z-10 -mx-4 flex flex-col gap-2 bg-paper/95 px-4 pb-4 backdrop-blur-[2px] sm:-mx-6 sm:px-6"
+      >
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <StatusBadge state={state} lang={lang} showForm />
           {revision ? <span className="font-mono text-meta text-ink-3">r{revision}</span> : null}
@@ -969,7 +1141,12 @@ export function MarkdownEditor({
             {sync.state === "local" && sync.reason === "expired" ? (
               <>
                 {" · "}
-                <a href={`/login?next=${encodeURIComponent(slug ? `/editor/${slug}` : "/editor/new")}`} className="pw-link text-ink" target="_blank" rel="noopener">
+                <a
+                  href={`/login?next=${encodeURIComponent(slug ? `/editor/${slug}` : "/editor/new")}`}
+                  className="pw-link text-ink"
+                  target="_blank"
+                  rel="noopener"
+                >
                   {zh ? "在新标签页重新登录" : "Sign in again in a new tab"}
                 </a>
               </>
@@ -1008,7 +1185,10 @@ export function MarkdownEditor({
             <KeyboardHint keys={["Ctrl", "S"]} className="hidden sm:inline-flex" />
           </div>
         </div>
-        <p role={feedback?.kind === "error" ? "alert" : "status"} className={cn("min-h-5 text-small", feedback?.kind === "error" ? "text-brick-ink" : "text-moss-ink")}>
+        <p
+          role={feedback?.kind === "error" ? "alert" : "status"}
+          className={cn("min-h-5 text-small", feedback?.kind === "error" ? "text-brick-ink" : "text-moss-ink")}
+        >
           {feedback?.text ?? ""}
         </p>
       </div>

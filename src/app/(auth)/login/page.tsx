@@ -10,7 +10,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const params = await searchParams;
   const lang = await getLang();
   const next = typeof params.next === "string" ? params.next : undefined;
-  const error = typeof params.error === "string" && hasReason(params.error) ? params.error : params.error ? "link_expired" : null;
+  const error =
+    typeof params.error === "string" && hasReason(params.error) ? params.error : params.error ? "link_expired" : null;
   return (
     <div>
       {error ? (
