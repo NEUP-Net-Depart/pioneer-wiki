@@ -27,12 +27,14 @@ export interface Catalogue {
   category: (id: string) => Category | undefined;
 }
 
-export async function getCatalogue(): Promise<Catalogue> {
+export async function getCatalogue(visibleEntries?: EntrySummary[]): Promise<Catalogue> {
   const { taxonomy, entries } = getServices();
   const [families, categories, all] = await Promise.all([
     taxonomy.listFamilies(),
     taxonomy.listCategories(),
-    entries.listEntries({ status: ["published"] }),
+    visibleEntries
+      ? Promise.resolve(visibleEntries.filter((entry) => entry.status === "published"))
+      : entries.listEntries({ status: ["published"] }),
   ]);
   const familyIds = new Set(families.map((f) => f.id));
   const live = categories.filter((c) => familyIds.has(c.familyId));

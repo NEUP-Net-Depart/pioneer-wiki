@@ -48,15 +48,16 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
     ? (query.view as SpecimenView)
     : "macro";
 
+  const allEntries = repo.listEntries();
   const [all, revisions, relations, authors, sources, tags, members, catalogue, snapshots] = await Promise.all([
-    repo.listEntries(),
+    allEntries,
     repo.listRevisions(entry.id),
     repo.listRelations(entry.id),
     references.listAuthors(),
     references.listSources(),
     references.listTags(),
     community.listMembers(),
-    getCatalogue(),
+    allEntries.then((visible) => getCatalogue(visible)),
     entry.species ? taxonomy.snapshots([entry.species]) : Promise.resolve<Record<string, TaxonSnapshot>>({}),
   ]);
   // Figures the body places as ![](asset:<id>); the asset store only lists ones that passed review.
