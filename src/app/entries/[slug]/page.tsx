@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { History, PenLine } from "lucide-react";
 import type { EntrySummary, TaxonSnapshot } from "@/lib/model/types";
 import { CONTENT_ROLES, LEVELS } from "@/lib/model/vocab";
@@ -39,9 +39,15 @@ export async function generateMetadata({ params }: PageProps<"/entries/[slug]">)
 export default async function EntryPage({ params, searchParams }: PageProps<"/entries/[slug]">) {
   const { slug } = await params;
   const query = await searchParams;
-  const { entries: repo, references, community, taxonomy } = getServices();
+  const { entries: repo, references, community, taxonomy, auth } = getServices();
   const entry = await repo.getEntry(slug);
   if (!entry) notFound();
+  // A renamed entry keeps its old address, which now points here permanently.
+  if (entry.slug !== slug) permanentRedirect(`/entries/${entry.slug}`);
+  const account = await auth.getCurrentAccount();
+  const canEdit = Boolean(
+    account && account.status !== "suspended" && (account.role === "admin" || account.authorId === entry.authorId),
+  );
 
   const { lang, t } = await getT();
   const view: SpecimenView = SPECIMEN_VIEWS.includes(query.view as SpecimenView)
@@ -81,7 +87,16 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
   // A body that marks its sources [S1] … gets them numbered, and its marks link here.
   const numbered = marksSources(entry.body);
   const entryTags = tags.filter((tg) => entry.tagIds.includes(tg.id));
-  const pending = revisions.find((r) => r.number > entry.revision && r.state === "in_review");
+  // Reading time from the reader's language: about 400 Chinese characters or 220 English words a minute.
+  const prose = entry.body.replace(/```[\s\S]*?```/g, " ");
+  const minutes = Math.max(
+    1,
+    Math.round(
+      lang === "zh"
+        ? (prose.match(/[㐀-鿿]/g)?.length ?? 0) / 400
+        : (prose.match(/[A-Za-z]+/g)?.length ?? 0) / 220,
+    ),
+  );
 
   const [latest] = revisions;
   const latestAuthor = latest ? authors.find((a) => a.id === latest.authorId) : undefined;
@@ -141,8 +156,7 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
             <span>
               {LEVELS[entry.level][lang]} · {CONTENT_ROLES[entry.contentRole][lang]}
             </span>
-            {/* Only an entry with no published ring is itself a draft; a pending newer ring gets the note below. */}
-            {entry.status === "draft" ? <StatusBadge state="draft" lang={lang} showForm /> : null}
+            <span>{lang === "zh" ? `约 ${minutes} 分钟读完` : `${minutes} min read`}</span>
           </p>
           <h1 className="mt-4 font-display">
             <span className="block text-[clamp(2.75rem,5.5vw,4.75rem)] leading-[0.98] font-[480] tracking-[-0.03em] text-balance">
@@ -164,12 +178,6 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
             <p className="mt-5 max-w-(--measure) text-lead text-ink-2">{pick(entry.summary, lang)}</p>
           )}
 
-          {pending ? (
-            <p className="mt-4 flex items-center gap-2 text-small text-ink-2">
-              <StatusBadge state="in_review" lang={lang} />
-              {t("entry.pendingRevision")} · r{pending.number}
-            </p>
-          ) : null}
 
           <div className="pw-ink-both mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-small">
             {author ? (
@@ -209,13 +217,15 @@ export default async function EntryPage({ params, searchParams }: PageProps<"/en
                 <History className="size-4" aria-hidden="true" />
                 {t("entry.history")}
               </Link>
-              <Link
-                href={`/editor/${entry.slug}`}
-                className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-ink px-3 text-paper-sheet no-underline transition-colors duration-(--dur-quick) hover:bg-ink-2"
-              >
-                <PenLine className="size-4" aria-hidden="true" />
-                {t("entry.edit")}
-              </Link>
+              {canEdit ? (
+                <Link
+                  href={`/editor/${entry.slug}`}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-ink px-3 text-paper-sheet no-underline transition-colors duration-(--dur-quick) hover:bg-ink-2"
+                >
+                  <PenLine className="size-4" aria-hidden="true" />
+                  {t("entry.edit")}
+                </Link>
+              ) : null}
             </span>
           </div>
         </header>

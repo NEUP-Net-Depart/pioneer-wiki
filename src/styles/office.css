@@ -44,3 +44,23 @@
     }
   }
 }
+
+/*
+ * Reading rhythm for entry bodies. Chinese text sits in a taller line than
+ * Latin text at the same size; paragraphs avoid a lone last word, and long
+ * unbroken tokens (URLs, identifiers) wrap instead of pushing the page wide.
+ */
+@layer components {
+  :root[lang="zh-CN"] .pw-prose,
+  .pw-prose :lang(zh) {
+    line-height: 1.85;
+  }
+  .pw-prose p,
+  .pw-prose li {
+    text-wrap: pretty;
+  }
+  .pw-prose :is(p, li, td) code,
+  .pw-prose a {
+    overflow-wrap: anywhere;
+  }
+}
