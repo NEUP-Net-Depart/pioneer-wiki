@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(100);
+select plan(104);
 
 -- Accounts: author A, author B, admin A, admin B (no author yet), reader, unverified.
 insert into auth.users(id, email, email_confirmed_at) values
@@ -244,6 +244,39 @@ select pg_temp.as_user('00000000-0000-0000-0000-00000000a001');
 select lives_ok($$select public.pw_save_member('life-member', '{"bio":{"zh":"新简介","en":"New bio"}}', null)$$, 'a member edits their own page');
 select throws_ok($$select public.pw_save_member('life-member', '{"handle":"stolen"}', null)$$, '42501', 'forbidden_fields', 'a member cannot rename their page');
 select throws_ok($$select public.pw_save_member('m-reader-x', '{"bio":{"zh":"x","en":"x"}}', null)$$, '42501', 'forbidden', 'a member cannot edit another page');
+-- The read policy names pw_bound_member(), which row level security evaluates as
+-- the calling role: an anonymous reader must be able to run it, and must still
+-- see only the unarchived pages.
+select pg_temp.as_user('');
+select lives_ok($$select count(*) from public.members$$, 'anonymous readers list the member directory');
+select is((select count(*) from public.members where id = 'life-member'), 1::bigint, 'an active page is in the anonymous directory');
+select is((select count(*) from public.members where id = 'm-reader-x'), 0::bigint, 'an archived page stays out of it');
+-- The same failure hides in any policy that names a function anon may not
+-- execute, and it only shows once the table holds a row. public.profiles and
+-- public.audit_logs stay out: anon holds no select on either by design.
+select lives_ok($$
+  select count(*) from public.entries
+  union all select count(*) from public.entry_revisions
+  union all select count(*) from public.entry_revision_bodies
+  union all select count(*) from public.entry_contributors
+  union all select count(*) from public.entry_sources
+  union all select count(*) from public.entry_tags
+  union all select count(*) from public.entry_auxiliary_categories
+  union all select count(*) from public.relations
+  union all select count(*) from public.members
+  union all select count(*) from public.friend_links
+  union all select count(*) from public.chronicles
+  union all select count(*) from public.forum_threads
+  union all select count(*) from public.forum_posts
+  union all select count(*) from public.taxon_families
+  union all select count(*) from public.taxon_categories
+  union all select count(*) from public.taxon_versions
+  union all select count(*) from public.taxon_snapshots
+  union all select count(*) from public.authors
+  union all select count(*) from public.sources
+  union all select count(*) from public.tags
+  union all select count(*) from public.assets
+$$, 'anonymous readers reach every table the public pages read');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000a003');
 select throws_ok($$select public.pw_admin_save_link(null, '{"name":{"zh":"坏","en":"Bad"},"url":"javascript:alert(1)"}', null)$$, '22023', 'invalid_link_url', 'links must be http(s)');
 insert into r values ('link', public.pw_admin_save_link(null, '{"name":{"zh":"友站","en":"Friend Site"},"url":"https://friend.example.org/","description":{"zh":"简介","en":"About"},"emblem":"geo-ship","since":"2026-10-01"}', null));
