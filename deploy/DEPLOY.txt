@@ -45,9 +45,9 @@ Doing it by hand instead:
 
        docker compose up -d
 
-5. Point DNS for domain(eg. wiki.example.com) at the server (A/AAAA for its IP, or CNAME
-   for an existing hostname), then point the existing Caddy at it. The root
-   CNAME file records the domain; it does not configure DNS or the proxy:
+5. Point DNS for the domain (eg. wiki.example.com) at the server (A/AAAA for its IP, or a
+   CNAME record for an existing hostname), then point the existing Caddy at it. DNS does
+   not configure the proxy, so give Caddy its own entry for the domain:
 
        wiki.example.com {
            encode zstd gzip

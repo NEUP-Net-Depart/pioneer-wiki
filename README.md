@@ -203,7 +203,7 @@ PIONEER_DATA_SOURCE=supabase
 
 `Dockerfile` 分阶段构建，`runner` 只带 `.next/standalone`、`public/` 与追踪到的依赖，以非 root 用户运行。Supabase 配置在运行时读取，同一个镜像可连任意项目。
 
-目标域名为 `wiki.perlica.cloud`，记录在根目录 `CNAME` 和 `deploy/Caddyfile.example` 中。`CNAME` 文件不会配置 DNS 或 Caddy：需在 DNS 控制台将 `wiki` 的 A/AAAA 记录指向服务器 IP，或用 DNS CNAME 记录指向服务器的已有主机名；再加载 Caddy 配置。Supabase Site URL 和允许的认证回调地址也应配置为 `https://wiki.perlica.cloud` 和 `https://wiki.perlica.cloud/auth/callback`。
+把 `wiki.example.com` 换成你自己的域名，`deploy/Caddyfile.example` 与 `deploy/deploy.sh` 用的是同一个占位域名。部署时需要：在 DNS 控制台把该域名的 A/AAAA 记录指向服务器 IP，或用 DNS CNAME 记录指向服务器的已有主机名；再按 `deploy/Caddyfile.example` 加载 Caddy 配置。Supabase Site URL 和允许的认证回调地址也要相应配置为 `https://<你的域名>` 和 `https://<你的域名>/auth/callback`。
 
 内存小的服务器用预构建镜像：推一个 `v*` 版本 tag，CI 会在该 tag 上跑一遍门禁，绿了才由 `.github/workflows/release-image.yml` 构建镜像并发布 release（附带镜像、`docker-compose.yml`、`DEPLOY.txt` 与 `default.env.example`），在服务器上跑部署脚本即可。
 
@@ -419,7 +419,7 @@ Accounts and public member pages remain separate. Only an administrator can bind
 
 The `Dockerfile` builds in stages: `runner` keeps only `.next/standalone`, `public/` and the traced dependencies, and runs as an unprivileged user. Supabase settings are read at runtime, so one image serves any project.
 
-The target domain is `wiki.perlica.cloud`, recorded in the root `CNAME` and `deploy/Caddyfile.example`. The `CNAME` file does not configure DNS or Caddy: point the DNS A/AAAA records for `wiki` at the server IP, or use a DNS CNAME record pointing at its existing hostname, then load the Caddy configuration. Configure the Supabase Site URL and allowed callback as `https://wiki.perlica.cloud` and `https://wiki.perlica.cloud/auth/callback`.
+Replace `wiki.example.com` with your own domain; `deploy/Caddyfile.example` and `deploy/deploy.sh` use the same placeholder. Then point the DNS A/AAAA records for that domain at the server IP, or use a DNS CNAME record pointing at its existing hostname, and load the Caddy configuration from `deploy/Caddyfile.example`. Configure the Supabase Site URL and allowed callback as `https://<your-domain>` and `https://<your-domain>/auth/callback`.
 
 On a host with little memory, use the prebuilt image: pushing a `v*` version tag runs CI on that commit, and once it passes `.github/workflows/release-image.yml` builds the image and publishes the release with the image, `docker-compose.yml`, `DEPLOY.txt` and `default.env.example` attached. One script installs them.
 
