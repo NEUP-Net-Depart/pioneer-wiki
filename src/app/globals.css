@@ -14,6 +14,7 @@
 @import "../styles/bookplate.css";
 @import "../styles/taxonomy.css";
 @import "../styles/chart.css";
+@import "../styles/office.css";
 
 /* Light paper only for now; `dark:` utilities in shadcn primitives stay inert. */
 @custom-variant dark (&:is(.dark *));

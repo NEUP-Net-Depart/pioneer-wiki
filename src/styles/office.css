@@ -1,0 +1,46 @@
+/*
+ * The editorial office, account pages and discussions: the reading prose at
+ * comment scale for forum posts, and the marks invalid fields carry. Built on
+ * the same tokens and rules as the archive; nothing here invents a colour.
+ */
+
+@layer components {
+  /* Forum posts read like short letters, not chapters. */
+  .pw-forum-body .pw-prose {
+    max-width: none;
+    font-size: var(--text-body);
+    line-height: 1.7;
+  }
+  .pw-forum-body .pw-prose > * + * {
+    margin-top: 0.8em;
+  }
+  .pw-forum-body .pw-prose :is(h1, h2, h3, h4) {
+    margin-top: 1.4em;
+    padding-top: 0;
+    background: none;
+    font-size: var(--text-h4);
+    line-height: var(--text-h4--line-height);
+  }
+  .pw-forum-body .pw-prose > :first-child {
+    margin-top: 0;
+  }
+
+  /* A field at fault: the inked line turns brick and thickens, so the mark is not colour alone. */
+  .pw-field[aria-invalid="true"] {
+    background: linear-gradient(var(--color-brick-ink), var(--color-brick-ink)) no-repeat 0 100% / 100% 2px;
+  }
+  .pw-lined[aria-invalid="true"] {
+    border-color: var(--color-brick-ink);
+    box-shadow: inset 3px 0 0 var(--color-brick-ink);
+  }
+
+  /* Dialog entrance: a sheet laid down, not a pop. */
+  [role="dialog"].pw-sheet {
+    animation: pw-sheet-in var(--dur-base) var(--ease-grow);
+  }
+  @keyframes pw-sheet-in {
+    from {
+      opacity: 0;
+    }
+  }
+}

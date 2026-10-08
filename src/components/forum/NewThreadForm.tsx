@@ -1,125 +1,141 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ForumCategory, ForumThread } from "@/lib/model/types";
 import { useI18n } from "@/lib/i18n/client";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DraftingSheet } from "@/components/writing/DraftingSheet";
+import { cn } from "@/lib/utils";
+import { api, failureText } from "@/components/admin/actions";
+import { Composer } from "@/components/writing/Composer";
+import { Vignette } from "@/components/book/Vignette";
 import { FORUM_CATEGORIES } from "./categories";
 
-/**
- * A new sheet for the register, drawn up as an engineering drawing: the body
- * goes in the gridded drawing area, title / name / category in the title
- * block, and filing it is stamping it. POST /api/forum/threads, then open it.
- */
-export function NewThreadForm({ nextNumber, today }: { nextNumber: number; today: string }) {
+const NOTES: Record<ForumCategory, { zh: string; en: string }> = {
+  general: { zh: "闲谈、想法和不属于其他分类的话题。", en: "Ideas, chat and anything that fits nowhere else." },
+  help: { zh: "遇到问题？写清楚做了什么、看到了什么。", en: "Stuck? Say what you did and what you saw." },
+  showcase: { zh: "分享你做的东西：项目、笔记、图。", en: "Show what you made: projects, notes, drawings." },
+  meta: { zh: "关于本站与本会：建议、勘误、友链交换。", en: "About the site and the society: suggestions, errata, link exchanges." },
+};
+
+/** Start a discussion: choose its category, give it a title, write the opening post. */
+export function NewThreadForm({ accountId }: { accountId: string }) {
   const router = useRouter();
   const { lang } = useI18n();
   const zh = lang === "zh";
+  const form = useRef<HTMLFormElement>(null);
+  const [category, setCategory] = useState<ForumCategory>("general");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ title?: string; body?: string; form?: string }>({});
+  const storageKey = `pioneer-wiki:forum:${accountId}:new`;
+
+  const send = async () => {
+    if (busy) return;
+    const next = {
+      title: title.trim() && title.length <= 120 ? undefined : zh ? "标题需要 1–120 个字符。" : "Titles need 1–120 characters.",
+      body: body.trim() ? undefined : zh ? "请写下首帖内容。" : "Write the opening post.",
+    };
+    setErrors(next);
+    if (next.title || next.body) {
+      form.current?.querySelector<HTMLElement>(next.title ? "#nt-title" : "textarea")?.focus();
+      return;
+    }
+    setBusy(true);
+    try {
+      const thread = await api<ForumThread>("/api/forum/threads", "POST", { title: title.trim(), category, body });
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {
+        // Nothing to clear.
+      }
+      router.push(`/forum/${thread.id}`);
+    } catch (error) {
+      setErrors({ form: failureText(error, lang) });
+      setBusy(false);
+    }
+  };
 
   return (
     <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const data = new FormData(e.currentTarget);
-        setBusy(true);
-        setError(null);
-        try {
-          const res = await fetch("/api/forum/threads", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ title: data.get("title"), category: data.get("category"), body: data.get("body") }),
-          });
-          const json = await res.json();
-          if (!res.ok) throw new Error(json.error?.message ?? res.statusText);
-          router.push(`/forum/${(json as ForumThread).id}`);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : String(err));
-          setBusy(false);
-        }
+      ref={form}
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        void send();
       }}
+      className="flex flex-col gap-8"
     >
-      <DraftingSheet
-        lang={lang}
-        notes={
-          zh
-            ? ["一张图纸只谈一件事。", "讨论条目请注明编号，如 PW-0001。", "申请友链请写站名、地址与一句介绍。"]
-            : [
-                "One subject per sheet.",
-                "Cite entries by number, e.g. PW-0001.",
-                "To exchange links: name, address, one line.",
-              ]
-        }
-        block={
-          <>
-            <label data-span className="pw-titleblock-title">
-              <small>{zh ? "标题 · Title" : "Title · 标题"}</small>
-              <input
-                name="title"
-                required
-                maxLength={120}
-                placeholder={zh ? "这张图纸要讨论什么？" : "What is this sheet about?"}
-              />
+      <fieldset className="flex flex-col gap-3">
+        <legend className="pw-label mb-2">{zh ? "分类" : "Category"}</legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {FORUM_CATEGORIES.map((c) => (
+            <label
+              key={c.id}
+              className={cn(
+                "flex cursor-pointer items-start gap-3 rounded-sm border px-4 py-3 transition-colors duration-(--dur-quick)",
+                category === c.id ? "border-part bg-part-wash" : "border-rule hover:border-rule-strong",
+              )}
+            >
+              <input type="radio" name="category" value={c.id} checked={category === c.id} onChange={() => setCategory(c.id)} className="mt-1.5" />
+              <Vignette name={c.emblem} className="w-10 shrink-0" sizes="40px" />
+              <span>
+                <span className="block font-display text-h4 text-ink">{c.label[lang]}</span>
+                <span className="block text-small text-ink-2">{NOTES[c.id][lang]}</span>
+              </span>
             </label>
-            <div>
-              <small>{zh ? "署名 · Drawn by" : "Drawn by · 署名"}</small>
-              <output>{zh ? "由账号资料读取" : "From your account"}</output>
-            </div>
-            <label>
-              <small>{zh ? "分类 · Class" : "Class · 分类"}</small>
-              <Select name="category" defaultValue={"general" satisfies ForumCategory}>
-                <SelectTrigger
-                  size="sm"
-                  className="h-auto w-full justify-between gap-2 rounded-none border-0 bg-transparent px-0 py-0.5 shadow-none text-small font-normal text-ink focus-visible:border-0 focus-visible:ring-0"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {FORUM_CATEGORIES.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.label[lang]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-            <div>
-              <small>{zh ? "图号 · Sheet" : "Sheet · 图号"}</small>
-              <output>No. {String(nextNumber).padStart(3, "0")}</output>
-            </div>
-            <div>
-              <small>{zh ? "日期 · Date" : "Date · 日期"}</small>
-              <output>{today}</output>
-            </div>
-            <div data-span className="items-start gap-2 py-4">
-              <button type="submit" disabled={busy} data-busy={busy || undefined} className="pw-stamp-button">
-                {busy ? (zh ? "登记中…" : "Filing…") : zh ? "登记 · File" : "File · 登记"}
-              </button>
-              {error ? (
-                <p role="alert" className="text-small text-brick-ink">
-                  {error}
-                </p>
-              ) : null}
-            </div>
-          </>
-        }
-      >
-        <label htmlFor="pw-new-sheet-body" className="sr-only">
-          {zh ? "正文" : "Body"}
+          ))}
+        </div>
+      </fieldset>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="nt-title" className="pw-label">
+          {zh ? "标题" : "Title"} <span className="text-brick-ink">*</span>
         </label>
-        <textarea
-          id="pw-new-sheet-body"
-          name="body"
-          required
-          maxLength={8000}
-          rows={10}
-          placeholder={zh ? "在图纸上写下你的问题、发现或想法……" : "Draw up your question, finding or idea…"}
-          className="pw-drafting-text text-body"
+        <input
+          id="nt-title"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          maxLength={120}
+          aria-invalid={errors.title ? true : undefined}
+          aria-describedby={errors.title ? "nt-title-error" : undefined}
+          placeholder={zh ? "一句话说清这次讨论的主题" : "Say in one line what this is about"}
+          className="pw-field font-display text-h3"
         />
-      </DraftingSheet>
+        {errors.title ? (
+          <p id="nt-title-error" className="text-meta text-brick-ink">
+            {errors.title}
+          </p>
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <span className="pw-label">
+          {zh ? "首帖" : "Opening post"} <span className="text-brick-ink">*</span>
+        </span>
+        <Composer
+          value={body}
+          onChange={setBody}
+          storageKey={storageKey}
+          label={zh ? "首帖内容" : "Opening post"}
+          placeholder={zh ? "写下问题、发现或想法。讨论条目时请写编号，例如 PW-0001。" : "Your question, finding or idea. Cite entries by number, e.g. PW-0001."}
+          invalid={Boolean(errors.body)}
+          describedBy={errors.body ? "nt-body-error" : undefined}
+          onSubmitShortcut={() => void send()}
+          minRows={10}
+        />
+        {errors.body ? (
+          <p id="nt-body-error" className="text-meta text-brick-ink">
+            {errors.body}
+          </p>
+        ) : null}
+      </div>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <button type="submit" disabled={busy} data-busy={busy || undefined} className="pw-stamp-button">
+          {busy ? (zh ? "发布中…" : "Posting…") : zh ? "发起讨论" : "Start discussion"}
+        </button>
+        <p role="alert" className="text-small text-brick-ink">
+          {errors.form ?? ""}
+        </p>
+      </div>
     </form>
   );
 }
