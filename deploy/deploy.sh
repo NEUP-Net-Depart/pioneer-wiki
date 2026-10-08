@@ -216,7 +216,7 @@ fi
 
 say ""
 say "Caddy still needs this once (then reload it):"
-say "    ${PIONEER_DOMAIN:-wiki.perlica.cloud} {"
+say "    ${PIONEER_DOMAIN:-wiki.example.com} {"
 say "        encode zstd gzip"
 say "        reverse_proxy 127.0.0.1:3000"
 say "    }"
