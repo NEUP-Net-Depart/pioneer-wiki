@@ -1,5 +1,6 @@
 import "server-only";
 import type {
+  Account,
   Asset,
   Author,
   Category,
@@ -44,7 +45,9 @@ import type {
 import { ServiceError } from "./contracts";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAuthAdapter } from "./supabase-auth";
-import { readProjects, validateProjects } from "@/lib/members/project-validation";
+import { readProjects } from "@/lib/members/project-validation";
+import { readMemberGithub, readMemberLinks, validateMemberPatch } from "@/lib/members/validation";
+import { validatePost, validateThread } from "@/lib/forum/validation";
 import { facetsOf, searchWords } from "@/lib/chronicles/query";
 
 type Row = Record<string, unknown>;
@@ -182,13 +185,15 @@ async function summary(
   return { ...value, contributorIds, sourceIds, tagIds, auxiliaryCategoryIds };
 }
 
-async function visibleRevision(row: Row): Promise<{ number: number; published: boolean }> {
-  const account = await createSupabaseAuthAdapter().getCurrentAccount();
+function revisionFor(row: Row, account: Account | null): { number: number; published: boolean } {
   const privileged = Boolean(account?.role === "admin" || (account?.authorId && account.authorId === row.author_id));
   return {
     number: privileged ? number(row.latest_revision_number) : number(row.published_revision_number),
     published: !privileged,
   };
+}
+async function visibleRevision(row: Row): Promise<{ number: number; published: boolean }> {
+  return revisionFor(row, await createSupabaseAuthAdapter().getCurrentAccount());
 }
 
 function createEntryRepository(): EntryRepository {
@@ -227,12 +232,46 @@ function createEntryRepository(): EntryRepository {
           .order(query.sort === "created" ? "created_at" : "updated_at", { ascending: false })
           .limit(query.limit ?? 1000),
       )) as Row[];
-      return Promise.all(
-        rows.map(async (row) => {
-          const visible = await visibleRevision(row);
-          return summary(client, row, visible.number, visible.published);
-        }),
-      );
+      if (!rows.length) return [];
+      const entryIds = rows.map((row) => text(row.id));
+      const load = async (table: string, key: string) => {
+        const grouped = new Map<string, string[]>();
+        for (let offset = 0; ; offset += 1000) {
+          const linked = (await result(
+            await client
+              .from(table)
+              .select("*")
+              .in("entry_id", entryIds)
+              .order("entry_id")
+              .order(key)
+              .range(offset, offset + 999),
+          )) as unknown as Row[];
+          for (const row of linked) {
+            const id = text(row.entry_id);
+            grouped.set(id, [...(grouped.get(id) ?? []), text(row[key])]);
+          }
+          if (linked.length < 1000) break;
+        }
+        return grouped;
+      };
+      const [account, contributors, sources, tags, auxiliary] = await Promise.all([
+        createSupabaseAuthAdapter().getCurrentAccount(),
+        load("entry_contributors", "author_id"),
+        load("entry_sources", "source_id"),
+        load("entry_tags", "tag_id"),
+        load("entry_auxiliary_categories", "category_id"),
+      ]);
+      return rows.map((row) => {
+        const visible = revisionFor(row, account);
+        const entry = mapSummary(row, visible.number, visible.published);
+        return {
+          ...entry,
+          contributorIds: contributors.get(entry.id) ?? [],
+          sourceIds: sources.get(entry.id) ?? [],
+          tagIds: tags.get(entry.id) ?? [],
+          auxiliaryCategoryIds: auxiliary.get(entry.id) ?? [],
+        };
+      });
     },
     async getEntry(slug) {
       const client = await createSupabaseServerClient();
@@ -353,30 +392,34 @@ function createSearchAdapter(): SearchAdapter {
   return {
     async search(query: SearchQuery): Promise<SearchResult> {
       const c = await createSupabaseServerClient();
-      const first = <T extends string>(values?: T[]) => values?.[0] ?? null;
-      const rows = (await result(
-        await c.rpc("pw_search_entries", {
+      const payload = (await result(
+        await c.rpc("pw_search_entries_v2", {
           p_text: query.text,
-          p_domain: first(query.filters?.domain),
-          p_scale: first(query.filters?.scale),
-          p_status: first(query.filters?.status),
-          p_lang: first(query.filters?.lang),
-          p_author: first(query.filters?.author),
+          p_domain: query.filters?.domain ?? [],
+          p_scale: query.filters?.scale ?? [],
+          p_status: query.filters?.status ?? [],
+          p_lang: query.filters?.lang ?? [],
+          p_author: query.filters?.author ?? [],
           p_limit: query.limit ?? 50,
           p_offset: query.offset ?? 0,
-          p_family: first(query.filters?.familyId),
-          p_category: first(query.filters?.categoryId),
+          p_family: query.filters?.familyId ?? [],
+          p_category: query.filters?.categoryId ?? [],
         }),
-      )) as Array<{ entry: EntrySummary; score: number; matchedFields: string[]; snippet: null }>;
+      )) as {
+        hits: SearchResult["hits"];
+        total: number;
+        facets: SearchResult["facets"];
+      };
       return {
-        hits: rows.map((row) => ({
+        hits: payload.hits.map((row) => ({
           entry: row.entry,
+          familyId: row.familyId,
           score: row.score,
           matchedFields: row.matchedFields as Array<"id" | "title" | "summary" | "body" | "tags" | "author" | "source">,
           snippet: row.snippet,
         })),
-        total: rows.length,
-        facets: { family: {}, category: {}, domain: {}, scale: {}, status: {}, lang: {} },
+        total: payload.total,
+        facets: payload.facets,
       };
     },
   };
@@ -547,8 +590,8 @@ function mapMember(row: Row): Member {
     cover,
     joined: text(row.joined),
     authorId: optionalText(row.author_id),
-    links: Array.isArray(row.links) ? (row.links as Array<{ label: string; url: string }>) : [],
-    github: optionalText(row.github),
+    links: readMemberLinks(row.links),
+    github: readMemberGithub(row.github),
     projects: readProjects(row.projects),
     sample: bool(row.sample),
   };
@@ -745,9 +788,10 @@ function createCommunityRepository(): CommunityRepository {
       return row ? mapMember(row) : null;
     },
     async updateMember(handle, patch: MemberPatch) {
+      patch = validateMemberPatch(patch);
       const c = await createSupabaseServerClient();
       const values: Row = {};
-      if (patch.projects !== undefined) values.projects = validateProjects(patch.projects);
+      if (patch.projects !== undefined) values.projects = patch.projects;
       if (patch.name) {
         values.name_zh = patch.name.zh;
         values.name_en = patch.name.en;
@@ -846,6 +890,7 @@ function createCommunityRepository(): CommunityRepository {
       };
     },
     async createThread(input) {
+      input = validateThread(input);
       const c = await createSupabaseServerClient();
       const id = `t-${Date.now()}`;
       const now = new Date().toISOString();
@@ -890,6 +935,7 @@ function createCommunityRepository(): CommunityRepository {
       );
     },
     async reply(input) {
+      input = validatePost(input);
       const c = await createSupabaseServerClient();
       const thread = (await result(
         await c.from("forum_threads").select("number").eq("id", input.threadId).maybeSingle(),
