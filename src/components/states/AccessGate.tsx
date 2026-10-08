@@ -37,6 +37,14 @@ const COPY: Record<string, { zh: [string, string]; en: [string, string] }> = {
     zh: ["编辑 Wiki 需要作者资格。", "作者资格由管理员批准。你可以在账号页提交申请，并在那里查看处理进度。"],
     en: ["Editing the wiki needs author status.", "Administrators grant author status. Apply from your account page and follow its progress there."],
   },
+  not_owner: {
+    zh: ["只有作者和管理员可以编辑这篇条目。", "你可以阅读它的公开版本；如需修改，请联系作者或管理员。"],
+    en: ["Only its author and administrators edit this entry.", "You can read the public version; ask the author or an administrator about changes."],
+  },
+  not_page_owner: {
+    zh: ["只有主页本人和管理员可以编辑。", "这个成员主页绑定在另一个账号上。"],
+    en: ["Only the page's owner and administrators edit it.", "This member page is bound to another account."],
+  },
   not_admin: {
     zh: ["此区域仅管理员可用。", "当前账号没有管理员权限。需要时请联系现有管理员。"],
     en: ["Administrators only.", "This account has no administrator access. Ask an existing administrator if you need it."],

@@ -90,7 +90,7 @@ export function MemberEditor({ member: initial, repositories = [] }: { member: M
       const next = await send(base, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(patch),
+        body: JSON.stringify({ patch, baseVersion: member.version }),
       });
       setMember(next);
       setFeedback({ kind: "ok", text: zh ? "已保存。" : "Saved." });

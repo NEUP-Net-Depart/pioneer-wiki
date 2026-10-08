@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { EntrySummary, Lang } from "@/lib/model/types";
 import { INKS } from "@/lib/model/vocab";
 import { pick } from "@/lib/i18n/dictionary";
@@ -41,15 +41,21 @@ function SectionTitle({ zh, en, lang, count }: { zh: string; en: string; lang: L
 export default async function MemberPage({ params }: PageProps<"/members/[handle]">) {
   const { handle } = await params;
   const { community, entries, auth } = getServices();
-  const member = await community.getMember(handle);
+  const account = await auth.getCurrentAccount();
+  // An archived page is shown only to its owner and administrators, with a notice; everyone else gets 404.
+  const member =
+    (await community.getMember(handle)) ??
+    (account && (account.role === "admin" || account.memberId)
+      ? await community.getMember(handle, { includeArchived: true })
+      : null);
   if (!member) notFound();
+  if (member.handle !== handle) permanentRedirect(`/members/${member.handle}`);
   const { lang } = await getT();
   const zh = lang === "zh";
   const other: Lang = zh ? "en" : "zh";
   const ink = INKS[member.plate.ink].hex;
 
-  const [user, all, posts, repos, projects] = await Promise.all([
-    auth.getCurrentUser(),
+  const [all, posts, repos, projects] = await Promise.all([
     entries.listEntries(),
     community.listPostsBy(member.id),
     member.github ? publicRepos(member.github) : Promise.resolve([]),
@@ -61,11 +67,23 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
       }),
     ),
   ]);
-  const own = Boolean(user && member.authorId === user.id);
+  const own = Boolean(account && account.status !== "suspended" && account.memberId === member.id);
+  const canEdit = Boolean(account && (own || account.role === "admin"));
   const written: EntrySummary[] = member.authorId ? all.filter((e) => e.authorId === member.authorId) : [];
 
   return (
     <article className="flex flex-col" style={{ "--plate-ink": ink } as React.CSSProperties}>
+      {member.archivedAt ? (
+        <p role="note" className="pw-sheet relative z-10 mb-6 border-rule-strong px-5 py-3 text-small text-ink-2">
+          {zh
+            ? own
+              ? "你的主页已被管理员归档：读者暂时看不到它，也不能编辑。如有疑问请联系管理员。"
+              : "这个主页已归档，只有本人和管理员能看到。可以在编辑室的回收站恢复。"
+            : own
+              ? "An administrator archived your page: readers cannot see it and it cannot be edited for now. Ask an administrator if this is unexpected."
+              : "This page is archived and visible only to its owner and administrators. Restore it from the archive bin."}
+        </p>
+      ) : null}
       {/* Frontispiece */}
       <div className="relative -mt-8 ml-[calc(50%-50vw)] w-screen sm:-mt-10">
         <Frontispiece
@@ -108,13 +126,13 @@ export default async function MemberPage({ params }: PageProps<"/members/[handle
           </p>
           <p className="max-w-[40em] text-lead text-ink-2">{member.bio[lang]}</p>
           <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-3">
-            {own ? (
+            {canEdit && (!member.archivedAt || account?.role === "admin") ? (
               <Link
                 href={`/members/${member.handle}/edit`}
                 className="inline-flex h-9 items-center rounded-sm px-4 text-small text-paper-sheet no-underline transition-opacity duration-(--dur-quick) hover:opacity-90"
                 style={{ background: ink }}
               >
-                {zh ? "编辑我的主页" : "Edit my page"}
+                {own ? (zh ? "编辑我的主页" : "Edit my page") : zh ? "代为编辑主页" : "Edit this page"}
               </Link>
             ) : null}
             <BookplateDownload plate={member.plate} name={member.name} handle={member.handle} lang={lang} />
