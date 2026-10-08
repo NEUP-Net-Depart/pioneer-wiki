@@ -7,10 +7,14 @@
 # If Caddy runs in a container instead, attach it to this project's network and
 # use `reverse_proxy app:3000`.
 
-wiki.perlica.cloud {
+wiki.example.com {
 	encode zstd gzip
 	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 	reverse_proxy 127.0.0.1:3000 {
 		header_up X-Real-IP {remote_host}
 	}
 }
+#Only X-Real-IP is accepted,so if using a proxy (eg. Cloudflare Proxy),you should transfer the CF-Connecting-IP into X-Real-IP
+#
+#	header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+#
