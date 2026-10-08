@@ -13,6 +13,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\" \"tools/**/*.{js,mjs,ts,json}\" .prettierrc.json components.json eslint.config.mjs next.config.ts package.json postcss.config.mjs tsconfig.json vitest.config.ts",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "bootstrap-admin": "node tools/bootstrap-admin.mjs",
     "seed-supabase": "node --experimental-strip-types tools/seed-supabase.mjs"
@@ -63,6 +64,8 @@
     "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.8",
+    "eslint-plugin-eslint-comments": "3.2.0",
+    "eslint-plugin-jsdoc": "63.3.3",
     "prettier": "^3.9.9",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
