@@ -65,6 +65,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js for concurrent database checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
@@ -80,3 +85,9 @@ jobs:
 
       - name: Lint database schema
         run: supabase db lint --local
+
+      - name: Test database authorization and forum transactions
+        run: supabase test db
+
+      - name: Test concurrent forum writes
+        run: node tools/test-forum-concurrency.mjs supabase_db_pioneer-wiki

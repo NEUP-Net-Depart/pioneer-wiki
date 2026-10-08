@@ -9,10 +9,8 @@ export async function POST(_request: Request, { params }: RouteContext<"/api/adm
   if (!getSupabaseConfig()) return NextResponse.json({ error: { code: "unavailable", message: "Archiving requires Supabase." } }, { status: 503 });
   const { id } = await params;
   const client = await createSupabaseServerClient();
-  const before = await client.from("entries").select("*").eq("id", id).maybeSingle();
-  if (before.error || !before.data) return NextResponse.json({ error: { code: "not_found", message: "No such entry" } }, { status: 404 });
-  const { data, error } = await client.from("entries").update({ deleted_at: new Date().toISOString() }).eq("id", id).select().single();
-  if (error) return NextResponse.json({ error: { code: "unavailable", message: error.message } }, { status: 503 });
-  await client.rpc("pw_audit_insert", { p_action: "archive", p_object_type: "entry", p_object_id: id, p_before: before.data, p_after: data });
+  const { data, error } = await client.rpc("pw_archive_entry", { p_entry_id: id });
+  if (error) return NextResponse.json({ error: { code: "unavailable", message: error.message } }, { status: error.code === "42501" ? 403 : 503 });
+  if (!data) return NextResponse.json({ error: { code: "not_found", message: "No such entry" } }, { status: 404 });
   return NextResponse.json(data);
 }

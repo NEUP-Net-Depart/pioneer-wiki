@@ -847,69 +847,24 @@ function createCommunityRepository(): CommunityRepository {
     },
     async createThread(input) {
       const c = await createSupabaseServerClient();
-      const id = `t-${Date.now()}`;
-      const now = new Date().toISOString();
-      const latest = (await result(
-        await c.from("forum_threads").select("number").order("number", { ascending: false }).limit(1).maybeSingle(),
-      )) as Row | null;
-      const n = number(latest?.number) + 1;
-      await result(
-        await c.from("forum_threads").insert({
-          id,
-          number: n,
-          title: input.title.trim(),
-          category: input.category,
-          author_name: input.authorName.trim(),
-          member_id: input.memberId,
-          created_at: now,
+      const row = (await result(
+        await c.rpc("pw_create_forum_thread", {
+          p_title: input.title,
+          p_body: input.body,
+          p_category: input.category,
         }),
-      );
-      await result(
-        await c.from("forum_posts").insert({
-          id: `p-${n}-1`,
-          thread_id: id,
-          author_name: input.authorName.trim(),
-          member_id: input.memberId,
-          body: input.body.trim(),
-          created_at: now,
-        }),
-      );
-      return mapThread(
-        {
-          id,
-          number: n,
-          title: input.title,
-          category: input.category,
-          author_name: input.authorName,
-          member_id: input.memberId,
-          created_at: now,
-        },
-        1,
-        input.body,
-        now,
-      );
+      )) as Row;
+      return mapThread(row, number(row.post_count), text(row.excerpt), text(row.last_activity_at));
     },
     async reply(input) {
       const c = await createSupabaseServerClient();
-      const thread = (await result(
-        await c.from("forum_threads").select("number").eq("id", input.threadId).maybeSingle(),
+      const row = (await result(
+        await c.rpc("pw_reply_forum_thread", {
+          p_thread_id: input.threadId,
+          p_body: input.body,
+        }),
       )) as Row | null;
-      if (!thread) return null;
-      const count = await c
-        .from("forum_posts")
-        .select("id", { count: "exact", head: true })
-        .eq("thread_id", input.threadId);
-      const n = (count.count ?? 0) + 1;
-      const post = {
-        id: `p-${number(thread.number)}-${n}`,
-        thread_id: input.threadId,
-        author_name: input.authorName.trim(),
-        member_id: input.memberId,
-        body: input.body.trim(),
-        created_at: new Date().toISOString(),
-      };
-      await result(await c.from("forum_posts").insert(post));
-      return mapPost(post);
+      return row ? mapPost(row) : null;
     },
   };
 }

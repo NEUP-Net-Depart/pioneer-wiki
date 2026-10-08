@@ -67,7 +67,7 @@ The CI workflow runs `pnpm install --frozen-lockfile`, lint, typecheck, tests, a
 | Routes, middleware, config, dependencies, or build scripts | The code checks above plus `pnpm run build` |
 | `tests/**` | `pnpm test`; run the focused test while iterating |
 | `src/styles/**` or UI behavior | Applicable code checks plus a real browser check; include screenshots for visible changes |
-| `supabase/migrations/**` or auth | Typecheck, tests, build, and `supabase db reset` / `supabase db lint --local` when Docker and the CLI are available |
+| `supabase/migrations/**` or auth | Typecheck, tests, build, and `supabase db reset` / `supabase db lint --local` / `supabase test db` when Docker and the CLI are available; run `node tools/test-forum-concurrency.mjs <local-db-container>` for forum write changes |
 | `public/**` or `tools/**` | Check all references and the relevant asset/preparation path; verify licenses and generated output |
 | Docs or agent instructions only | Review links, paths, commands, and requirements; run `git diff --check` |
 
@@ -79,6 +79,7 @@ Do not claim a browser, Supabase, or production check that was not actually perf
 - Keep the mock data path deterministic in tests; do not make CI depend on a live Supabase project.
 - Treat migrations and authentication changes as cross-module changes. Read the relevant auth, service, and migration code before editing and describe compatibility or rollback implications.
 - Keep `entries.published_revision_number` separate from `entries.latest_revision_number`; public reads must never expose an unpublished revision.
+- Client writes to entries and forum tables must use authorized RPCs. Forum identity is derived from the database session; thread creation and its opening post are one transaction. Keep administrator archive and audit writes atomic.
 - Preserve the service contracts when adding Supabase implementations. The mock adapter remains the deterministic unit-test backend; do not make tests depend on a live project.
 - Preserve existing URL routes, bilingual heading IDs, member/account boundaries, and public asset licenses.
 - Do not edit generated build output or upload directories (`.next`, `out`, `build`, `.data`).
