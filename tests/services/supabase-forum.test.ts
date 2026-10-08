@@ -71,7 +71,7 @@ describe("Supabase forum transaction contract", () => {
   it("propagates database validation and authorization failures", async () => {
     const community = createSupabaseServices().community;
     mocks.rpc.mockResolvedValueOnce({ data: null, error: { code: "22023", message: "invalid_post" } });
-    await expect(community.reply({ threadId: "t", body: "", authorName: "Reader" })).rejects.toMatchObject({
+    await expect(community.reply({ threadId: "t", body: "Body", authorName: "Reader" })).rejects.toMatchObject({
       code: "invalid",
     });
     mocks.rpc.mockResolvedValueOnce({ data: null, error: { code: "42501", message: "verified_account_required" } });
