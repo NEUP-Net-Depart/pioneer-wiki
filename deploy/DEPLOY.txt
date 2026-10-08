@@ -45,17 +45,16 @@ Doing it by hand instead:
 
        docker compose up -d
 
-5. Point DNS for wiki.perlica.cloud at the server (A/AAAA for its IP, or CNAME
+5. Point DNS for domain(eg. wiki.example.com) at the server (A/AAAA for its IP, or CNAME
    for an existing hostname), then point the existing Caddy at it. The root
    CNAME file records the domain; it does not configure DNS or the proxy:
 
-       wiki.perlica.cloud {
+       wiki.example.com {
            encode zstd gzip
            reverse_proxy 127.0.0.1:3000
    }
 
 Before the first deployment the Supabase project needs the schema from
 supabase/migrations (in the release's source archive), applied in filename
-order, with https://wiki.perlica.cloud as the site URL and
-https://wiki.perlica.cloud/auth/callback allowed as a redirect
+order, with the site URL and URL/auth/callback allowed as a redirect
 targets. Content is imported once from a checkout with pnpm run seed-supabase.
