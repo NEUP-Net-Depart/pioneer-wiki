@@ -125,6 +125,6 @@ describe.skipIf(bash === null)("release deployment assets", () => {
     expect(result.env).toBe(existing);
     expect(result.fetches).toContain("pioneer-wiki-linux-amd64.tar.gz");
     expect(result.docker).toBe("info\nload\n");
-    expect(result.stdout).toContain("wiki.perlica.cloud");
+    expect(result.stdout).toContain("wiki.example.com");
   });
 });
