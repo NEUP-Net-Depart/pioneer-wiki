@@ -247,9 +247,14 @@ describe("entries and their place in the catalogue", () => {
       "raft-consensus",
     );
 
-    await repo.transition({ entryId: "PW-0002", action: "submit", actorId: "a-qingkong" });
+    const submitted = await repo.transition({ entryId: "PW-0002", action: "submit", actorId: "a-qingkong" });
     expect((await repo.getEntry("raft-consensus"))?.categoryId).toBe("distributed-systems");
-    await repo.transition({ entryId: "PW-0002", action: "publish", actorId: "a-qingkong" });
+    await repo.transition({
+      entryId: "PW-0002",
+      action: "publish",
+      actorId: "a-qingkong",
+      expectedRevision: submitted.number,
+    });
     const published = await repo.getEntry("raft-consensus");
     expect(published).toMatchObject({
       categoryId: "networks-protocols",
@@ -303,7 +308,9 @@ describe("entries and their place in the catalogue", () => {
       authorId: "a-qingkong",
       categoryId: "cryptography",
     });
-    expect((await repo.getEntryById(byGenus.entryId))?.categoryId).toBe("cryptography");
+    // Unpublished: readers do not see it, its editors find it filed under the genus.
+    expect(await repo.getEntryById(byGenus.entryId)).toBeNull();
+    expect((await repo.getEditorial(byGenus.entryId))?.latest.metadata.categoryId).toBe("cryptography");
     const byPhylum = await repo.saveDraft({
       title: { zh: "旧客户端", en: "Phylum entry" },
       summary: { zh: "摘要", en: "Summary" },
@@ -312,7 +319,7 @@ describe("entries and their place in the catalogue", () => {
       authorId: "a-qingkong",
       domain: "security",
     });
-    expect((await repo.getEntryById(byPhylum.entryId))?.categoryId).toBe("application-security");
+    expect((await repo.getEditorial(byPhylum.entryId))?.latest.metadata.categoryId).toBe("application-security");
   });
 
   it("searches by family and genus", async () => {

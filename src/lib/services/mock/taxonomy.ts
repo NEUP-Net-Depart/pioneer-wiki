@@ -71,9 +71,9 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
   const apply = (kind: TaxonKind, current: Family | Category, patch: TaxonPatch): Family | Category => {
     const next = structuredClone(current) as Family & Partial<Category>;
     if (patch.slug !== undefined) {
-      if (!SLUG.test(patch.slug)) throw new ServiceError("invalid", "A slug is lowercase words joined by hyphens");
+      if (!SLUG.test(patch.slug)) throw new ServiceError("invalid", "invalid_slug");
       const owner = bySlug(kind, patch.slug);
-      if (owner && owner.id !== current.id) throw new ServiceError("conflict", `The slug ${patch.slug} is taken`);
+      if (owner && owner.id !== current.id) throw new ServiceError("conflict", "slug_taken");
       if (patch.slug !== current.slug) {
         next.formerSlugs = [...current.formerSlugs.filter((s) => s !== patch.slug), current.slug];
         next.slug = patch.slug;
@@ -81,12 +81,12 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
     }
     if (patch.name !== undefined) {
       if (!patch.name.zh.trim() || !patch.name.en.trim())
-        throw new ServiceError("invalid", "A taxon needs a Chinese and an English name");
+        throw new ServiceError("invalid", "invalid_name");
       next.name = { zh: patch.name.zh.trim(), en: patch.name.en.trim() };
     }
     if (patch.scientificName !== undefined) {
       if (!LATIN.test(patch.scientificName.trim()))
-        throw new ServiceError("invalid", "A scientific name is one capitalised Latin word, e.g. Corvidae");
+        throw new ServiceError("invalid", "invalid_scientific_name");
       next.scientificName = patch.scientificName.trim();
     }
     if (patch.taxonNameZh !== undefined) next.taxonNameZh = patch.taxonNameZh?.trim() || undefined;
@@ -95,33 +95,33 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
     if (patch.emblemAssetId !== undefined) next.emblemAssetId = patch.emblemAssetId ?? undefined;
     if (patch.links !== undefined) {
       if (!patch.links.every(validLink))
-        throw new ServiceError("invalid", "Links need a label and a site path or an http(s) address");
+        throw new ServiceError("invalid", "invalid_links");
       next.links = patch.links.map((l) => ({ label: l.label, url: l.url.trim() }));
     }
     if (patch.leadId !== undefined) {
       if (patch.leadId && !authors.some((a) => a.id === patch.leadId))
-        throw new ServiceError("invalid", "The lead must be a wiki author");
+        throw new ServiceError("invalid", "author_not_found");
       next.leadId = patch.leadId ?? undefined;
     }
     if (patch.collaboratorIds !== undefined) {
       if (!patch.collaboratorIds.every((id) => authors.some((a) => a.id === id)))
-        throw new ServiceError("invalid", "Collaborators must be wiki authors");
+        throw new ServiceError("invalid", "author_not_found");
       next.collaboratorIds = [...new Set(patch.collaboratorIds)].filter((id) => id !== next.leadId);
     }
     if (patch.sortOrder !== undefined) {
       if (!Number.isInteger(patch.sortOrder) || patch.sortOrder < 0)
-        throw new ServiceError("invalid", "The order is a whole number");
+        throw new ServiceError("invalid", "invalid_sort_order");
       next.sortOrder = patch.sortOrder;
     }
     if (kind === "category") {
       if (patch.familyId !== undefined) {
         const family = store.families.find((f) => f.id === patch.familyId);
-        if (!family || family.status !== "active") throw new ServiceError("invalid", "The family does not exist");
+        if (!family || family.status !== "active") throw new ServiceError("invalid", "invalid_family");
         next.familyId = patch.familyId;
       }
       if (patch.representativeSlug !== undefined) {
         if (patch.representativeSlug && !SLUG.test(patch.representativeSlug))
-          throw new ServiceError("invalid", "The representative entry is given by its slug");
+          throw new ServiceError("invalid", "invalid_slug");
         next.representativeSlug = patch.representativeSlug ?? undefined;
       }
     }
@@ -144,17 +144,17 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
     note: string,
   ) => {
     const taxon = find(kind, id);
-    if (!taxon) throw new ServiceError("invalid", "The taxon does not exist");
-    if (taxon.status === status) throw new ServiceError("conflict", `The taxon is already ${status}`);
+    if (!taxon) throw new ServiceError("invalid", "taxon_not_found");
+    if (taxon.status === status) throw new ServiceError("conflict", "unchanged_status");
     if (
       kind === "family" &&
       status === "archived" &&
       store.categories.some((c) => c.familyId === id && c.status === "active")
     )
-      throw new ServiceError("conflict", "Archive every genus in the family first");
+      throw new ServiceError("conflict", "family_has_active_genera");
     if (kind === "category" && status === "active") {
       const family = store.families.find((f) => f.id === (taxon as Category).familyId);
-      if (family?.status !== "active") throw new ServiceError("conflict", "Restore the family first");
+      if (family?.status !== "active") throw new ServiceError("conflict", "family_archived");
     }
     taxon.status = status;
     taxon.version += 1;
@@ -188,10 +188,10 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
       if (!input.id) {
         const { slug, name, scientificName } = input.patch;
         if (!slug || !name || !scientificName)
-          throw new ServiceError("invalid", "A new taxon needs a slug, a name and a scientific name");
-        if (find(input.kind, slug)) throw new ServiceError("conflict", `The id ${slug} is taken`);
+          throw new ServiceError("invalid", "taxon_incomplete");
+        if (find(input.kind, slug)) throw new ServiceError("conflict", "slug_taken");
         if (input.kind === "category" && !input.patch.familyId)
-          throw new ServiceError("invalid", "A new genus needs a family");
+          throw new ServiceError("invalid", "family_required");
         const blank: Family = {
           id: slug,
           slug,
@@ -215,9 +215,9 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
         return record(input.kind, next, input.note || "Created", input.actorId);
       }
       const current = find(input.kind, input.id);
-      if (!current) throw new ServiceError("invalid", "The taxon does not exist");
+      if (!current) throw new ServiceError("invalid", "taxon_not_found");
       if (input.baseVersion !== undefined && input.baseVersion !== current.version)
-        throw new ServiceError("conflict", "The taxon changed while you were editing it");
+        throw new ServiceError("conflict", "version_conflict");
       const next = apply(input.kind, current, input.patch);
       next.version = current.version + 1;
       next.updatedAt = now;
@@ -245,7 +245,7 @@ export function createMockTaxonomyRepository(store: TaxonomyStore): TaxonomyRepo
     async revertTaxon(kind, id, versionNumber, actorId) {
       const current = find(kind, id);
       const old = store.versions.find((v) => v.kind === kind && v.taxonId === id && v.number === versionNumber);
-      if (!current || !old) throw new ServiceError("invalid", "The version does not exist");
+      if (!current || !old) throw new ServiceError("invalid", "version_not_found");
       const {
         slug,
         name,

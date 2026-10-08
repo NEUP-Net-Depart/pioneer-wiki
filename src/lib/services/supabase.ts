@@ -543,14 +543,12 @@ function createCommunityRepository(): CommunityRepository {
       return row ? mapMember(row) : null;
     },
     async updateMember(handle, patch, baseVersion) {
+      // Malformed values are refused before anything reaches the database.
+      const args = memberPatchArgs(patch);
       const row = await memberRow(handle, true);
       if (!row) return null;
       return mapMember(
-        await rpc<Row>("pw_save_member", {
-          p_member_id: text(row.id),
-          p_patch: memberPatchArgs(patch),
-          p_base_version: baseVersion ?? null,
-        }),
+        await rpc<Row>("pw_save_member", { p_member_id: text(row.id), p_patch: args, p_base_version: baseVersion ?? null }),
       );
     },
     async setMemberCover(handle, cover) {

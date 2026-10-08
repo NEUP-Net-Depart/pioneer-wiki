@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { ServiceError } from "@/lib/services/contracts";
 
 vi.mock("server-only", () => ({}));
-const mocks = vi.hoisted(() => ({ ownerOf: vi.fn(), importProjectPreview: vi.fn() }));
-vi.mock("@/lib/members/owner", () => ({ ownerOf: mocks.ownerOf }));
+vi.mock("@/lib/i18n/server", () => ({ getLang: async () => "en" }));
+const mocks = vi.hoisted(() => ({ editableMember: vi.fn(), importProjectPreview: vi.fn() }));
+vi.mock("@/lib/members/owner", () => ({ editableMember: mocks.editableMember }));
 vi.mock("@/lib/members/preview", () => ({ importProjectPreview: mocks.importProjectPreview }));
 import { POST } from "@/app/api/members/[handle]/project-preview/route";
 
@@ -17,10 +19,12 @@ const context = { params: Promise.resolve({ handle: "qingkong" }) };
 describe("owner-only project preview import", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mocks.ownerOf.mockResolvedValue(null);
+    mocks.editableMember.mockResolvedValue({ account: { id: "a" }, member: { id: "m", handle: "qingkong" }, admin: false });
   });
-  it("denies visitors before any outbound request", async () => {
-    mocks.ownerOf.mockResolvedValue(NextResponse.json({ error: "forbidden" }, { status: 403 }));
+  it("denies visitors and other accounts before any outbound request", async () => {
+    mocks.editableMember.mockRejectedValue(new ServiceError("unauthenticated", "unauthenticated"));
+    expect((await POST(request(), context)).status).toBe(401);
+    mocks.editableMember.mockRejectedValue(new ServiceError("forbidden", "forbidden"));
     expect((await POST(request(), context)).status).toBe(403);
     expect(mocks.importProjectPreview).not.toHaveBeenCalled();
   });

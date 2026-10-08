@@ -115,7 +115,35 @@ export function createMockEntryRepository(taxonomy: TaxonomyStore, context: Mock
       latest: revisions.at(-1)?.number ?? 0,
       status: fixture.status,
       editedAt: fixture.updatedAt,
-      revisions: revisions.map((r) => ({ ...r, taxonomy: taxonomyOf(fixture) })),
+      revisions: revisions.map((r) => {
+        // As the snapshot migration does: the published revision of an entry with no newer work is
+        // exactly what readers see, so it records that; any other fixture revision recorded nothing.
+        const certain = published && r.number === published.number && published.number === revisions.at(-1)?.number;
+        return {
+          ...r,
+          taxonomy: taxonomyOf(fixture),
+          ...(certain
+            ? {
+                title: structuredClone(fixture.title),
+                summary: structuredClone(fixture.summary),
+                metadata: {
+                  scale: fixture.scale,
+                  role: fixture.role,
+                  analogue: fixture.analogue,
+                  heroAssetId: fixture.heroAssetId,
+                  contributorIds: [...fixture.contributorIds],
+                  sourceIds: [...fixture.sourceIds],
+                  tagIds: [...fixture.tagIds],
+                  relationDrafts: relationFixtures
+                    .filter((x) => x.from === fixture.id)
+                    .map((x) => ({ to: x.to, kind: x.kind, strength: x.strength, note: x.note })),
+                  pendingSources: [],
+                  pendingTags: [],
+                },
+              }
+            : {}),
+        };
+      }),
     };
   });
 
