@@ -8,11 +8,29 @@ import type {
   SearchSnippet,
 } from "@/lib/services/contracts";
 import { bodyAt } from "@/lib/services/mock/body";
-import { entries, type EntryFixture } from "@/mock/entries";
+import { entries } from "@/mock/entries";
 import { authors, sources, tags } from "@/mock/people";
 import { categories } from "@/mock/taxonomy";
 
 const familyOf = new Map(categories.map((c) => [c.id, c.familyId]));
+
+/** What the search reads: published entries and their published bodies. */
+export type SearchSource = () => Promise<Array<{ entry: EntrySummary; body: string }>>;
+
+/** The fixtures as first published, for callers that have no entry store. */
+const fixtureSource: SearchSource = async () =>
+  entries.flatMap((entry) => {
+    const published = entry.revisions.filter((r) => r.state === "published").at(-1);
+    if (!published) return [];
+    const { revisions, ...summary } = entry;
+    void revisions;
+    return [
+      {
+        entry: { ...summary, status: "published" as const, revision: published.number },
+        body: bodyAt(entry.slug, published.number),
+      },
+    ];
+  });
 
 const weights: Record<SearchField, number> = {
   id: 100,
@@ -22,11 +40,6 @@ const weights: Record<SearchField, number> = {
   author: 15,
   source: 15,
   body: 5,
-};
-const summaryOf = (entry: EntryFixture): EntrySummary => {
-  const { revisions, ...summary } = entry;
-  void revisions;
-  return summary;
 };
 const stripMarkdown = (value: string) =>
   value
@@ -62,13 +75,13 @@ function snippet(value: string, terms: string[], field: SearchField): SearchSnip
   return { field, text: excerpt, highlights };
 }
 
-export function createMockSearchAdapter(): SearchAdapter {
+export function createMockSearchAdapter(source: SearchSource = fixtureSource): SearchAdapter {
   return {
     async search({ text, filters = {}, limit = 50, offset = 0 }: SearchQuery): Promise<SearchResult> {
       const terms = text.toLocaleLowerCase().split(/\s+/).filter(Boolean);
-      const textMatched: Array<{ entry: EntryFixture; hit: SearchHit }> = [];
-      for (const entry of entries) {
-        const body = stripMarkdown(bodyAt(entry.slug, entry.revision));
+      const textMatched: Array<{ entry: EntrySummary; hit: SearchHit }> = [];
+      for (const { entry, body: markdown } of await source()) {
+        const body = stripMarkdown(markdown);
         const fields: Record<SearchField, string> = {
           id: entry.id,
           title: `${entry.title.zh} ${entry.title.en}`,
@@ -95,7 +108,7 @@ export function createMockSearchAdapter(): SearchAdapter {
         const bodyHasHit = terms.some((term) => body.toLocaleLowerCase().includes(term));
         const excerpt = bodyHasHit ? body : `${entry.summary.zh} ${entry.summary.en}`;
         const hit: SearchHit = {
-          entry: summaryOf(entry),
+          entry,
           score: matchedFields.reduce((score, field) => score + weights[field], 0),
           matchedFields,
           snippet: terms.length ? snippet(excerpt, terms, bodyHasHit ? "body" : "summary") : null,

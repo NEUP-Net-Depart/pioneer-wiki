@@ -1,22 +1,23 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getSupabaseConfig } from "@/lib/supabase/config";
+import { handle, readJson } from "@/lib/http/route";
+import { authClient, validPassword } from "@/lib/http/site";
+import { ServiceError } from "@/lib/services/contracts";
 
+/** Sets a new password for the session a reset link opened, then ends it so the new password is used. */
 export async function POST(request: Request) {
-  if (!getSupabaseConfig())
-    return NextResponse.json(
-      { error: { message: "Supabase is not configured for this environment." } },
-      { status: 503 },
-    );
-  const input = (await request.json().catch(() => ({}))) as { password?: unknown; confirmPassword?: unknown };
-  const password = typeof input.password === "string" ? input.password : "";
-  if (password.length < 8 || password !== input.confirmPassword)
-    return NextResponse.json(
-      { error: { message: "Use matching passwords of at least 8 characters." } },
-      { status: 422 },
-    );
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.updateUser({ password });
-  if (error) return NextResponse.json({ error: { message: error.message } }, { status: 400 });
-  return NextResponse.json({ ok: true });
+  return handle(async () => {
+    const supabase = await authClient();
+    const input = await readJson(request);
+    const password = validPassword(input.password, input.confirmPassword);
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) throw new ServiceError("unauthenticated", "link_expired");
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error)
+      throw new ServiceError(
+        "invalid",
+        /should be different/i.test(error.message) ? "invalid_password" : "link_expired",
+      );
+    await supabase.auth.signOut({ scope: "local" });
+    return NextResponse.json({ ok: true });
+  });
 }

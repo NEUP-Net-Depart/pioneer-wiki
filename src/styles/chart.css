@@ -12,6 +12,11 @@
  */
 
 @layer components {
+  .pw-chart-stage {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
   .pw-chart {
     --weight: 1;
     --sea-ink: var(--part, #3e6f7d);

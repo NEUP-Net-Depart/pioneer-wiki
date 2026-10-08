@@ -77,7 +77,7 @@ describe("taxonomy admin API", () => {
     expect((await PATCH(json({ patch: {} }), ctx({ kind: "order", id: "databases" }))).status).toBe(422);
     const refused = await status(json({ status: "archived" }), ctx({ kind: "family", id: "ai" }));
     expect(refused.status).toBe(409);
-    expect((await refused.json()).error.message).toMatch(/genus/);
+    expect((await refused.json()).error).toMatchObject({ code: "conflict", reason: "family_has_active_genera" });
   });
 
   it("archives and restores but never deletes", async () => {

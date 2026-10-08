@@ -39,16 +39,22 @@ function Rings({ n, current }: { n: number; current: boolean }) {
 export default async function HistoryPage({ params, searchParams }: PageProps<"/entries/[slug]/history">) {
   const { slug } = await params;
   const query = await searchParams;
-  const { entries: repo, references, taxonomy } = getServices();
+  const { entries: repo, references, taxonomy, auth } = getServices();
   const entry = await repo.getEntry(slug);
   if (!entry) notFound();
 
   const { lang, t } = await getT();
-  const [revisions, authors, genera] = await Promise.all([
+  const [revisions, authors, genera, account] = await Promise.all([
     repo.listRevisions(entry.id),
     references.listAuthors(),
     taxonomy.listCategories(),
+    auth.getCurrentAccount(),
   ]);
+  const canEdit = Boolean(
+    account?.status === "active" &&
+    account.emailVerified &&
+    (account.role === "admin" || account.authorId === entry.authorId),
+  );
   const familyId = genera.find((c) => c.id === entry.categoryId)?.familyId;
   const byNumber = new Map<number, Revision>(revisions.map((r) => [r.number, r]));
   const newest = revisions[0];
@@ -118,6 +124,14 @@ export default async function HistoryPage({ params, searchParams }: PageProps<"/
           aria-label={`${t("history.compare")} r${from.number} → r${to.number}`}
           className="min-w-0 lg:col-span-8"
         >
+          {canEdit ? (
+            <Link
+              href={`/editor/${entry.slug}?from=${to.number}`}
+              className="pw-link mb-5 inline-block min-h-11 py-3 text-small text-indigo"
+            >
+              {lang === "zh" ? `从 r${to.number} 在编辑器中打开` : `Open r${to.number} in the editor`} →
+            </Link>
+          ) : null}
           <p className="mb-4 flex flex-wrap items-baseline gap-x-4 font-mono text-small text-ink-2">
             <span>
               r{from.number} → r{to.number}

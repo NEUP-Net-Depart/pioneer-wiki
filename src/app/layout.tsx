@@ -33,18 +33,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const lang = await getLang();
   const textOnly = (await cookies()).get(READING_COOKIE)?.value === "text";
   const services = getServices();
-  const [account, user, entries, members] = await Promise.all([
+  const [account, user, entries] = await Promise.all([
     services.auth.getCurrentAccount(),
     services.auth.getCurrentUser(),
-    services.entries.listEntries(),
-    services.community.listMembers(),
+    // A failing data store must not take the whole shell down; pages report their own errors.
+    services.entries.listEntries().catch(() => []),
   ]);
-  // The signed-in reader's own member record, for the header's "Me" entry.
-  const me = account?.authorId
-    ? (members.find((m) => m.authorId === account.authorId) ?? null)
-    : user
-      ? (members.find((m) => m.authorId === user.id) ?? null)
-      : null;
+  // The page the signed-in account owns, for the header's "Me" entry (archived pages included: the owner still sees them).
+  const me = account?.memberId
+    ? await services.community.getMember(account.memberId, { includeArchived: true }).catch(() => null)
+    : null;
 
   return (
     <html

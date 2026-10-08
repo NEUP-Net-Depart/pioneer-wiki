@@ -15,6 +15,8 @@ update public.profiles set author_id = 'audit-admin', account_role = 'admin' whe
 insert into public.members(id, handle, name_zh, name_en, role_zh, role_en, bio_zh, bio_en, about,
   plate_number, plate_emblem, plate_ink, plate_border, plate_motto, joined, author_id)
 values ('audit-member', 'audit-member', 'Member name', 'Member name', '', '', '', '', '', 100, 'oak', 'prussian', 'vine', '', current_date, 'audit-author');
+-- The account owns the page through profiles.member_id; members.author_id is attribution.
+update public.profiles set member_id = 'audit-member' where id = '00000000-0000-0000-0000-000000000101';
 insert into public.taxon_families(id, slug, name_zh, name_en, scientific_name) values ('audit-family', 'audit-family', 'Test', 'Test', 'Test');
 insert into public.taxon_categories(id, family_id, slug, name_zh, name_en, scientific_name)
 values ('audit-category', 'audit-family', 'audit-category', 'Test', 'Test', 'Test');
@@ -71,7 +73,7 @@ select throws_ok($$select public.pw_create_forum_thread('Title', 'Body', 'bogus'
 select is(public.pw_reply_forum_thread('missing', 'Body'), null::jsonb, 'missing thread returns null');
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000101', true);
 insert into audit_results values ('member-post', public.pw_reply_forum_thread((select data->>'id' from audit_results where kind = 'reader-thread'), 'Reply'));
-select is((select data->>'member_id' from audit_results where kind = 'member-post'), 'audit-member', 'member derived from author binding');
+select is((select data->>'member_id' from audit_results where kind = 'member-post'), 'audit-member', 'member derived from the owner binding');
 select is((select data->>'author_name' from audit_results where kind = 'member-post'), 'Member name', 'member display name derived in database');
 
 reset role;
@@ -90,7 +92,7 @@ update public.forum_threads set deleted_at = now() where id = (select data->>'id
 set local role authenticated;
 select is(public.pw_reply_forum_thread((select data->>'id' from audit_results where kind = 'reader-thread'), 'Reply'), null::jsonb, 'deleted thread returns null');
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000102', true);
-select ok(public.pw_archive_entry((select data->>'entryId' from audit_results where kind = 'draft'))->>'deleted_at' is not null, 'admin archives through RPC');
+select ok(public.pw_archive_entry((select data->>'entryId' from audit_results where kind = 'draft'))->>'archivedAt' is not null, 'admin archives through RPC');
 select is((select count(*) from public.audit_logs where object_id = (select data->>'entryId' from audit_results where kind = 'draft') and action = 'archive'), 1::bigint, 'archive audit is atomic');
 
 select * from finish();

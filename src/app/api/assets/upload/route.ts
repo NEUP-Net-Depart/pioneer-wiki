@@ -1,54 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
-import { saveEntryImage } from "@/lib/media/store";
-import { verifiedAccountOrResponse } from "@/lib/auth/server";
-import { getSupabaseConfig } from "@/lib/supabase/config";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { handle, ok, requireAccount } from "@/lib/http/route";
+import { getServices } from "@/lib/services";
+import { ServiceError } from "@/lib/services/contracts";
+import { encodeImage } from "@/lib/media/store";
 
-const clean = (value: FormDataEntryValue | null, fallback: string) =>
-  typeof value === "string" && value.trim() ? value.trim() : fallback;
+const field = (form: FormData, name: string) => {
+  const value = form.get(name);
+  return typeof value === "string" ? value.trim() : undefined;
+};
 
-export async function POST(request: NextRequest) {
-  const gate = await verifiedAccountOrResponse();
-  if ("response" in gate) return gate.response;
-  const form = await request.formData();
-  const file = form.get("file");
-  if (!(file instanceof File))
-    return NextResponse.json({ error: { code: "invalid", message: "Choose an image file." } }, { status: 422 });
-  try {
-    const saved = await saveEntryImage(file);
-    const asset = {
-      id: `asset-${crypto.randomUUID()}`,
-      src: saved.src,
-      width: saved.width,
-      height: saved.height,
-      alt: {
-        zh: clean(form.get("altZh"), "待补充插图说明"),
-        en: clean(form.get("altEn"), "Illustration awaiting description"),
-      },
-      credit: clean(form.get("credit"), gate.account.handle),
-      license: clean(form.get("license"), "CC BY 4.0"),
-    };
-    if (getSupabaseConfig()) {
-      const client = await createSupabaseServerClient();
-      const { error } = await client.from("assets").insert({
-        id: asset.id,
-        src: asset.src,
-        width: asset.width,
-        height: asset.height,
-        alt_zh: asset.alt.zh,
-        alt_en: asset.alt.en,
-        credit: asset.credit,
-        license: asset.license,
-        owner_id: gate.account.id,
-        review_status: "pending",
-      });
-      if (error) return NextResponse.json({ error: { code: "unavailable", message: error.message } }, { status: 503 });
-    }
-    return NextResponse.json({ asset }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: { code: "invalid", message: error instanceof Error ? error.message : "Upload failed" } },
-      { status: 422 },
-    );
-  }
+/**
+ * POST multipart { file, altZh, altEn, captionZh, captionEn, credit, license, sourceUrl }
+ * → { asset } (201). The image is re-encoded, stored and recorded as pending
+ * review; readers see it only once an administrator approves it.
+ */
+export async function POST(request: Request) {
+  return handle(async () => {
+    await requireAccount({ author: true });
+    const form = await request.formData().catch(() => {
+      throw new ServiceError("invalid", "image_required");
+    });
+    const file = form.get("file");
+    if (!(file instanceof File)) throw new ServiceError("invalid", "image_required");
+    const image = await encodeImage(file);
+    const asset = await getServices().references.uploadEntryAsset(image, {
+      altZh: field(form, "altZh"),
+      altEn: field(form, "altEn"),
+      captionZh: field(form, "captionZh"),
+      captionEn: field(form, "captionEn"),
+      credit: field(form, "credit"),
+      license: field(form, "license"),
+      sourceUrl: field(form, "sourceUrl"),
+    });
+    return ok({ asset }, 201);
+  });
 }

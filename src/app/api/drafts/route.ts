@@ -1,30 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
+import { handle, ok, readJson, requireAccount } from "@/lib/http/route";
 import { getServices } from "@/lib/services";
-import { ServiceError, type DraftInput } from "@/lib/services/contracts";
-import { verifiedAccountOrResponse } from "@/lib/auth/server";
+import type { DraftInput } from "@/lib/services/contracts";
 
-export async function POST(request: NextRequest) {
-  try {
-    const input = (await request.json()) as Omit<DraftInput, "authorId">;
-    const gate = await verifiedAccountOrResponse();
-    if ("response" in gate) return gate.response;
-    if (!gate.account.authorId)
-      return NextResponse.json(
-        { error: { code: "forbidden", message: "An administrator must bind you to a wiki author before editing." } },
-        { status: 403 },
-      );
-    const revision = await getServices().entries.saveDraft({ ...input, authorId: gate.account.authorId });
-    return NextResponse.json(revision, { status: 201 });
-  } catch (error) {
-    const serviceError = error instanceof ServiceError ? error : new ServiceError("invalid", "Invalid draft payload");
-    const status =
-      serviceError.code === "forbidden"
-        ? 403
-        : serviceError.code === "conflict"
-          ? 409
-          : serviceError.code === "unavailable"
-            ? 503
-            : 422;
-    return NextResponse.json({ error: { code: serviceError.code, message: serviceError.message } }, { status });
-  }
+/**
+ * POST (DraftInput without authorId) → the saved revision (201). Saving never
+ * changes what readers see; saving over a submission withdraws it, and the
+ * answer says so (withdrewReview).
+ */
+export async function POST(request: Request) {
+  return handle(async () => {
+    const account = await requireAccount({ author: true });
+    const input = await readJson<Omit<DraftInput, "authorId">>(request);
+    const revision = await getServices().entries.saveDraft({
+      ...input,
+      title: { zh: String(input.title?.zh ?? ""), en: String(input.title?.en ?? "") },
+      summary: { zh: String(input.summary?.zh ?? ""), en: String(input.summary?.en ?? "") },
+      body: String(input.body ?? ""),
+      note: String(input.note ?? ""),
+      authorId: account.authorId ?? "",
+    });
+    return ok(revision, 201);
+  });
 }

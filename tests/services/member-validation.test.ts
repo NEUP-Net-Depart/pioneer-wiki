@@ -5,6 +5,21 @@ const mocks = vi.hoisted(() => ({ client: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: mocks.client }));
 import { createSupabaseServices } from "@/lib/services/supabase";
 import { createMockCommunityRepository } from "@/lib/services/mock/community";
+import { createMockContext } from "@/lib/services/mock/context";
+
+/** The page's own account, so the fixtures backend checks values rather than refusing a stranger. */
+const owner = createMockContext(() => ({
+  id: "a-qingkong",
+  email: "qingkong@example.test",
+  handle: "qingkong",
+  name: { zh: "青空", en: "Qingkong" },
+  sigil: "qingkong",
+  role: "reader",
+  emailVerified: true,
+  status: "active",
+  authorId: "a-qingkong",
+  memberId: "m-qingkong",
+}));
 import { readMemberLinks, validateMemberPatch } from "@/lib/members/validation";
 
 describe("member validation across stores", () => {
@@ -20,7 +35,7 @@ describe("member validation across stores", () => {
     { name: null },
     { links: null },
   ])("rejects malformed values before Supabase writes", async (patch) => {
-    const mock = createMockCommunityRepository();
+    const mock = createMockCommunityRepository(owner);
     await expect(mock.updateMember("qingkong", patch as never)).rejects.toMatchObject({ code: "invalid" });
     await expect(createSupabaseServices().community.updateMember("qingkong", patch as never)).rejects.toMatchObject({
       code: "invalid",

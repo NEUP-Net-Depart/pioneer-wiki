@@ -6,9 +6,10 @@ import { getT } from "@/lib/i18n/server";
 import { getServices } from "@/lib/services";
 import { RunningHead } from "@/components/book/RunningHead";
 import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
+import { AccessGate, gateReason } from "@/components/states/AccessGate";
 import { cataloguePlate } from "@/lib/taxonomy/plates";
 
-export const metadata: Metadata = { title: "Edit 编辑条目" };
+export const metadata: Metadata = { title: "Edit 编辑条目", robots: { index: false } };
 
 /** The entry's accessioned species plate, if any, for the editor's plate sheet. */
 function speciesPlateOf(slug: string) {
@@ -16,39 +17,51 @@ function speciesPlateOf(slug: string) {
   return plate ? { [slug]: { src: plate.src, width: plate.width, height: plate.height, alt: plate.alt } } : {};
 }
 
-/** Opens the newest revision (which may be unpublished), not the reader-visible one. */
-export default async function EditEntryPage({ params }: PageProps<"/editor/[slug]">) {
+/**
+ * Opens the entry's latest revision — which may be unpublished — for its
+ * author or an administrator. ?from=<n> starts from an older revision instead
+ * (opened from the history), saved as a new revision on top of the latest.
+ */
+export default async function EditEntryPage({ params, searchParams }: PageProps<"/editor/[slug]">) {
   const { slug } = await params;
-  const { entries, references, taxonomy } = getServices();
-  const entry = await entries.getEntry(slug);
-  if (!entry) notFound();
+  const query = await searchParams;
+  const { entries, references, taxonomy, auth } = getServices();
   const { lang, t } = await getT();
-  const [newest] = await entries.listRevisions(entry.id);
-  const body = (newest ? await entries.getRevisionBody(newest.id) : null) ?? entry.body;
-  const [sources, tags, authors, allEntries, assets, relations, families, categories] = await Promise.all([
+  const account = await auth.getCurrentAccount();
+  const refused = gateReason(account, "author");
+  if (refused) return <AccessGate reason={refused} lang={lang} next={`/editor/${slug}`} />;
+  const packet = await entries.getEditorial(slug);
+  if (!packet) {
+    // Someone else's entry, or no entry at all: say which without revealing drafts.
+    if (await entries.getEntry(slug)) return <AccessGate reason="not_owner" lang={lang} next={`/editor/${slug}`} />;
+    notFound();
+  }
+  const { entry, latest } = packet;
+  const fromNumber = Number(query.from);
+  const start =
+    Number.isInteger(fromNumber) && fromNumber > 0 && fromNumber !== latest.number
+      ? await entries.getRevision(`${entry.id}@r${fromNumber}`)
+      : null;
+  const shown = start ?? latest;
+  const [sources, tags, authors, allEntries, assets, families, categories, serverDraft] = await Promise.all([
     references.listSources(),
     references.listTags(),
     references.listAuthors(),
-    entries.listEntries({ status: ["published"] }),
+    entries.listEntries(),
     references.listAssets(),
-    entries.listRelations(entry.id),
     taxonomy.listFamilies(),
     taxonomy.listCategories(),
+    entries.getWorkingDraft({ entryId: entry.id }).catch(() => null),
   ]);
-  // The newest revision's place, which may differ from the published one while a refiling waits for review.
-  const filing = newest?.taxonomy ?? {
-    categoryId: entry.categoryId,
-    auxiliaryCategoryIds: entry.auxiliaryCategoryIds,
-    species: entry.species,
-    level: entry.level,
-    contentRole: entry.contentRole,
-  };
 
   return (
     <div className="flex flex-col gap-(--space-block)">
       <RunningHead
         left={
-          <Link href={`/entries/${entry.slug}`} className="no-underline hover:text-ink">
+          <Link
+            href={entry.publishedRevision ? `/entries/${entry.slug}` : "/account/entries"}
+            className="no-underline hover:text-ink"
+          >
             ← {t("editor.headingEdit")} · {pick(entry.title, lang)}
           </Link>
         }
@@ -58,43 +71,37 @@ export default async function EditEntryPage({ params }: PageProps<"/editor/[slug
         {t("editor.headingEdit")} — {pick(entry.title, lang)}
       </h1>
       <MarkdownEditor
+        accountId={account!.id}
+        admin={account!.role === "admin"}
         entryId={entry.id}
         slug={entry.slug}
-        initial={{
-          title: entry.title,
-          summary: entry.summary,
-          body,
-          state: newest?.state ?? entry.status,
-          metadata: {
-            ...filing,
-            scale: entry.scale,
-            role: entry.role,
-            analogue: entry.analogue,
-            contributorIds: entry.contributorIds,
-            sourceIds: entry.sourceIds,
-            tagIds: entry.tagIds,
-            heroAssetId: entry.heroAssetId,
-            relationDrafts: relations.map((relation) => ({
-              to: relation.from === entry.id ? relation.to : relation.from,
-              kind: relation.kind,
-              strength: relation.strength,
-              note: relation.note,
-            })),
-            pendingSources: [],
-            pendingTags: [],
-          },
+        workflow={{
+          status: entry.status,
+          latestRevision: entry.latestRevision,
+          publishedRevision: entry.publishedRevision,
+          returnNote: entry.returnNote,
+          archived: Boolean(entry.archivedAt),
+          startedFrom: start ? start.number : undefined,
         }}
+        initial={{
+          title: shown.title,
+          summary: shown.summary,
+          body: shown.body,
+          state: entry.status,
+          metadata: shown.metadata,
+        }}
+        serverDraft={serverDraft}
         options={{
           sources,
           tags,
           authors,
-          entries: allEntries,
+          entries: allEntries.filter((e) => e.id !== entry.id),
           assets,
           families,
           categories,
           speciesPlates: speciesPlateOf(entry.slug),
         }}
-        baseRevision={newest?.number ?? entry.revision}
+        baseRevision={latest.number}
       />
     </div>
   );

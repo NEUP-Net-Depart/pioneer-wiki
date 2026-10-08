@@ -173,16 +173,26 @@ export interface Author {
   sigil: string;
 }
 
+/** Whether an account may act: suspended accounts keep their record but cannot write; closed ones are anonymised. */
+export type AccountStatus = "active" | "suspended" | "closed";
+
 /** The authenticated account, which may exist before it is bound to a wiki author. */
 export interface Account {
   id: string;
   email: string;
+  /** Private sign-in identifier; never a public URL (member pages have their own handle). */
   handle: string;
   name: Localized;
   sigil: string;
   role: "reader" | "admin";
   emailVerified: boolean;
+  /** Absent on records read before account states existed; treat as active. */
+  status?: AccountStatus;
   authorId?: string;
+  /** The member page this account owns. */
+  memberId?: string;
+  /** When the account holder asked for their account to be closed. */
+  closureRequestedAt?: IsoDate;
 }
 
 export interface Source {
@@ -214,7 +224,11 @@ export interface Asset {
   credit: string;
   license: string;
   sourceUrl?: string;
+  /** Uploaded images wait for an administrator; readers only ever see approved ones. Absent means approved. */
+  reviewStatus?: AssetReviewStatus;
 }
+
+export type AssetReviewStatus = "pending" | "approved" | "rejected";
 
 /** Directed edge between two entries. */
 export interface Relation {
@@ -311,6 +325,131 @@ export interface Entry extends EntrySummary {
   body: string;
 }
 
+/**
+ * One revision with everything it records: the whole draft contract. Revisions
+ * saved before snapshots existed have no title or summary (`recorded: false`);
+ * publishing or rolling back to one keeps the public title and summary.
+ */
+export interface RevisionSnapshot extends Revision {
+  title: Localized;
+  summary: Localized;
+  body: string;
+  metadata: EntryMetadata;
+  recorded: boolean;
+}
+
+/** Where an entry is in the editorial workflow, as its editors see it. */
+export interface EditorialEntry {
+  id: EntryId;
+  slug: EntrySlug;
+  /** Of the latest revision, which may be unpublished. */
+  title: Localized;
+  summary: Localized;
+  /** State of the latest revision. */
+  status: ReviewState;
+  latestRevision: number;
+  /** The revision readers see; absent until the entry is first published. */
+  publishedRevision?: number;
+  authorId: string;
+  authorName: Localized;
+  categoryId?: string;
+  editedAt: IsoDate;
+  publishedAt?: IsoDate;
+  /** Archived entries leave every public listing until restored. */
+  archivedAt?: IsoDate;
+  /** Why an administrator sent the submission back; cleared on resubmission. */
+  returnNote?: string;
+  returnedAt?: IsoDate;
+}
+
+/** A page of results with the total before paging, so lists can say how many there are. */
+export interface Page<T> {
+  rows: T[];
+  total: number;
+}
+
+/** An account as administrators manage it. */
+export interface AccountRecord {
+  id: string;
+  email: string;
+  handle: string;
+  name: Localized;
+  role: Account["role"];
+  status: AccountStatus;
+  statusReason?: string;
+  emailVerified: boolean;
+  authorId?: string;
+  authorName?: Localized;
+  memberId?: string;
+  memberHandle?: string;
+  memberName?: Localized;
+  memberArchived?: boolean;
+  closureRequestedAt?: IsoDate;
+  closedAt?: IsoDate;
+  pendingApplicationId?: string;
+  createdAt: IsoDate;
+  lastSignInAt?: IsoDate;
+}
+
+export type ApplicationKind = "author" | "member" | "both";
+export type ApplicationStatus = "pending" | "approved" | "rejected" | "withdrawn";
+
+/** A reader asking to write for the wiki, to have a member page, or both. */
+export interface IdentityApplication {
+  id: string;
+  accountId?: string;
+  kind: ApplicationKind;
+  statement: string;
+  proposedHandle?: string;
+  status: ApplicationStatus;
+  decisionReason?: string;
+  decidedAt?: IsoDate;
+  createdAt: IsoDate;
+  account?: {
+    handle: string;
+    email: string;
+    name: Localized;
+    authorId?: string;
+    memberId?: string;
+    status: AccountStatus;
+  };
+}
+
+/** One recorded change: who, what, on which object, when, and the parts that changed. */
+export interface AuditEvent {
+  id: number;
+  action: string;
+  objectType: string;
+  objectId: string;
+  actorId?: string;
+  actorHandle?: string;
+  actorName?: Localized;
+  before: unknown;
+  after: unknown;
+  createdAt: IsoDate;
+}
+
+/** An image as administrators review it. */
+export interface AssetRecord extends Asset {
+  reviewStatus: AssetReviewStatus;
+  reviewNote?: string;
+  ownerHandle?: string;
+  createdAt: IsoDate;
+  /** Entries that place it; `published` when readers see it there now. */
+  usedBy: Array<{ id: EntryId; slug: EntrySlug; published: boolean }>;
+}
+
+/** A recorded state of a member page, friend link or chronicle. */
+export interface ContentVersion {
+  kind: "member" | "link" | "chronicle";
+  objectId: string;
+  number: number;
+  note: string;
+  actorId?: string;
+  createdAt: IsoDate;
+  data: Record<string, unknown>;
+}
+
 // ── Community: the parts beside the wiki ────────────────────────────────────
 
 /** 友链 — a friend site, catalogued like a port in an atlas gazetteer. */
@@ -324,6 +463,11 @@ export interface FriendLink {
   since: IsoDate;
   /** Placeholder data until the real list is supplied. */
   sample?: boolean;
+  /** Archived links leave the directory and the chart until restored. */
+  archivedAt?: IsoDate;
+  sortOrder?: number;
+  /** Increments on every save; used for optimistic concurrency. */
+  version?: number;
 }
 
 /** One of the 19th-century printing inks a member's bookplate and page are printed in (vocab INKS). */
@@ -404,6 +548,10 @@ export interface Member {
   projects?: MemberProject[];
   /** Placeholder data until the real member list is supplied. */
   sample?: boolean;
+  /** An archived page is hidden from readers; its owner and administrators still see it. */
+  archivedAt?: IsoDate;
+  /** Increments on every save; used for optimistic concurrency. */
+  version?: number;
 }
 
 /** What a member may change on their own page. */
@@ -429,6 +577,9 @@ export interface ForumPost {
   memberId?: string;
   body: string;
   createdAt: IsoDate;
+  /** Set when an administrator hid the post; only administrators see hidden posts. */
+  hiddenAt?: IsoDate;
+  moderationNote?: string;
 }
 
 export interface ForumThread {
@@ -443,6 +594,13 @@ export interface ForumThread {
   lastActivityAt: IsoDate;
   postCount: number;
   excerpt: string;
+  /** A locked thread takes no new replies. */
+  lockedAt?: IsoDate;
+  /** Set when an administrator hid the thread. */
+  hiddenAt?: IsoDate;
+  moderationNote?: string;
+  /** Hidden replies, counted for administrators. */
+  hiddenPosts?: number;
 }
 
 // ── 纪行 — the society's annals ─────────────────────────────────────────────
@@ -487,6 +645,8 @@ export interface Chronicle {
   tags: string[];
   /** Placeholder data until the real annals are supplied. */
   sample?: boolean;
+  archivedAt?: IsoDate;
+  version?: number;
 }
 
 export interface ChronicleDetail extends Chronicle {

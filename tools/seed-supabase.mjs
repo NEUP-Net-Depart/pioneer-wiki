@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !serviceKey)
   throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before seeding Supabase.");
@@ -21,9 +21,15 @@ const { bodyAt } = await importFrom("../src/lib/services/mock/body.ts");
 const { museumSnapshots } = await importFrom("../src/mock/museum.ts");
 const sizes = JSON.parse(await readFile(join(process.cwd(), "public", "plates", "web", "sizes.json"), "utf8"));
 
+const includeSamples = process.argv.includes("--include-samples");
+if (includeSamples && !["localhost", "127.0.0.1", "[::1]"].includes(new URL(url).hostname)) {
+  throw new Error("--include-samples is restricted to an explicitly selected local Supabase.");
+}
+const productionRows = (rows) => rows.filter((row) => includeSamples || !row.sample);
+
 async function upsert(table, rows, onConflict = "id") {
   if (!rows.length) return;
-  const { error } = await supabase.from(table).upsert(rows, { onConflict });
+  const { error } = await supabase.from(table).upsert(rows, { onConflict, ignoreDuplicates: true });
   if (error) throw new Error(`${table}: ${error.message}`);
 }
 
@@ -116,7 +122,22 @@ await upsert("taxon_versions", [
   ...categoryRows.map((row) => taxonVersion("category", row)),
 ]);
 
+// Existing entries and every association/revision belonging to them stay untouched.
+const existingEntries = new Set();
+for (let offset = 0; ; offset += 1000) {
+  const { data, error } = await supabase
+    .from("entries")
+    .select("id")
+    .order("id")
+    .range(offset, offset + 999);
+  if (error) throw new Error(`entries: ${error.message}`);
+  for (const row of data) existingEntries.add(row.id);
+  if (data.length < 1000) break;
+}
+const importedEntries = new Set();
 for (const entry of entries) {
+  if (existingEntries.has(entry.id)) continue;
+  importedEntries.add(entry.id);
   const latest = entry.revisions.at(-1);
   const published = [...entry.revisions].reverse().find((revision) => revision.state === "published");
   await upsert("entries", [
@@ -159,7 +180,29 @@ for (const entry of entries) {
       created_at: revision.createdAt,
       note: revision.note,
       state: revision.state,
+      title_zh: entry.title.zh,
+      title_en: entry.title.en,
+      summary_zh: entry.summary.zh,
+      summary_en: entry.summary.en,
       metadata: {
+        scale: entry.scale,
+        role: entry.role,
+        analogue: entry.analogue ?? null,
+        heroAssetId: entry.heroAssetId ?? null,
+        contributorIds: entry.contributorIds,
+        sourceIds: entry.sourceIds,
+        tagIds: entry.tagIds,
+        relationDrafts: relations
+          .filter((r) => r.from === entry.id)
+          .map((r) => ({
+            to: r.to,
+            kind: r.kind,
+            strength: r.strength,
+            note: r.note,
+          })),
+        pendingSources: [],
+        pendingTags: [],
+        importedFixtureMetadata: true,
         taxonomy: {
           categoryId: entry.categoryId,
           auxiliaryCategoryIds: entry.auxiliaryCategoryIds,
@@ -184,11 +227,6 @@ for (const entry of entries) {
     entry.contributorIds.map((author_id) => ({ entry_id: entry.id, author_id })),
     "entry_id,author_id",
   );
-  // An entry's sources are replaced, not merged: a rewrite cites its own.
-  {
-    const { error } = await supabase.from("entry_sources").delete().eq("entry_id", entry.id);
-    if (error) throw new Error(`entry_sources: ${error.message}`);
-  }
   await upsert(
     "entry_sources",
     entry.sourceIds.map((source_id) => ({ entry_id: entry.id, source_id })),
@@ -208,19 +246,21 @@ for (const entry of entries) {
 
 await upsert(
   "relations",
-  relations.map((relation) => ({
-    id: relation.id,
-    from_entry_id: relation.from,
-    to_entry_id: relation.to,
-    kind: relation.kind,
-    note_zh: relation.note?.zh,
-    note_en: relation.note?.en,
-    strength: relation.strength,
-  })),
+  relations
+    .filter((relation) => importedEntries.has(relation.from))
+    .map((relation) => ({
+      id: relation.id,
+      from_entry_id: relation.from,
+      to_entry_id: relation.to,
+      kind: relation.kind,
+      note_zh: relation.note?.zh,
+      note_en: relation.note?.en,
+      strength: relation.strength,
+    })),
 );
 await upsert(
   "friend_links",
-  community.links.map((link) => ({
+  productionRows(community.links).map((link) => ({
     id: link.id,
     name_zh: link.name.zh,
     name_en: link.name.en,
@@ -234,7 +274,7 @@ await upsert(
 );
 await upsert(
   "members",
-  community.members.map((member) => ({
+  productionRows(community.members).map((member) => ({
     id: member.id,
     name_zh: member.name.zh,
     name_en: member.name.en,
@@ -262,7 +302,7 @@ await upsert(
 );
 await upsert(
   "forum_threads",
-  community.threadSeeds.map((thread) => ({
+  (includeSamples ? community.threadSeeds : []).map((thread) => ({
     id: thread.id,
     number: thread.number,
     title: thread.title,
@@ -275,7 +315,7 @@ await upsert(
 );
 await upsert(
   "forum_posts",
-  community.postSeeds.map((post) => ({
+  (includeSamples ? community.postSeeds : []).map((post) => ({
     id: post.id,
     thread_id: post.threadId,
     author_name: post.authorName,
@@ -288,7 +328,7 @@ await upsert(
 
 await upsert(
   "chronicles",
-  chronicles.map((record) => ({
+  productionRows(chronicles).map((record) => ({
     id: record.id,
     number: record.number,
     date: record.date,
@@ -307,5 +347,5 @@ await upsert(
 );
 
 console.log(
-  `Seeded ${families.length} families, ${categories.length} genera, ${museumSnapshots.length} name snapshots, ${entries.length} entries, ${relations.length} relations, ${community.members.length} members, ${community.threadSeeds.length} forum threads and ${chronicles.length} chronicles.`,
+  `Insert-only import (existing entries untouched; samples ${includeSamples ? "included locally" : "excluded"}): ${families.length} families, ${categories.length} genera, ${museumSnapshots.length} name snapshots, ${entries.length} entries, ${relations.length} relations, ${community.members.length} members, ${community.threadSeeds.length} forum threads and ${chronicles.length} chronicles.`,
 );

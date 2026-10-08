@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const emails = (process.env.PIONEER_ADMIN_EMAILS ?? "")
   .split(",")
@@ -14,6 +14,9 @@ if (!url || !serviceKey || emails.length === 0) {
 }
 
 const supabase = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-const { error } = await supabase.from("profiles").update({ account_role: "admin" }).in("email", emails);
-if (error) throw error;
-console.log(`Promoted ${emails.length} configured admin email(s).`);
+for (const email of emails) {
+  const { data, error } = await supabase.rpc("pw_bootstrap_admin", { p_email: email });
+  if (error) throw new Error(`Administrator bootstrap failed: ${error.message}`);
+  if (!data?.verified) throw new Error("Administrator created but email is not verified. Verify it before signing in.");
+}
+console.log(`Bootstrapped ${emails.length} administrator(s), including author identity and audit.`);

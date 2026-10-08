@@ -27,7 +27,8 @@ describe("museum articles", () => {
     expect(rewrites).toHaveLength(16);
     for (const article of rewrites) {
       const since = museumBodySince[article.slug];
-      const revisions = await repo.listRevisions(article.id);
+      // Editors see every ring; readers only the published ones.
+      const revisions = await repo.listRevisions(article.id, { scope: "editorial" });
       expect(revisions[0], article.slug).toMatchObject({ number: since, state: "published" });
       expect(revisions.length, article.slug).toBe(since);
       expect(bodyAt(article.slug, since)).toBe(museumBody(article.slug));
@@ -42,8 +43,10 @@ describe("museum articles", () => {
   it("send a revision still waiting for review back to its author as a draft", async () => {
     const { entries: repo } = createMockServices();
     for (const id of ["PW-0006", "PW-0012"]) {
-      const states = (await repo.listRevisions(id)).map((r) => `${r.number}:${r.state}`);
+      const states = (await repo.listRevisions(id, { scope: "editorial" })).map((r) => `${r.number}:${r.state}`);
       expect(states).toEqual(["3:published", "2:draft", "1:published"]);
+      // The draft ring is never offered to readers.
+      expect((await repo.listRevisions(id)).map((r) => r.number)).toEqual([3, 1]);
     }
   });
 

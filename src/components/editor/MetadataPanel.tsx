@@ -292,8 +292,8 @@ export function MetadataPanel({
             />
             <span className="text-meta text-ink-3">
               {zh
-                ? "随版本提交，由审校登记入来源库。"
-                : "Sent with the revision; reviewers enter them in the register."}
+                ? "随修订提交，发布时自动登记进来源库（同名或同链接的来源会复用）。最多 20 条。"
+                : "Sent with the revision and entered in the register when it is published (an existing source with the same title or link is reused). Up to 20."}
             </span>
           </label>
           <label className="flex flex-col gap-1.5">
@@ -302,8 +302,13 @@ export function MetadataPanel({
               value={newTags}
               onChange={(event) => onNewTagsChange(event.target.value)}
               className="pw-lined min-h-24 resize-y text-small"
-              placeholder="streaming, 流式"
+              placeholder={zh ? "流式 / Streaming, 缓存 / Cache" : "流式 / Streaming, 缓存 / Cache"}
             />
+            <span className="text-meta text-ink-3">
+              {zh
+                ? "写成“中文 / English”可同时给出两种语言的名称；发布时创建，已有同名标签会复用。"
+                : "Write “中文 / English” to name both languages; created on publish, reusing a tag of the same name."}
+            </span>
           </label>
           <fieldset className="lg:col-span-2">
             <legend className="pw-label">{zh ? "协作者 · 点选署名" : "Contributors · stamp to credit"}</legend>

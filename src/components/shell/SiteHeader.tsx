@@ -45,7 +45,7 @@ export function SiteHeader({
   const t = (k: Parameters<typeof translate>[1]) => translate(lang, k);
   return (
     <HeaderFrame>
-      <div className="mx-auto flex h-(--shell-header) max-w-(--content-max) items-center gap-6 px-4 sm:px-6 lg:gap-10">
+      <div className="mx-auto flex h-(--shell-header) max-w-(--content-max) items-center gap-2 px-3 sm:gap-6 sm:px-6 lg:gap-10">
         <Link
           href="/"
           className="group flex shrink-0 items-center gap-2.5 no-underline"
@@ -61,7 +61,7 @@ export function SiteHeader({
           <NavLinks />
         </nav>
 
-        <div className="ml-auto flex items-center gap-4 lg:gap-6">
+        <div className="ml-auto flex items-center gap-2 sm:gap-4 lg:gap-6">
           <span className="hidden md:inline-flex">
             <SearchTrigger />
           </span>
@@ -69,9 +69,11 @@ export function SiteHeader({
             <SearchTrigger compact />
           </span>
           <LanguageToggle className="hidden md:inline-flex" />
-          <Link href="/editor/new" className="pw-link hidden text-small text-ink-2 hover:text-ink lg:inline">
-            {t("nav.create")}
-          </Link>
+          {account && account.status !== "suspended" && (account.authorId || account.role === "admin") ? (
+            <Link href="/editor/new" className="pw-link hidden text-small text-ink-2 hover:text-ink lg:inline">
+              {t("nav.create")}
+            </Link>
+          ) : null}
           {me ? (
             <Link
               href={`/members/${me.handle}`}
@@ -88,7 +90,7 @@ export function SiteHeader({
               <span className="hidden sm:inline">{lang === "zh" ? "我的" : "Me"}</span>
             </Link>
           ) : null}
-          <UserMenu account={account} user={user} />
+          <UserMenu account={account} user={user} me={me} />
           <div className="md:hidden">
             <MobileNav />
           </div>

@@ -89,13 +89,15 @@ describe("Supabase annals queries (stubbed database)", () => {
 
     const [listing, counting] = requests;
     const methods = listing.map(([method]) => method);
-    expect(methods).toEqual(["from", "select", "in", "gte", "lte", "contains", "or", "order", "order", "range"]);
+    // Archived records are left out of every public read, before any other filter.
+    expect(methods).toEqual(["from", "select", "is", "in", "gte", "lte", "contains", "or", "order", "order", "range"]);
+    expect(listing).toContainEqual(["is", "archived_at", null]);
     expect(listing[1][1]).not.toContain("body");
     expect(listing).toContainEqual(["contains", "host_ids", ["m-qingkong"]]);
     expect(listing).toContainEqual(["or", chronicleTextFilter("例会, (1)")]);
     expect(listing.at(-1)).toEqual(["range", 40, 79]);
     expect(counting[1]).toEqual(["select", "id", { count: "exact", head: true }]);
-    expect(counting.map(([method]) => method)).toEqual(["from", "select", "in", "gte", "lte", "contains", "or"]);
+    expect(counting.map(([method]) => method)).toEqual(["from", "select", "is", "in", "gte", "lte", "contains", "or"]);
   });
 
   it("leaves blank words out of the request", async () => {
