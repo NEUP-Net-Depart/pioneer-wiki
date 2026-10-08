@@ -69,9 +69,11 @@ export function SiteHeader({
             <SearchTrigger compact />
           </span>
           <LanguageToggle className="hidden md:inline-flex" />
-          <Link href="/editor/new" className="pw-link hidden text-small text-ink-2 hover:text-ink lg:inline">
-            {t("nav.create")}
-          </Link>
+          {account && account.status !== "suspended" && (account.authorId || account.role === "admin") ? (
+            <Link href="/editor/new" className="pw-link hidden text-small text-ink-2 hover:text-ink lg:inline">
+              {t("nav.create")}
+            </Link>
+          ) : null}
           {me ? (
             <Link
               href={`/members/${me.handle}`}
@@ -88,7 +90,7 @@ export function SiteHeader({
               <span className="hidden sm:inline">{lang === "zh" ? "我的" : "Me"}</span>
             </Link>
           ) : null}
-          <UserMenu account={account} user={user} />
+          <UserMenu account={account} user={user} me={me} />
           <div className="md:hidden">
             <MobileNav />
           </div>
