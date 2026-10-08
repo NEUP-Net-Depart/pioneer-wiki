@@ -62,6 +62,20 @@ git rev-list --left-right --count neup/main...origin/main
 - pnpm 10.34.6（通过 Corepack 使用项目固定版本）
 - 需要验证 UI 时使用可运行本项目的现代浏览器
 
+### 浏览器测试边界
+
+`pnpm run test:e2e` 只运行 Playwright 管理的 Chromium 公共页面冒烟测试。它使用 Mock 数据和生产构建，不连接 Supabase，不登录账号，也不代表 Firefox、WebKit、真实数据库或用户本机浏览器的兼容性。
+
+CI 会在安装依赖后执行 `pnpm exec playwright install --with-deps chromium`，因此 GitHub runner 和贡献者都不需要预装 Chrome 或 Chromium。首次本地运行前执行：
+
+```bash
+pnpm exec playwright install chromium
+pnpm run build
+pnpm run test:e2e
+```
+
+本地若希望复用系统 Chrome，需要使用专门的浏览器调试脚本；仓库 CI 的结果以 Playwright 管理的 Chromium 为准。
+
 ### 本地运行
 
 ```bash
@@ -99,7 +113,7 @@ docs: explain local mock data
 test: cover auth validation edge case
 ```
 
-遵循现有 TypeScript 和 React 风格：两空格缩进、双引号、分号；组件和组件文件使用 PascalCase，函数和变量使用 camelCase，URL 段和静态资源使用 kebab-case。优先使用 `@/*` 导入别名，并将共享逻辑放在 `src/lib` 或 `src/components`。
+遵循现有 TypeScript 和 React 风格：两空格缩进、双引号、分号；组件和组件文件使用 PascalCase，函数和变量使用 camelCase，URL 段和静态资源使用 kebab-case。优先使用 `@/*` 导入别名，并将共享逻辑放在 `src/lib` 或 `src/components`。注释应简洁地说明意图、约束或不明显的行为，并在 `//` 和块注释标记后留空格。ESLint 抑制必须写出具体规则，并以 `-- 原因` 说明例外；禁止无规则的 `eslint-disable`、重复抑制和已经没有作用的抑制。JSDoc 标签使用标准拼写并保持对齐。
 
 ## 验证改动
 

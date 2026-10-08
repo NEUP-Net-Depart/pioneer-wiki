@@ -129,8 +129,7 @@ export function Overture({ cuts, birds }: { cuts: OvertureCut[]; birds: Overture
       window.removeEventListener("pointerdown", onInput);
       timers.current.forEach((t) => window.clearTimeout(t));
     };
-    // Runs once per page load; cuts/birds are static props.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per page load; cuts/birds are static props.
   }, []);
 
   // While the card lifts, uncover the page so the frontispiece plays its own entrance underneath.

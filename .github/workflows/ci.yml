@@ -45,7 +45,7 @@ jobs:
       - name: Format check
         run: pnpm run format:check
 
-      - name: Lint
+      - name: Lint and comment policy
         run: pnpm run lint
 
       - name: Typecheck
@@ -91,3 +91,49 @@ jobs:
 
       - name: Test concurrent forum writes
         run: node tools/test-forum-concurrency.mjs supabase_db_pioneer-wiki
+
+  browser:
+    name: Verify Chromium browser flows
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PIONEER_DATA_SOURCE: mock
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js and cache pnpm store
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build production bundle
+        run: pnpm run build
+
+      # CI owns the browser boundary: this downloads the Chromium revision
+      # required by the pinned @playwright/test package. System Chrome is not a
+      # prerequisite for contributors or GitHub-hosted runners.
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Chromium smoke tests
+        run: pnpm run test:e2e
+
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
