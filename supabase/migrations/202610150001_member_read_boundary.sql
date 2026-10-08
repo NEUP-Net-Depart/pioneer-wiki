@@ -1,0 +1,16 @@
+-- Anonymous readers could not list member pages at all: every read of
+-- public.members raised 42501 instead of returning the unarchived rows.
+--
+-- The read policy from 202610140003_community_admin names pw_bound_member(),
+-- and 202610140001_identity_lifecycle revoked its execute from anon, where it
+-- was meant as an internal helper. Row level security evaluates the policy as
+-- the calling role, so the role reading the table must be able to execute every
+-- function the expression names — an anonymous read failed before it could
+-- decide a single row.
+--
+-- Granted rather than rewritten: for an anonymous caller auth.uid() is null, so
+-- the function answers null and `id = null` is false. Archived pages stay out of
+-- the reader's directory exactly as before, and an owner or administrator loses
+-- nothing. A fresh `db reset` reaches this after the revoke that made it
+-- necessary, so it is a repair for existing projects and not for new ones only.
+grant execute on function public.pw_bound_member() to anon;
