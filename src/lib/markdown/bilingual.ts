@@ -1,6 +1,6 @@
 import GithubSlugger from "github-slugger";
 import { toString } from "mdast-util-to-string";
-import type { Blockquote, Heading, Parent, Root, RootContent } from "mdast";
+import type { Heading, Parent, Root, RootContent } from "mdast";
 import { visit } from "unist-util-visit";
 
 /*
@@ -46,26 +46,6 @@ export function remarkBilingual() {
     const slugger = new GithubSlugger();
 
     visit(tree, (node) => {
-      if (node.type === "blockquote") {
-        const quote = node as Blockquote;
-        const first = quote.children[0];
-        const text = first?.type === "paragraph" ? toString(first) : "";
-        const match = /^\[!(tip|info|warning|danger|note)\]\s*/i.exec(text);
-        if (match && first?.type === "paragraph") {
-          const marker = match[0];
-          const firstText = first.children[0];
-          if (firstText?.type === "text") {
-            firstText.value = firstText.value.slice(marker.length);
-          }
-          quote.data = {
-            ...quote.data,
-            hProperties: {
-              className: [`pw-callout`, `pw-callout-${match[1].toLowerCase()}`],
-              "data-callout": match[1].toLowerCase(),
-            },
-          };
-        }
-      }
       if (node.type === "heading") {
         const heading = node as Heading;
         const parts = splitHeading(toString(heading));

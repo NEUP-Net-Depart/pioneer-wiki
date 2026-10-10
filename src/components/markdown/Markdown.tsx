@@ -47,14 +47,6 @@ const CODE_LANGUAGES: Record<string, string> = {
   txt: "Text",
 };
 
-const CALLOUT_TYPES: Record<string, { label: string; className: string }> = {
-  tip: { label: "Tip", className: "pw-callout-tip" },
-  info: { label: "Info", className: "pw-callout-info" },
-  warning: { label: "Warning", className: "pw-callout-warning" },
-  danger: { label: "Danger", className: "pw-callout-danger" },
-  note: { label: "Note", className: "pw-callout-note" },
-};
-
 /**
  * Keep `asset:<id>` references (figures from the asset store) for the image
  * renderer below; every other URL goes through react-markdown's safe default,
@@ -73,17 +65,6 @@ interface MarkdownProps {
 
 export function Markdown({ children, lang, assets = {}, className }: MarkdownProps) {
   const components: Components = {
-    blockquote: ({ node, children, ...rest }) => {
-      const calloutType = node?.properties["data-callout"];
-      const type = typeof calloutType === "string" ? CALLOUT_TYPES[calloutType] : undefined;
-      if (!type) return <blockquote {...rest}>{children}</blockquote>;
-      return (
-        <blockquote {...rest}>
-          <span className="pw-callout-label">{type.label}</span>
-          {children}
-        </blockquote>
-      );
-    },
     // Code: a heavier typed slip with a tab naming the language, and a copy button.
     pre: ({ node, children, ...rest }) => {
       const code = node?.children[0];

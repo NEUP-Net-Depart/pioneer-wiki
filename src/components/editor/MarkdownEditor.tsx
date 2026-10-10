@@ -209,7 +209,6 @@ export function MarkdownEditor({
   const [otherTab, setOtherTab] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [uploadedAssets, setUploadedAssets] = useState<Asset[]>([]);
-  const [assetPreviews, setAssetPreviews] = useState<Record<string, string>>({});
   const [ready, setReady] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const draftId = useRef<string | undefined>(serverDraft?.id);
@@ -220,11 +219,6 @@ export function MarkdownEditor({
     typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Math.random()),
   );
   const channel = useRef<BroadcastChannel | null>(null);
-  useEffect(() => {
-    return () => {
-      Object.values(assetPreviews).forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [assetPreviews]);
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
   const archived = Boolean(workflow?.archived);
   const storageKey = `pioneer-wiki:draft:${accountId}:${initialEntryId ?? "new"}`;
@@ -593,8 +587,6 @@ export function MarkdownEditor({
     try {
       const { asset } = await api<{ asset: Asset }>("/api/assets/upload", "POST", form);
       setUploadedAssets((current) => [...current, asset]);
-      const previewUrl = URL.createObjectURL(file);
-      setAssetPreviews((current) => ({ ...current, [asset.id]: previewUrl }));
       setFeedback({
         kind: "ok",
         text: zh
@@ -617,12 +609,7 @@ export function MarkdownEditor({
     })(),
   };
   /** Figures the body may reference as asset:<id>, for the proof beside the notebook. */
-  const figureMap = Object.fromEntries(
-    [...options.assets, ...uploadedAssets].map((a) => [
-      a.id,
-      assetPreviews[a.id] ? { ...a, src: assetPreviews[a.id] } : a,
-    ]),
-  );
+  const figureMap = Object.fromEntries([...options.assets, ...uploadedAssets].map((a) => [a.id, a]));
   const words = body
     .replace(/:::(zh|en)?/g, "")
     .replace(/\s+/g, " ")
@@ -646,19 +633,13 @@ export function MarkdownEditor({
       >
         <Link2 className="size-4" />
       </ToolButton>
-      <ToolButton
-        label={zh ? "插入 Bash 代码块" : "Insert Bash code block"}
-        onClick={() => insert("```bash\n", "\n```", "command")}
-      >
+      <ToolButton label={zh ? "插入代码块" : "Insert code block"} onClick={() => insert("```\n", "\n```", "code")}>
         <Code2 className="size-4" />
       </ToolButton>
       <ToolButton label={zh ? "插入数学公式" : "Insert math"} onClick={() => insert("$", "$", "x")}>
         <Sigma className="size-4" />
       </ToolButton>
-      <ToolButton
-        label={zh ? "插入引用（可选类型）" : "Insert quote with optional type"}
-        onClick={() => insert("> [!tip]\n> ", "", zh ? "引用" : "quote")}
-      >
+      <ToolButton label={zh ? "插入引用" : "Insert quote"} onClick={() => insert("> ", "", zh ? "引用" : "quote")}>
         <Quote className="size-4" />
       </ToolButton>
       <ToolButton
