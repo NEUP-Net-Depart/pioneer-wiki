@@ -204,6 +204,25 @@
     border-top: 1px dashed var(--color-rule-strong);
   }
 
+  .pw-prose .pw-callout {
+    padding-top: 2.2rem;
+  }
+  .pw-prose .pw-callout-label {
+    position: absolute;
+    top: 0.7rem;
+    left: 3.1rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-style: normal;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--phylum-ink);
+  }
+  .pw-prose .pw-callout-warning,
+  .pw-prose .pw-callout-danger {
+    border-left-color: var(--color-brick-ink);
+  }
+
   /* Inline code: a word typed onto a phylum-tinted slip. */
   .pw-prose :not(pre) > code {
     padding: 0.05em 0.36em;

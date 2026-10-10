@@ -71,6 +71,16 @@ describe("bilingual markdown", () => {
     expect(html).not.toContain("\r");
     expect(html).toMatch(/<span class="pw-code-count">2 行<\/span>/);
   });
+
+  it("renders typed callouts and bash code labels", () => {
+    const html = renderToStaticMarkup(
+      Markdown({ lang: "zh", children: "> [!tip]\n> 使用 bash 脚本部署。\n\n```bash\necho hi\n```" }),
+    );
+    expect(html).toContain('class="pw-callout pw-callout-tip"');
+    expect(html).toContain('<span class="pw-callout-label">Tip</span>');
+    expect(html).not.toContain("[!tip]");
+    expect(html).toContain("Shell");
+  });
 });
 
 describe("figures in the body", () => {
