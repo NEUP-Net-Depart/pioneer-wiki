@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(29);
+select plan(30);
 
 insert into public.authors(id, handle, name_zh, name_en, role, sigil) values
   ('audit-author', 'audit-author', 'Author', 'Author', 'contributor', 'test'),
@@ -65,7 +65,10 @@ select throws_ok($$select public.pw_create_forum_thread('Title', 'Body', 'help')
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000103', true);
 select throws_ok($$insert into public.forum_threads(id) values ('forged')$$, '42501', 'permission denied for table forum_threads', 'cannot forge thread identity');
 select throws_ok($$insert into public.forum_posts(id) values ('forged')$$, '42501', 'permission denied for table forum_posts', 'cannot forge post identity');
+select public.pw_update_own_profile('Administrator', 'Administrator');
 insert into audit_results values ('reader-thread', public.pw_create_forum_thread('Title', 'Body', 'help'));
+select is((select author_name from public.forum_threads where id = (select data->>'id' from audit_results where kind = 'reader-thread')),
+  (select '@' || handle from public.profiles where id = auth.uid()), 'reader display name cannot impersonate an administrator');
 select ok((select data->>'member_id' is null from audit_results where kind = 'reader-thread'), 'unbound reader posts without member attribution');
 select is((select count(*) from public.forum_posts where thread_id = (select data->>'id' from audit_results where kind = 'reader-thread')), 1::bigint, 'opening post exists');
 select throws_ok($$select public.pw_create_forum_thread('Title', repeat('x', 8001), 'help')$$, '22023', 'invalid_thread', 'reject oversized body');
