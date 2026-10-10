@@ -121,8 +121,8 @@ export default async function AdminTrash() {
           ))}
         </Ledger>
       </Section>
-      <Section id="t-threads" title={tr(lang, "隐藏的主题", "Hidden threads")} count={threads.length}>
-        <Ledger label={tr(lang, "隐藏的主题", "Hidden threads")}>
+      <Section id="t-threads" title={tr(lang, "已归档的讨论", "Archived discussions")} count={threads.length}>
+        <Ledger label={tr(lang, "已归档的讨论", "Archived discussions")}>
           {threads.map((thread) => (
             <LedgerRow key={thread.id} muted className="md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
               <div className="min-w-0">

@@ -4,7 +4,7 @@ import type { ForumPost, ForumThread } from "@/lib/model/types";
 import { useI18n } from "@/lib/i18n/client";
 import { api, ConfirmAction, NoticeLine, useAction } from "./actions";
 
-/** Hide / restore and lock / unlock one thread. */
+/** Archive / restore and lock / unlock one thread. */
 export function ThreadModeration({ thread }: { thread: ForumThread }) {
   const { lang } = useI18n();
   const zh = lang === "zh";
@@ -44,7 +44,7 @@ export function ThreadModeration({ thread }: { thread: ForumThread }) {
         )}
         {thread.hiddenAt ? (
           <ConfirmAction
-            trigger={zh ? "恢复显示" : "Restore"}
+            trigger={zh ? "恢复归档" : "Restore"}
             title={zh ? `恢复主题 #${thread.number}？` : `Restore thread #${thread.number}?`}
             description={
               zh
@@ -53,25 +53,25 @@ export function ThreadModeration({ thread }: { thread: ForumThread }) {
             }
             confirmLabel={zh ? "恢复主题" : "Restore thread"}
             onConfirm={async () => {
-              await call("restore");
+              await call("unarchive");
               succeed(zh ? "已恢复。" : "Restored.");
             }}
           />
         ) : (
           <ConfirmAction
             tone="danger"
-            trigger={zh ? "隐藏" : "Hide"}
-            title={zh ? `隐藏主题 #${thread.number}？` : `Hide thread #${thread.number}?`}
+            trigger={zh ? "归档" : "Archive"}
+            title={zh ? `归档主题 #${thread.number}？` : `Archive thread #${thread.number}?`}
             description={
               zh
-                ? "主题与全部回复从公开讨论区和成员页中隐藏，内容保留，可在回收站恢复。"
-                : "The thread and all replies leave the forum and member pages; the content is kept and can be restored from the archive bin."
+                ? "主题与全部回复从公开讨论区和成员页中移出，内容保留，可在回收站恢复。"
+                : "The thread and all replies leave public pages; the content is kept and can be restored from the archive bin."
             }
-            reason={{ label: zh ? "隐藏原因（记入审计）" : "Reason (audit log)", required: true }}
-            confirmLabel={zh ? "隐藏主题" : "Hide thread"}
+            reason={{ label: zh ? "归档原因（记入审计）" : "Reason (audit log)", required: true }}
+            confirmLabel={zh ? "归档主题" : "Archive thread"}
             onConfirm={async (reason) => {
-              await call("hide", reason);
-              succeed(zh ? "已隐藏。" : "Hidden.");
+              await call("archive", reason);
+              succeed(zh ? "已归档。" : "Archived.");
             }}
           />
         )}

@@ -559,7 +559,11 @@ export interface CommunityRepository {
   createThread(input: NewThreadInput): Promise<ForumThread>;
   /** Throws ServiceError("invalid") for an empty body; resolves null when the thread does not exist. */
   reply(input: NewPostInput): Promise<ForumPost | null>;
-  moderateThread(id: string, action: "hide" | "restore" | "lock" | "unlock", reason?: string): Promise<ForumThread>;
+  moderateThread(
+    id: string,
+    action: "hide" | "restore" | "archive" | "unarchive" | "lock" | "unlock",
+    reason?: string,
+  ): Promise<ForumThread>;
   moderatePost(id: string, action: "hide" | "restore", reason?: string): Promise<ForumPost>;
 }
 

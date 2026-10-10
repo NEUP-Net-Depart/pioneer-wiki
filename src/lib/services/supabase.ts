@@ -702,8 +702,9 @@ function createCommunityRepository(): CommunityRepository {
       return row ? mapPost(row) : null;
     },
     async moderateThread(id, action, reason) {
+      const dbAction = action === "archive" ? "hide" : action === "unarchive" ? "restore" : action;
       return mapThread(
-        await rpc<Row>("pw_admin_moderate_thread", { p_id: id, p_action: action, p_reason: reason ?? null }),
+        await rpc<Row>("pw_admin_moderate_thread", { p_id: id, p_action: dbAction, p_reason: reason ?? null }),
       );
     },
     async moderatePost(id, action, reason) {

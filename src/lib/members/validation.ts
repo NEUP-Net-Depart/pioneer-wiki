@@ -13,9 +13,12 @@ function clean(value: unknown, max: number, field: string, required = true): str
     throw new ServiceError("invalid", `Invalid ${field}`);
   return value.trim();
 }
-function localized(value: unknown, max: number, field: string) {
+function localized(value: unknown, max: number, field: string, required = true) {
   const input = record(value);
-  return { zh: clean(input.zh, max, `${field} (zh)`), en: clean(input.en, max, `${field} (en)`) };
+  return {
+    zh: clean(input.zh, max, `${field} (zh)`, required),
+    en: clean(input.en, max, `${field} (en)`, required),
+  };
 }
 export function memberLink(value: unknown): { label: string; url: string } {
   const input = record(value);
@@ -66,8 +69,8 @@ export function validateMemberPatch(value: unknown): MemberPatch {
   const patch: MemberPatch = {};
   if (input.projects !== undefined) patch.projects = validateProjects(input.projects);
   if (input.name !== undefined) patch.name = localized(input.name, 40, "name");
-  if (input.role !== undefined) patch.role = localized(input.role, 40, "role");
-  if (input.bio !== undefined) patch.bio = localized(input.bio, 160, "bio");
+  if (input.role !== undefined) patch.role = localized(input.role, 40, "role", false);
+  if (input.bio !== undefined) patch.bio = localized(input.bio, 160, "bio", false);
   if (input.about !== undefined) {
     if (typeof input.about !== "string" || input.about.length > 20000)
       throw new ServiceError("invalid", "Invalid about");

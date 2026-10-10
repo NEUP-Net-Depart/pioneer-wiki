@@ -410,11 +410,12 @@ export function createMockCommunityRepository(
       if (at < 0) throw new ServiceError("invalid", "thread_not_found");
       const thread = threads[at];
       const now = new Date().toISOString();
-      if (action === "hide" || action === "restore") {
-        if (Boolean(thread.hiddenAt) === (action === "hide")) throw new ServiceError("conflict", "unchanged_status");
-        if (action === "hide" && !reason?.trim()) throw new ServiceError("invalid", "reason_required");
-        thread.hiddenAt = action === "hide" ? now : undefined;
-        thread.moderationNote = action === "hide" ? reason?.trim() : undefined;
+      if (action === "hide" || action === "restore" || action === "archive" || action === "unarchive") {
+        const hiding = action === "hide" || action === "archive";
+        if (Boolean(thread.hiddenAt) === hiding) throw new ServiceError("conflict", "unchanged_status");
+        if (hiding && !reason?.trim()) throw new ServiceError("invalid", "reason_required");
+        thread.hiddenAt = hiding ? now : undefined;
+        thread.moderationNote = hiding ? reason?.trim() : undefined;
       } else {
         if (Boolean(thread.lockedAt) === (action === "lock")) throw new ServiceError("conflict", "unchanged_status");
         thread.lockedAt = action === "lock" ? now : undefined;

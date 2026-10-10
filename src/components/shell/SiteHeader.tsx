@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UserRound } from "lucide-react";
 import type { Account, Author, Lang, Member } from "@/lib/model/types";
 import { Bookplate } from "@/components/members/Bookplate";
 import { translate } from "@/lib/i18n/dictionary";
@@ -74,19 +75,23 @@ export function SiteHeader({
               {t("nav.create")}
             </Link>
           ) : null}
-          {me ? (
+          {account ? (
             <Link
-              href={`/members/${me.handle}`}
+              href={me ? `/members/${me.handle}` : "/account"}
               className="group flex items-center gap-2 text-small text-ink-2 no-underline hover:text-ink"
-              aria-label={lang === "zh" ? "我的主页" : "My page"}
+              aria-label={me ? (lang === "zh" ? "我的主页" : "My page") : lang === "zh" ? "我的账号" : "My account"}
             >
-              <Bookplate
-                plate={me.plate}
-                name={me.name}
-                lang={lang}
-                mini
-                className="w-6 shadow-sheet transition-transform duration-(--dur-quick) group-hover:-rotate-6"
-              />
+              {me ? (
+                <Bookplate
+                  plate={me.plate}
+                  name={me.name}
+                  lang={lang}
+                  mini
+                  className="w-6 shadow-sheet transition-transform duration-(--dur-quick) group-hover:-rotate-6"
+                />
+              ) : (
+                <UserRound aria-hidden="true" className="size-5 sm:hidden" />
+              )}
               <span className="hidden sm:inline">{lang === "zh" ? "我的" : "Me"}</span>
             </Link>
           ) : null}
