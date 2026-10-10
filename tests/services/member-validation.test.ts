@@ -58,6 +58,12 @@ describe("member validation across stores", () => {
       plate: { motto: "" },
     });
   });
+  it("allows optional role and bio fields to be cleared", () => {
+    expect(validateMemberPatch({ role: { zh: "", en: " " }, bio: { zh: "", en: "" } })).toEqual({
+      role: { zh: "", en: "" },
+      bio: { zh: "", en: "" },
+    });
+  });
   it("keeps valid older links and filters malformed entries independently", () => {
     expect(
       readMemberLinks([

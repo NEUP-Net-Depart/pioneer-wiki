@@ -72,17 +72,27 @@ export function MemberEditor({ member: initial, repositories = [] }: { member: M
     setBusy("save");
     setFeedback(null);
     try {
+      const incomplete = [...links, ...projects.flatMap((project) => project.links)].some(
+        (link) => Boolean(link.label.trim()) !== Boolean(link.url.trim()),
+      );
+      if (incomplete) {
+        throw new Error(
+          zh
+            ? "链接名称和地址需要同时填写。请补全或移除未完成的链接后再保存。"
+            : "Each link needs both a label and an address. Complete or remove unfinished links before saving.",
+        );
+      }
       const patch: MemberPatch = {
         projects: projects.map((project) => ({
           ...project,
           tags: project.tags.map((tag) => tag.trim()).filter(Boolean),
-          links: project.links.filter((link) => link.label.trim() || link.url.trim()),
+          links: project.links.filter((link) => link.label.trim() && link.url.trim()),
         })),
         name,
         role,
         bio,
         about,
-        links: links.filter((l) => l.label.trim() || l.url.trim()),
+        links: links.filter((l) => l.label.trim() && l.url.trim()),
         github: github.trim() || null,
         plate: { emblem: plate.emblem, ink: plate.ink, border: plate.border, motto: plate.motto },
         coverPrint: print,
@@ -93,6 +103,8 @@ export function MemberEditor({ member: initial, repositories = [] }: { member: M
         body: JSON.stringify({ patch, baseVersion: member.version }),
       });
       setMember(next);
+      setLinks(next.links);
+      setProjects(next.projects ?? []);
       setFeedback({ kind: "ok", text: zh ? "已保存。" : "Saved." });
       router.refresh();
     } catch (e) {

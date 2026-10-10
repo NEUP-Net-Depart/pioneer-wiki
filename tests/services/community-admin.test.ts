@@ -85,18 +85,20 @@ describe("community administration (fixtures backend)", () => {
     expect((await community.getMember("qingkong", { includeArchived: true }))?.archivedAt).toBeTruthy();
   });
 
-  it("moderates the forum: locked threads take no replies, hidden ones leave public reads", async () => {
+  it("moderates the forum: locked threads take no replies, archived ones leave public reads", async () => {
     const { community } = createMockServices();
     const [thread] = await community.listThreads();
     await community.moderateThread(thread.id, "lock", "Resolved");
     await expect(community.reply({ threadId: thread.id, body: "late", authorName: "x" })).rejects.toMatchObject({
       reason: "thread_locked",
     });
-    await expect(community.moderateThread(thread.id, "hide")).rejects.toMatchObject({ reason: "reason_required" });
-    await community.moderateThread(thread.id, "hide", "Off topic");
+    await expect(community.moderateThread(thread.id, "archive")).rejects.toMatchObject({ reason: "reason_required" });
+    await community.moderateThread(thread.id, "archive", "Off topic");
     expect((await community.listThreads()).some((t) => t.id === thread.id)).toBe(false);
     expect(await community.getThread(thread.id)).toBeNull();
     expect((await community.getThread(thread.id, { includeHidden: true }))?.thread.hiddenAt).toBeTruthy();
+    await community.moderateThread(thread.id, "unarchive");
+    expect((await community.listThreads()).some((t) => t.id === thread.id)).toBe(true);
     const opening = (await community.getThread(thread.id, { includeHidden: true }))!.posts[0];
     await expect(community.moderatePost(opening.id, "hide", "x")).rejects.toMatchObject({
       reason: "hide_thread_instead",
