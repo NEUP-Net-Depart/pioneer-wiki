@@ -32,6 +32,15 @@
   <a href="#sponsors">💛 Sponsors</a>
 </p>
 
+> [!IMPORTANT]
+> **AI 生物插图声明 · Notice on AI-generated biological illustrations**
+>
+> 本项目曾使用 AI 生成的生物题材插图作为视觉素材。此前的美术方向容易让人误以为这些图像是实物照片或可供物种识别的图鉴资料，这是我们在视觉设计上的判断失误。项目方不会将这些图片作为真实生物图鉴、实物照片或科学记录对外宣传，也不会再对这些图片进行二次分发。我们正筹备下架相关图片，并调整项目的插图方向。
+>
+> This project has used AI-generated artwork depicting organisms as visual material. Our earlier art direction made it too easy to mistake these images for photographs of real specimens or references for species identification. That was a mistake in our visual design. The project will neither promote these images as authentic field-guide illustrations, specimen photographs or scientific records, nor redistribute them. We are preparing to take down the affected images and revise the project's approach to illustration.
+>
+> 已发布插图的许可见 [插图许可证 / Illustration licence](LICENSE-ILLUSTRATIONS.md)。
+
 <table align="center">
   <tr>
     <td align="center"><img src="public/stage/biology.webp" width="180" alt="Natural history entrance: forest floor, birds and stream" /><br /><sub>I · 博物 Wiki · Natural history</sub></td>
